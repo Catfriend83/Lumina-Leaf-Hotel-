@@ -1,4 +1,5 @@
 import {buildGardenCurb} from './garden-curb.js?v=101';
+import {subtractGarageFootprint} from './garage-site.js?v=104';
 import {T,Kit,rng} from './core.js?v=75';
 import {GARAGE_CROSSING} from './pool-connection.js?v=91';
 import {buildHotelDrive,hotelDriveOverlaps} from './hotel-drive.js?v=102';
@@ -69,7 +70,7 @@ export function buildForecourt(root,m){
  exitFill.castShadow=false;
  exitFill.userData={garageExitRoadRepair:true,flushAsphalt:true,joinsMainRoad:true,geometryTriangles:2};
  // Keep the existing open garage crossing; the north pavement never bridges it.
- for(const [left,right,endZ] of [[-58.5,GARAGE_CROSSING.minX,28.1],[GARAGE_CROSSING.maxX,1.0,28.1],[1.0,6.3,27.9],[6.3,66.5,28.1]]){
+ for(const [left,right,endZ] of [[-58.5,GARAGE_CROSSING.minX,28.1],[GARAGE_CROSSING.maxX,1.0,28.1],[1.0,6.3,27.9],[6.3,35.40,28.1],[42.60,54.90,28.1],[62.10,66.5,28.1]]){
   const walk=flat('Gehweg am Hotel mit freier Garagenquerung',m.cobbles,left,right,26.3,endZ,.105);walk.userData={hotelSidewalk:true};
  }
  // Exactly the two existing sidewalk curbs END at the garage portals.
@@ -94,7 +95,20 @@ export function buildForecourt(root,m){
  k.bevel(curbFinish,GARAGE_CROSSING.minX-restoredWidth/2,.0575,
   (restoredZ0+restoredZ1)/2,restoredWidth,.125,restoredZ1-restoredZ0,.022);
  group.userData.garageExitStraightCurbRestored=true;
- buildGardenCurb(group,m);
+ // The relocated limousine compound fronts the hotel at z=19. Its two
+ // 6.64m asphalt approaches reach the existing road at z=28.3. Remove only
+ // the front curb across those accesses, keeping the entire remaining
+ // original flowerbed and VIP curb untouched.
+ const gardenCurb=buildGardenCurb(group,m);
+ for(const gateX of [39,58.5]){
+  const old= gardenCurb.geometry;
+  gardenCurb.geometry=subtractGarageFootprint(old,{
+   minX:gateX-3.6,maxX:gateX+3.6,minZ:27.98,maxZ:28.61
+  });
+  old.dispose();
+ }
+ gardenCurb.geometry.computeVertexNormals();
+ gardenCurb.userData.limousineGatesCleared=true;
  const ramp=new T.BufferGeometry();ramp.setAttribute('position',new T.Float32BufferAttribute([1,.105,27.9,1,-.005,28.4,6.3,-.005,28.4,6.3,.105,27.9],3));ramp.setAttribute('uv',new T.Float32BufferAttribute([0,0,0,.25,2.65,.25,2.65,0],2));ramp.setIndex([0,1,2,0,2,3]);ramp.computeVertexNormals();const rampMesh=k.mesh(ramp,m.cobbles,'Abgesenkter Bordstein am roten Teppich');rampMesh.userData={entranceCurbRamp:true};rampMesh.castShadow=false;
  // Thin, matte thermoplastic lines sit on the asphalt, rather than glowing.
  const paint=(x,z,w,d)=>k.box(m.roadPaint,x,.0005,z,w,.003,d);
