@@ -22,6 +22,7 @@ import {buildCar} from './car.js?v=91';
 import {buildLandscape} from './landscape.js?v=91';
 import {buildLakeActivity} from './lake-activity.js?v=75';
 import {makeRoadMaterials,removeVegetationOnRoad,buildForecourt} from './forecourt.js?v=91';
+import {buildMobileLandscape} from './mobile-landscape.js?v=96';
 import {SPA_WING} from './spa-wing.js?v=75';
 export async function createScene({createCanvas,loadTexture,onProgress=()=>{},mobile=false,fastHotel=false}){
  // Allow the browser to paint the loading state between long scene build steps.
@@ -45,15 +46,11 @@ export async function createScene({createCanvas,loadTexture,onProgress=()=>{},mo
   // Fast mobile preview: reuse the actual hotel, pool, SPA and forecourt
   // builders. Only the costly valley, village and botanical reconstructions
   // are omitted. The full landscape remains available via ?full=1.
-  await phase(25,'Hotel-Schnellansicht vorbereiten …');
-  const ground=new T.Mesh(new T.PlaneGeometry(300,320),
-   new T.MeshStandardMaterial({name:'Grünfläche der mobilen Hotelansicht',color:'#75865b',roughness:1}));
-  ground.rotation.x=-Math.PI/2;ground.position.set(0,-.16,-30);
-  ground.name='Vereinfachter Untergrund der Hotel-Schnellansicht';
-  ground.receiveShadow=false;scene.add(ground);
-  await phase(42,'Hotel mit Lobby, Gästetrakt und Pool aufbauen …');
+  await phase(22,'Alpenlandschaft, See, Wiesen und Wald aufbauen …');
+  buildMobileLandscape(scene,materials);
+  await phase(55,'Hotel mit Lobby, Gästetrakt und Pool aufbauen …');
   buildHotel(scene,materials);
-  await phase(74,'Straße und Limousine ergänzen …');
+  await phase(83,'Hotelvorfahrt und Limousine ergänzen …');
   buildForecourt(scene,materials);
   const car=buildCar(scene,materials,carWrap);
   sun.castShadow=false;
