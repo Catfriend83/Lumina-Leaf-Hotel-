@@ -77,7 +77,9 @@ export function buildLuxuryPool(terrace,m,{position=[-12.3,2.63,2.65]}={}){
  function planter(x,z,h=.55){k.box(m.poolFrame,x,h/2,z,.64,h,.64);k.box(m.soil,x,h+.01,z,.55,.035,.55);for(let i=0;i<11;i++){const a=i*2.4,l=.35+random()*.23;const tip=[x+Math.cos(a)*l,h+.25+random()*.30,z+Math.sin(a)*l];k.line(m.trunk,[x,h,z],tip,.009);k.put(broadLeaf,i%2?m.leaf:m.leaf2,...tip,.34,.47,.38,-.3,a,Math.sin(a)*.4);}k.box(m.poolWarm,x,.08,z+.326,.32,.027,.008);}
  for(const x of [-5.9,5.9])planter(x,15.7,.72);
  for(const x of [-3.9,-1.3,1.3,3.9])planter(x,15.95,.32);
- for(const x of [-6.0,6.0]){const z=-10.6;k.cyl(m.poolFrame,x,.38,z,.34,.76);for(let i=0;i<7;i++){const a=i*2.4,tip=[x+Math.cos(a)*.46,1.6+random()*.65,z+Math.sin(a)*.46];k.line(m.trunk,[x,.7,z],tip,.018);k.put(broadLeaf,m.leaf,...tip,.50,.95,.48,-.35,a,Math.sin(a)*.25);}const light=new T.PointLight('#ffd7a2',1.8,3,2);light.name='Indirektes Pflanzenlicht der Poolterrasse';light.position.set(x,.15,z+.4);g.add(light);}
+ // V98: Remove both tree-sized planters immediately next to the pool terrace.
+ // The continuous natural-stone deck was constructed above, so no patch or
+ // replacement surface is needed, and no soil, roots or stumps remain.
  // Spa walls preserve the existing open connection to the hotel.
  buildSpaPrivacy(g,m,d);
  for(const x of [d.left+.10,d.right-.10])for(const z of [-10.5,-5.6,.3,6.2,11.1,15.7]){box(m.poolFrame,x,.07,z,.12,.14,.12);box(m.poolWarm,x,.145,z,.075,.008,.075);}
