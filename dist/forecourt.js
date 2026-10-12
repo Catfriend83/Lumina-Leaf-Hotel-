@@ -47,6 +47,27 @@ export function buildForecourt(root,m){
  const group=new T.Group();group.name='Asphaltstraße und VIP-Hotelvorfahrt';group.userData={hotelForecourt:true};root.add(group);const k=new Kit(group),f=FORECOURT;
  const flat=(name,material,x0,x1,z0,z1,y)=>{const g=new T.PlaneGeometry(x1-x0,z1-z0);g.rotateX(-Math.PI/2);g.translate((x0+x1)/2,y,(z0+z1)/2);const p=g.attributes.position,uv=g.attributes.uv;for(let i=0;i<p.count;i++)uv.setXY(i,p.getX(i)/2,p.getZ(i)/2);const mesh=k.mesh(g,material,name);mesh.castShadow=false;return mesh;};
  buildHotelDrive(group,m);
+ // Reconnect the exit lane to the existing asphalt. The road polygon begins at
+ // x=-18.715 alongside the portal, while the actual garage wall starts near
+ // x=-21.715; that left strip was mistakenly left as exposed terrain.
+ // A single textured quad fills only that forecourt gap, without rebuilding
+ // either ramp or the road beyond the garage approach.
+ const garageExitLeft=GARAGE_CROSSING.minX,joinRoadX=-18.60,frontZ=28.4,mergeZ=33.82;
+ const fillGeometry=new T.BufferGeometry();
+ fillGeometry.setAttribute('position',new T.Float32BufferAttribute([
+  garageExitLeft,-.0035,frontZ,
+  garageExitLeft,-.0035,mergeZ,
+  joinRoadX,-.0035,mergeZ,
+  joinRoadX,-.0035,frontZ
+ ],3));
+ fillGeometry.setAttribute('uv',new T.Float32BufferAttribute([
+  garageExitLeft/2,frontZ/2,garageExitLeft/2,mergeZ/2,
+  joinRoadX/2,mergeZ/2,joinRoadX/2,frontZ/2
+ ],2));
+ fillGeometry.setIndex([0,1,2,0,2,3]);fillGeometry.computeVertexNormals();
+ const exitFill=k.mesh(fillGeometry,m.asphalt,'Durchgehend reparierter Asphalt vor der Garagenausfahrt');
+ exitFill.castShadow=false;
+ exitFill.userData={garageExitRoadRepair:true,flushAsphalt:true,joinsMainRoad:true,geometryTriangles:2};
  // Keep the existing open garage crossing; the north pavement never bridges it.
  for(const [left,right,endZ] of [[-58.5,GARAGE_CROSSING.minX,28.1],[GARAGE_CROSSING.maxX,1.0,28.1],[1.0,6.3,27.9],[6.3,66.5,28.1]]){
   const walk=flat('Gehweg am Hotel mit freier Garagenquerung',m.cobbles,left,right,26.3,endZ,.105);walk.userData={hotelSidewalk:true};
@@ -54,6 +75,14 @@ export function buildForecourt(root,m){
  const curb=(left,right,z,height=.125)=>k.box(m.ivory,(left+right)/2,height/2-.005,z,right-left,height,.30);
  // A lowered entrance crossing meets the existing carpet without a high curb step.
  for(const [left,right] of [[-58.5,GARAGE_CROSSING.minX],[GARAGE_CROSSING.maxX,1.0]])curb(left,right,28.25);
+ // One crisp continuous curb return on the grassy LEFT edge of the repaired
+ // exit. This eliminates broken tiny pavement segments at the portal corner;
+ // the right entrance lane and all non-garage curbs remain unchanged.
+ const curbThickness=.23,curbZ0=28.31,curbZ1=33.42;
+ const exitCurb=k.box(m.ivory,GARAGE_CROSSING.minX-curbThickness/2,.0575,
+  (curbZ0+curbZ1)/2,curbThickness,.125,curbZ1-curbZ0);
+ exitCurb.name='Sauberer durchgehender Bordstein links vor der Tiefgarage';
+ exitCurb.userData={garageExitCurbRepair:true,cleanStraightEdge:true};
  buildGardenCurb(group,m);
  const ramp=new T.BufferGeometry();ramp.setAttribute('position',new T.Float32BufferAttribute([1,.105,27.9,1,-.005,28.4,6.3,-.005,28.4,6.3,.105,27.9],3));ramp.setAttribute('uv',new T.Float32BufferAttribute([0,0,0,.25,2.65,.25,2.65,0],2));ramp.setIndex([0,1,2,0,2,3]);ramp.computeVertexNormals();const rampMesh=k.mesh(ramp,m.cobbles,'Abgesenkter Bordstein am roten Teppich');rampMesh.userData={entranceCurbRamp:true};rampMesh.castShadow=false;
  // Thin, matte thermoplastic lines sit on the asphalt, rather than glowing.
