@@ -32,7 +32,7 @@ async function start(){
  try{const scriptFont=new FontFace('Lumina Script','url(./assets/lumina-script.otf)');document.fonts.add(await scriptFont.load());}
  catch(e){console.warn('Optionale Schrift konnte nicht geladen werden.',e);}
  renderer=new T.WebGLRenderer({antialias:!mobile,alpha:false,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,mobile?1:1.8));renderer.outputColorSpace=T.SRGBColorSpace;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=CINEMATIC.exposure;renderer.shadowMap.enabled=!fastHotel;renderer.shadowMap.type=T.PCFSoftShadowMap;el('viewport').append(renderer.domElement);
- camera=new T.PerspectiveCamera(27.88,1,.35,2800);controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.dampingFactor=.075;controls.screenSpacePanning=true;controls.minDistance=4;controls.maxDistance=440;controls.maxPolarAngle=Math.PI*.492;controls.autoRotateSpeed=.65;controls.target.set(-1,5,-8);controls.zoomSpeed=.85;controls.panSpeed=.65;controls.rotateSpeed=.6;
+ camera=new T.PerspectiveCamera(27.88,1,.35,3300);controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.dampingFactor=.075;controls.screenSpacePanning=true;controls.minDistance=4;controls.maxDistance=440;controls.maxPolarAngle=Math.PI*.492;controls.autoRotateSpeed=.65;controls.target.set(-1,5,-8);controls.zoomSpeed=.85;controls.panSpeed=.65;controls.rotateSpeed=.6;
  monitor=createPerformanceMonitor(renderer);
  const loader=new T.TextureLoader(),assets=new Map();
  const paths=fastHotel?
