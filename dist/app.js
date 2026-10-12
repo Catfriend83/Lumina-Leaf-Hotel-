@@ -2,7 +2,7 @@ import {optimizeStaticScene} from './static-performance.js?v=78';
 import {createPerformanceMonitor} from './performance-monitor.js?v=78';
 import {loadModelBlob} from './model-download.js?v=75';
 import {T} from './core.js?v=75';
-import {createScene,cameraViews} from './scene.js?v=95';
+import {createScene,cameraViews} from './scene.js?v=96';
 import {createRendering} from './rendering.js?v=94';
 import {CINEMATIC} from './cinematic.js?v=75';
 import {assemble8K,EXPORT_8K} from './export-8k.js?v=75';
@@ -36,7 +36,7 @@ async function start(){
  monitor=createPerformanceMonitor(renderer);
  const loader=new T.TextureLoader(),assets=new Map();
  const paths=fastHotel?
-  ['photo-reference.jpg','alpine-stone.png','alpine-limestone.png','granite-cobblestone.png','botanical-wrap.png','snowy-spruce.png','festive-shrub.png','limousine-side-wrap-v12.png','sunset-sky.png']:
+  ['photo-reference.jpg','alpine-stone.png','alpine-limestone.png','granite-cobblestone.png','botanical-wrap.png','snowy-spruce.png','alpine-forest-pine.png','festive-shrub.png','limousine-side-wrap-v12.png','sunset-sky.png']:
   ['photo-reference.jpg','alpine-stone.png','alpine-limestone.png','granite-cobblestone.png','botanical-wrap.png','snowy-spruce.png','alpine-forest-pine.png','festive-shrub.png','limousine-side-wrap-v12.png','sunset-sky.png'];
  const loadTexture=path=>{if(!assets.has(path)){const task=loader.loadAsync(new URL(path,import.meta.url)).then(t=>{t.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());return t;});task.catch(()=>{});assets.set(path,task);}return assets.get(path);};
  for(const name of paths)loadTexture('assets/'+name);
@@ -91,15 +91,15 @@ async function start(){
   const loading=el('loading');if(loading){loading.style.opacity='0';setTimeout(()=>loading.remove(),550);}
  }
  });
- window.luminaPerformance={read:()=>({...monitor.summary(),optimization:optimization.report,pixelRatio:renderer.getPixelRatio(),renderProfile:fastHotel?'mobile-hotel-first':mobile?'mobile-fluent':'cinematic'})};
+ window.luminaPerformance={read:()=>({...monitor.summary(),optimization:optimization.report,pixelRatio:renderer.getPixelRatio(),renderProfile:fastHotel?'mobile-alpine-landscape':mobile?'mobile-fluent':'cinematic'})};
  if(mobile){
   const modeButton=el('scene-mode-btn');
   modeButton.hidden=false;
-  modeButton.textContent=fastHotel?'Gesamtanlage laden':'Hotel-Schnellansicht';
+  modeButton.textContent=fastHotel?'Volle 3D-Details laden':'Mobile Landschaftsansicht';
   modeButton.onclick=()=>{location.search=fastHotel?'?full=1':'';};
  }
  if(fastHotel){
-  const available=new Set(['cinematic','original','pool','back','aerial','fitness','eingang','rezeption','vorfahrt']);
+  const available=new Set(['cinematic','original','pool','back','aerial','fitness','eingang','rezeption','vorfahrt','village','lake','seehaeuser','kirchenchor','dorfeinfahrt','rathaus','gasthaus','kapelle','landhaeuser','dorfladen','rundweg','meadow']);
   document.querySelectorAll('[data-view]').forEach(b=>{if(!available.has(b.dataset.view))b.hidden=true;});
  }
  addEvents();registerTools();
