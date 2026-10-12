@@ -7,7 +7,7 @@ import {repairChurchFloor} from './church-floor.js?v=75';
 import {repairTownhallFloor} from './townhall-floor.js?v=75';
 import {refineTownhallPlaza} from './plaza-refinement.js?v=91';
 import {placeTownhallOnPlaza} from './townhall-placement.js?v=75';
-import {applyAlpineMeadows} from './alpine-meadows.js?v=93';
+import {applyAlpineMeadows} from './alpine-meadows.js?v=94';
 import {clearGarageSite,finishLobbyGarage} from './garage-site.js?v=91';
 import {reconstructHotelVerge,closeHotelPavingSeams} from './hotel-drive.js?v=91';
 import {closeEntryPavingSeam} from './entry-seam.js?v=75';
@@ -23,7 +23,7 @@ import {buildLandscape} from './landscape.js?v=91';
 import {buildLakeActivity} from './lake-activity.js?v=75';
 import {makeRoadMaterials,removeVegetationOnRoad} from './forecourt.js?v=91';
 import {SPA_WING} from './spa-wing.js?v=75';
-export async function createScene({createCanvas,loadTexture,onProgress=()=>{}}){
+export async function createScene({createCanvas,loadTexture,onProgress=()=>{},mobile=false}){
  // Allow the browser to paint the loading state between long scene build steps.
  // Geometry and build order within each step remain unchanged.
  const phase=async(percent,message)=>{onProgress(percent,message);await new Promise(resolve=>setTimeout(resolve,0));};
@@ -49,7 +49,7 @@ export async function createScene({createCanvas,loadTexture,onProgress=()=>{}}){
  removeVegetationOnRoad(scene,materials);clearVillageConstruction(scene,materials);applyVillagePlazaFinish(scene,materials);closeEntryPavingSeam(scene,materials);reconstructHotelVerge(scene,materials);closeHotelPavingSeams(scene,materials);clearGarageSite(scene,materials,true);buildLakePathFurnishing(scene,materials);
  scene.updateMatrixWorld(true);
  await phase(66,'Alpenwiesen und Pflanzen berechnen …');
- const meadow=applyAlpineMeadows(scene,materials);scene.userData.alpineMeadows=meadow.report;placeTownhallOnPlaza(scene,materials,meadow.controller);refineTownhallPlaza(scene,materials,meadow.controller);thinLakePathFurnishing(scene);repairTownhallFloor(scene,materials,meadow.controller);repairChurchFloor(scene,materials,meadow.controller);rebuildCompletePlaza(scene,materials,meadow.controller);replaceAlpineForest(scene,materials,meadow.controller);
+ const meadow=applyAlpineMeadows(scene,materials,{mobile});scene.userData.alpineMeadows=meadow.report;placeTownhallOnPlaza(scene,materials,meadow.controller);refineTownhallPlaza(scene,materials,meadow.controller);thinLakePathFurnishing(scene);repairTownhallFloor(scene,materials,meadow.controller);repairChurchFloor(scene,materials,meadow.controller);rebuildCompletePlaza(scene,materials,meadow.controller);replaceAlpineForest(scene,materials,meadow.controller);
  await phase(83,'Landschaft, Dorfplatz und Hotellobby fertigstellen …');
  const referencePlaza=rebuildReferencePlaza(scene,materials);
  applyVillageDetails(scene,materials,referencePlaza,meadow.controller);finishLobbyGarage(scene,materials,meadow.controller);scene.userData.hotelMeadowPreservation=preserveHotelSurroundings(meadow.controller,scene);
