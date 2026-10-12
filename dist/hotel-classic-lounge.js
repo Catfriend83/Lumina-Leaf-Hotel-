@@ -107,7 +107,9 @@ function wallDecor(parent,m){
  k.finish();
 }
 function chandelier(parent,m,x,z,r,index){
- const g=new T.Group();g.name='Klassischer Kristall-Kronleuchter '+index;g.position.set(x,5.85,z);g.userData={crystalChandelier:true};parent.add(g);const k=new Kit(g);
+ const g=new T.Group();g.name='Klassischer Kristall-Kronleuchter '+index;g.position.set(x,5.85,z);
+ g.userData={crystalChandelier:true,axis:'Lobby-Laengsachse',index,diameter:2*r,mountingHeight:5.85,orientation:0};
+ parent.add(g);const k=new Kit(g);
  k.cyl(m.gold,0,.27,0,.055,.48);k.cyl(m.gold,0,.48,0,.24,.04);
  for(const [radius,y] of [[r,0],[r*.82,-.28],[r*.52,-.53]])k.put(new T.TorusGeometry(radius,.035,8,64),m.gold,0,y,0,1,1,1,Math.PI/2);
  k.put(new T.CylinderGeometry(r,r,.14,64,1,true),m.gold,0,.04,0);
@@ -119,7 +121,8 @@ function chandelier(parent,m,x,z,r,index){
   }
  }
  k.ball(m.litCrystal,0,-.69,0,.10,.06,.10);k.cyl(m.opal,0,-.10,0,r*.76,.035);k.finish();
- const light=new T.PointLight('#ffdab1',10,8,2);light.name='Weiches Licht des Kristall-Kronleuchters '+index;light.position.y=-.3;g.add(light);
+ // Same calibrated warm source for all three: reduce glare while keeping crystal detail.
+ const light=new T.PointLight('#ffdab1',5.5,8,2);light.name='Weiches Licht des Kristall-Kronleuchters '+index;light.position.y=-.3;g.add(light);
 }
 function ceiling(parent,m){
  const k=new Kit(parent),shape=new T.Shape();shape.absellipse(8,-1.0,8.8,4.75,0,TAU,false,0);
@@ -128,7 +131,7 @@ function ceiling(parent,m){
  for(const [rx,rz,y,mat,r] of [[8.85,4.80,6.18,m.gold,.055],[8.68,4.63,6.17,m.opal,.024]]){
   const pts=[];for(let i=0;i<96;i++){const a=i*TAU/96;pts.push([8+rx*Math.cos(a),y,-1+rz*Math.sin(a)]);}curve(k,mat,pts,r,true);
  }
- k.finish();chandelier(parent,m,8,-1.6,1.70,1);chandelier(parent,m,8,2.6,.93,2);
+ k.finish();
 }
 function backPassage(parent,m){
  const g=new T.Group();g.name='Linker Durchgang zum hinteren Hotelbereich';g.userData={hotelPassage:true,clearWidth:2.2,clearHeight:3.1,depth:7.72};parent.add(g);const k=new Kit(g);
@@ -155,5 +158,15 @@ export function buildClassicLounge(parent,source){
  const k=new Kit(g),shape=new T.Shape();shape.absellipse(8,8.3,11.9,4.05,0,TAU,false,0);
  k.put(new T.ShapeGeometry(shape,96),m.bronze,0,6.25,0,1,1,1,Math.PI/2);
  for(const [rx,rz,y,mat,r] of [[11.95,4.10,6.18,m.gold,.055],[11.78,3.93,6.17,m.opal,.024]]){const pts=[];for(let i=0;i<96;i++){const a=i*TAU/96;pts.push([8+rx*Math.cos(a),y,8.3+rz*Math.sin(a)]);}curve(k,mat,pts,r,true);}
- k.finish();chandelier(g,m,8,8.3,1.65,3);return g;
+ k.finish();
+ // Actual lobby depth: reception wall z≈-7, entry glazing z≈13.53.
+ // Centre z=3.25, 5.45m identical spacing along x=8. No crosswise alignment.
+ // All three are built by the same geometry function, radius and hanging height.
+ const chandelierAxis={x:8,y:5.85,centerZ:3.25,spacing:5.45,radius:1.65};
+ for(let i=0;i<3;i++){
+  const z=chandelierAxis.centerZ+(1-i)*chandelierAxis.spacing;
+  chandelier(g,m,chandelierAxis.x,z,chandelierAxis.radius,i+1);
+ }
+ g.userData.chandelierAlignment={count:3,...chandelierAxis,direction:'from entrance toward reception',identicalGeometry:true};
+ return g;
 }
