@@ -115,7 +115,7 @@ export function makeVolumetricPlant(kind,level=0){
   const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(positions,3));g.setAttribute('color',new T.Float32BufferAttribute(colors,3));g.setIndex(indices);g.computeVertexNormals();g.computeBoundingBox();g.computeBoundingSphere();g.userData={solidBotany:true,species:kind,detailLevel:level};return g;
 }
 
-export function createBotanyController(group,records){
+export function createBotanyController(group,records,{mobile=false}={}){
   const material=new T.MeshStandardMaterial({name:'Wiesenbotanik – körperliche alpine Pflanzen',vertexColors:true,roughness:.87,metalness:0,side:T.FrontSide});
   const meshes=records.map((rows,k)=>Array.from({length:3},(_,level)=>{
     const mesh=new T.InstancedMesh(makeVolumetricPlant(k,level),material,Math.max(1,rows.length)+(k===6?6000:1500));mesh.name=names[k]+' – '+['Nahbereich','Mittlere Distanz','Ferne'][level];mesh.count=0;mesh.visible=false;
@@ -133,8 +133,16 @@ export function createBotanyController(group,records){
       let level=exporting&&r.foreground?0:1;
       if(!exporting){
         const dx=r.x-camera.position.x,dy=r.y-camera.position.y,dz=r.z-camera.position.z;
-        if(Math.abs(dx)>180||Math.abs(dy)>180||Math.abs(dz)>180){if(!r.coverageAnchor&&r.rank>.18-.12)return;level=2;}
-        else{const d=Math.hypot(dx,dy,dz),density=d<75?1-.82*smooth(25,75,d):.18-.12*smooth(75,180,d);if(!r.coverageAnchor&&r.rank>density)return;level=d<34?0:d<95?1:2;}
+        const reach=mobile?115:180;
+        if(Math.abs(dx)>reach||Math.abs(dy)>reach||Math.abs(dz)>reach){
+          if(mobile||(!r.coverageAnchor&&r.rank>.18-.12))return;
+          level=2;
+        }else{
+          const d=Math.hypot(dx,dy,dz);
+          const density=mobile?(d<24?1:d<65?.52-.38*smooth(24,65,d):.14-.10*smooth(65,115,d)):(d<75?1-.82*smooth(25,75,d):.18-.12*smooth(75,180,d));
+          if(!r.coverageAnchor&&r.rank>density)return;
+          level=d<(mobile?24:34)?0:d<(mobile?70:95)?1:2;
+        }
       }else if(r.rank>.43&&!r.foreground&&!r.coverageAnchor)return;
       if(!r.matrixElements){q.set(0,Math.sin(r.yaw/2),0,Math.cos(r.yaw/2));v.set(r.x,r.y,r.z);scale.set(r.radial,r.h,r.radial);matrix.compose(v,q,scale);r.matrixElements=new Float32Array(matrix.elements);}
       const mesh=meshes[k][level];mesh.instanceMatrix.array.set(r.matrixElements,counts[k][level]++*16);
@@ -146,7 +154,7 @@ export function createBotanyController(group,records){
       b.min.y=Math.min(b.min.y,r.y+mesh.botanicalExtent.minY*r.h);b.max.y=Math.max(b.max.y,r.y+mesh.botanicalExtent.maxY*r.h);
     };
     if(exporting)records.forEach((rows,k)=>rows.forEach(r=>apply(r,k)));
-    else{indexRecords();persistent.forEach((rows,k)=>rows.forEach(r=>apply(r,k)));const minX=Math.floor((camera.position.x-180)/32),maxX=Math.floor((camera.position.x+180)/32),minZ=Math.floor((camera.position.z-180)/32),maxZ=Math.floor((camera.position.z+180)/32);for(let x=minX;x<=maxX;x++)for(let z=minZ;z<=maxZ;z++)for(const [k,r]of cells.get(x+','+z)||[])apply(r,k);}
+    else{indexRecords();persistent.forEach((rows,k)=>rows.forEach(r=>apply(r,k)));const reach=mobile?115:180,minX=Math.floor((camera.position.x-reach)/32),maxX=Math.floor((camera.position.x+reach)/32),minZ=Math.floor((camera.position.z-reach)/32),maxZ=Math.floor((camera.position.z+reach)/32);for(let x=minX;x<=maxX;x++)for(let z=minZ;z<=maxZ;z++)for(const [k,r]of cells.get(x+','+z)||[])apply(r,k);}
     if(!exporting)localRecords.forEach((rows,k)=>rows.forEach(r=>apply(r,k,true)));
     meshes.forEach((list,k)=>list.forEach((mesh,level)=>{mesh.count=counts[k][level];mesh.visible=mesh.count>0;mesh.instanceMatrix.clearUpdateRanges();if(mesh.count){mesh.instanceMatrix.addUpdateRange(0,mesh.count*16);mesh.instanceMatrix.needsUpdate=true;}mesh.boundingBox.getBoundingSphere(mesh.boundingSphere);}));
     return counts.map(r=>r.slice());

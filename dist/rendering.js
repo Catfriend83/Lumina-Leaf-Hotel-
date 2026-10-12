@@ -14,23 +14,47 @@ import {installMountainClarity} from './mountain-clarity.js?v=75';
 export function createRendering(renderer,built,camera,{mobile=false,monitor=null}={}){
  const {scene,materials,car,sun}=built;
  installMountainClarity(scene);updateLakePathLights(scene,camera);
- const probeTarget=new T.WebGLCubeRenderTarget(256,{type:T.HalfFloatType,generateMipmaps:true,minFilter:T.LinearMipmapLinearFilter});
- const probe=new T.CubeCamera(.15,1600,probeTarget);probe.position.copy(car.position).add(new T.Vector3(0,3.26,0));scene.add(probe);
- renderer.shadowMap.autoUpdate=false;renderer.shadowMap.needsUpdate=true;car.visible=false;probe.update(renderer,scene);car.visible=true;probe.removeFromParent();renderer.shadowMap.needsUpdate=true;
- for(const m of [materials.paint,materials.carGlass,materials.chrome,materials.gold]){m.envMap=probeTarget.texture;m.envMapIntensity=m===materials.paint?1.4:.9;m.needsUpdate=true;}
+ // Keep the full cinematic environment probe on desktop. Capturing six complete
+ // scenes on a mobile GPU delays startup and consumes extra render-target memory.
+ let probeTarget=null;
+ if(!mobile){
+  probeTarget=new T.WebGLCubeRenderTarget(256,{type:T.HalfFloatType,generateMipmaps:true,minFilter:T.LinearMipmapLinearFilter});
+  const probe=new T.CubeCamera(.15,1600,probeTarget);
+  probe.position.copy(car.position).add(new T.Vector3(0,3.26,0));scene.add(probe);
+  renderer.shadowMap.autoUpdate=false;renderer.shadowMap.needsUpdate=true;car.visible=false;
+  try{probe.update(renderer,scene);}finally{car.visible=true;probe.removeFromParent();}
+  renderer.shadowMap.needsUpdate=true;
+  for(const m of [materials.paint,materials.carGlass,materials.chrome,materials.gold]){
+   m.envMap=probeTarget.texture;m.envMapIntensity=m===materials.paint?1.4:.9;m.needsUpdate=true;
+  }
+ }else{
+  // Static shadows need one modest shadow map, not a 2048² buffer.
+  sun.shadow.mapSize.set(768,768);
+  renderer.shadowMap.needsUpdate=true;
+ }
  const originals=[];scene.traverse(o=>{if(o.name==='Pool Wasseroberfläche'||o.name==='Spiegelnder Bergsee')originals.push(o);});
  const waters=[];let lake=null;
- for(const mesh of originals){if(mesh.name==='Spiegelnder Bergsee'){lake=mesh;mesh.material=createLakeWaterMaterial(materials.lake.normalMap,sun.position,{mobile});mesh.userData={...mesh.userData,mobileWaterOptimized:true};continue;}const pool=mesh.name==='Pool Wasseroberfläche';const water=new Water(mesh.geometry,{textureWidth:mobile?512:1024,textureHeight:mobile?512:1024,waterNormals:pool?materials.water.normalMap:materials.lake.normalMap,sunDirection:sun.position.clone().normalize(),sunColor:'#ffdfba',alpha:pool?.72:1,waterColor:pool?'#527f7c':'#355a61',distortionScale:pool?.22:.48,fog:true});
+ for(const mesh of originals){if(mesh.name==='Spiegelnder Bergsee'){lake=mesh;mesh.material=createLakeWaterMaterial(materials.lake.normalMap,sun.position,{mobile});mesh.userData={...mesh.userData,mobileWaterOptimized:true};continue;}
+  // A reflective Water mesh renders the scene again on every frame.
+  // Reuse the authored pool surface on phones instead of adding a second camera.
+  if(mobile){mesh.userData.mobileWaterOptimized=true;continue;}
+  const pool=mesh.name==='Pool Wasseroberfläche';const water=new Water(mesh.geometry,{textureWidth:1024,textureHeight:1024,waterNormals:pool?materials.water.normalMap:materials.lake.normalMap,sunDirection:sun.position.clone().normalize(),sunColor:'#ffdfba',alpha:pool?.72:1,waterColor:pool?'#527f7c':'#355a61',distortionScale:pool?.22:.48,fog:true});
   water.name=mesh.name;water.position.copy(mesh.position);water.quaternion.copy(mesh.quaternion);water.scale.copy(mesh.scale);water.material.uniforms.size.value=pool?3:1.3;if(pool){water.material.transparent=true;water.material.depthWrite=false;water.renderOrder=2;}
   mesh.parent.add(water);mesh.removeFromParent();waters.push(water);
  }
  // The pool keeps its existing reflection; the lake never captures the scene.
  for(const water of waters){const original=water.onBeforeRender,others=[...waters.filter(w=>w!==water),...(lake?[lake]:[])],states=others.map(w=>w.visible);water.onBeforeRender=function(...args){others.forEach((w,i)=>states[i]=w.visible);others.forEach(w=>w.visible=false);try{if(monitor)monitor.measure('poolReflection',()=>original.apply(this,args));else original.apply(this,args);}finally{others.forEach((w,i)=>w.visible=states[i]);}};}
- const composer=new EffectComposer(renderer);composer.addPass(new RenderPass(scene,camera));
- const bloom=new UnrealBloomPass(new T.Vector2(1,1),CINEMATIC.bloomStrength,CINEMATIC.bloomRadius,CINEMATIC.bloomThreshold);composer.addPass(bloom);composer.addPass(createCinematicOutput());
- if(monitor){const pass=bloom.render;bloom.render=function(...args){return monitor.measure('postprocessing',()=>pass.apply(this,args));};}
+ // Multi-pass HDR bloom is expensive on low-memory mobile browsers.
+ // Direct rendering keeps the established scene materials and tone mapping.
+ const composer=mobile?null:new EffectComposer(renderer);
+ if(composer){
+  composer.addPass(new RenderPass(scene,camera));
+  const bloom=new UnrealBloomPass(new T.Vector2(1,1),CINEMATIC.bloomStrength,CINEMATIC.bloomRadius,CINEMATIC.bloomThreshold);
+  composer.addPass(bloom);composer.addPass(createCinematicOutput());
+  if(monitor){const pass=bloom.render;bloom.render=function(...args){return monitor.measure('postprocessing',()=>pass.apply(this,args));};}
+ }
  let shadowsReady=false;const lastLightCamera=new T.Vector3(Infinity,Infinity,Infinity);
- return {resize(w,h){composer.setSize(w,h);},update(t){if(!lastLightCamera.equals(camera.position)){updateLakePathLights(scene,camera);lastLightCamera.copy(camera.position);}built.activity?.update(t);animateReferenceFountain(built,t);if(lake)lake.material.uniforms.time.value=t;for(const water of waters)water.material.uniforms.time.value=t*.24;},render(dt){composer.render(dt);if(!shadowsReady){renderer.shadowMap.autoUpdate=false;shadowsReady=true;}},
+ return {resize(w,h){composer?.setSize(w,h);},update(t){if(!lastLightCamera.equals(camera.position)){updateLakePathLights(scene,camera);lastLightCamera.copy(camera.position);}built.activity?.update(t);animateReferenceFountain(built,t);if(lake)lake.material.uniforms.time.value=t;for(const water of waters)water.material.uniforms.time.value=t*.24;},render(dt){if(composer)composer.render(dt);else renderer.render(scene,camera);if(!shadowsReady){renderer.shadowMap.autoUpdate=false;shadowsReady=true;}},
   createExport(w,h){
    // One full-frame glow and reflection capture keeps tiles continuous.
    const maxSize=renderer.capabilities.maxTextureSize,gl=renderer.getContext();
@@ -55,5 +79,5 @@ export function createRendering(renderer,built,camera,{mobile=false,monitor=null
     return {render(target,area,full){output.uniforms.filmCrop.value.set(area.x/full.width,1-(area.y+area.height)/full.height,area.width/full.width,area.height/full.height);
      renderer.setRenderTarget(linear);renderer.clear();renderer.render(scene,camera);output.render(renderer,target,linear);},dispose:restore};
    }catch(e){restore();throw e;}
-  },dispose(){composer.dispose();for(const pass of composer.passes)pass.dispose?.();for(const water of waters)water.getReflectionTarget().dispose();probeTarget.dispose();},composer,waters};
+  },dispose(){composer?.dispose();for(const pass of composer?.passes||[])pass.dispose?.();for(const water of waters)water.getReflectionTarget().dispose();probeTarget?.dispose();},composer,waters};
 }

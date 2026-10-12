@@ -2,13 +2,16 @@ import {optimizeStaticScene} from './static-performance.js?v=78';
 import {createPerformanceMonitor} from './performance-monitor.js?v=78';
 import {loadModelBlob} from './model-download.js?v=75';
 import {T} from './core.js?v=75';
-import {createScene,cameraViews} from './scene.js?v=93';
-import {createRendering} from './rendering.js?v=91';
+import {createScene,cameraViews} from './scene.js?v=94';
+import {createRendering} from './rendering.js?v=94';
 import {CINEMATIC} from './cinematic.js?v=75';
 import {assemble8K,EXPORT_8K} from './export-8k.js?v=75';
 import {OrbitControls} from './vendor/addons/controls/OrbitControls.js';
 const el=id=>document.getElementById(id);let renderer,camera,controls,built,rendering,activeView='cinematic',flight=null,busy=false,toastTimer,optimization,monitor;
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+// Handheld devices start with a GPU-friendly rendering profile; desktop retains
+// its cinematic output. This only changes viewer rendering, never exported models.
+const mobile=/Android|iPhone|iPod|Mobile/i.test(navigator.userAgent)||innerWidth<700;
 function setLoadingProgress(percent,message){
  const loading=el('loading');if(!loading)return;
  const value=Math.min(100,Math.max(0,Math.round(percent)));
@@ -27,25 +30,62 @@ async function start(){
  // A missing decorative font must not prevent the 3D model from starting.
  try{const scriptFont=new FontFace('Lumina Script','url(./assets/lumina-script.otf)');document.fonts.add(await scriptFont.load());}
  catch(e){console.warn('Optionale Schrift konnte nicht geladen werden.',e);}
- renderer=new T.WebGLRenderer({antialias:true,alpha:false,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,innerWidth<600?1.5:1.8));renderer.outputColorSpace=T.SRGBColorSpace;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=CINEMATIC.exposure;renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFSoftShadowMap;el('viewport').append(renderer.domElement);
+ renderer=new T.WebGLRenderer({antialias:!mobile,alpha:false,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,mobile?1:1.8));renderer.outputColorSpace=T.SRGBColorSpace;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=CINEMATIC.exposure;renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFSoftShadowMap;el('viewport').append(renderer.domElement);
  camera=new T.PerspectiveCamera(27.88,1,.1,3500);controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.dampingFactor=.075;controls.screenSpacePanning=true;controls.minDistance=4;controls.maxDistance=440;controls.maxPolarAngle=Math.PI*.492;controls.autoRotateSpeed=.65;controls.target.set(-1,5,-8);controls.zoomSpeed=.85;controls.panSpeed=.65;controls.rotateSpeed=.6;
  monitor=createPerformanceMonitor(renderer);
  const loader=new T.TextureLoader(),assets=new Map();
  const paths=['photo-reference.jpg','alpine-stone.png','alpine-limestone.png','granite-cobblestone.png','botanical-wrap.png','snowy-spruce.png','alpine-forest-pine.png','festive-shrub.png','limousine-side-wrap-v12.png','sunset-sky.png'];
  const loadTexture=path=>{if(!assets.has(path)){const task=loader.loadAsync(new URL(path,import.meta.url)).then(t=>{t.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());return t;});task.catch(()=>{});assets.set(path,task);}return assets.get(path);};
  for(const name of paths)loadTexture('assets/'+name);
- built=await createScene({createCanvas:(w,h)=>{const c=document.createElement('canvas');c.width=w;c.height=h;return c;},loadTexture,onProgress:setLoadingProgress});
+ built=await createScene({createCanvas:(w,h)=>{const c=document.createElement('canvas');c.width=w;c.height=h;return c;},loadTexture,onProgress:setLoadingProgress,mobile});
  setLoadingProgress(97,'Grafikleistung für dein Gerät optimieren …');
  optimization=optimizeStaticScene(built,{multiDraw:!!renderer.getContext().getExtension('WEBGL_multi_draw')});
- rendering=createRendering(renderer,built,camera,{mobile:innerWidth<800,monitor});resize();setView('cinematic',false);built.meadowController.update(camera,true);controls.addEventListener('start',()=>{flight=null;hideHint();document.querySelectorAll('[data-view]').forEach(b=>b.setAttribute('aria-pressed','false'));});
+ rendering=createRendering(renderer,built,camera,{mobile,monitor});resize();setView('cinematic',false);built.meadowController.update(camera,true);controls.addEventListener('start',()=>{flight=null;hideHint();document.querySelectorAll('[data-view]').forEach(b=>b.setAttribute('aria-pressed','false'));});
+ // Only keep high-poly forest instances within viewing range on handhelds.
+ // The actual forest geometry remains untouched for export and desktop views.
+ const mobileForest=[];
+ if(mobile)built.scene.traverse(o=>{
+  if(!o.visible||!(o.isInstancedMesh||o.isBatchedMesh)||!/Alpiner Mischwald/i.test(o.material?.name||''))return;
+  if(!o.boundingSphere)o.computeBoundingSphere();
+  if(!o.boundingSphere)return;
+  const sphere=o.boundingSphere.clone().applyMatrix4(o.matrixWorld);
+  mobileForest.push({object:o,x:sphere.center.x,z:sphere.center.z,radius:sphere.radius});
+ });
+ let lastForestCull=-Infinity;
+ function cullDistantForest(now){
+  if(!mobile||now-lastForestCull<350)return;
+  lastForestCull=now;
+  const x=camera.position.x,z=camera.position.z;
+  for(const item of mobileForest)item.object.visible=Math.hypot(x-item.x,z-item.z)-item.radius<315;
+ }
  renderer.domElement.addEventListener('webglcontextlost',e=>{e.preventDefault();busy=true;toast('Die Grafik wurde unterbrochen. Bitte lade die Seite erneut.',0);});
  setLoadingProgress(99,'Erste 3D-Ansicht wird gerendert …');
- let firstFrame=true,last=performance.now();renderer.setAnimationLoop(now=>{if(busy||document.hidden){last=now;return;}const period=now-last,dt=Math.min(period/1000,.1);last=now;monitor.begin(now,period);if(flight){const t=Math.min(1,(now-flight.start)/flight.duration),e=t*t*(3-2*t);camera.position.lerpVectors(flight.from,flight.to,e);controls.target.lerpVectors(flight.fromTarget,flight.toTarget,e);if(t===1)flight=null;}controls.update(dt);if(monitor.measure('vegetation',()=>built.meadowController.update(camera)))renderer.shadowMap.needsUpdate=true;rendering.update(now/1000);monitor.measure('renderSubmission',()=>rendering.render(dt));monitor.end();
+ // Track actual frame intervals. Scale only the mobile framebuffer in small
+ // steps; avoid expensive full-scene rebuilds or deleting source meshes.
+ let firstFrame=true,last=performance.now(),sampleDuration=0,sampleFrames=0,lastAdjustment=0;
+ function adaptMobileResolution(now,period){
+  if(!mobile||period>250||period<=0)return;
+  sampleDuration+=period;sampleFrames++;
+  if(sampleDuration<2500||sampleFrames<12)return;
+  const average=sampleDuration/sampleFrames,old=renderer.getPixelRatio();
+  const upper=Math.min(devicePixelRatio,1);
+  let next=old;
+  if(average>42)next=Math.max(.65,old-.12);
+  else if(average>34)next=Math.max(.65,old-.07);
+  else if(average<27)next=Math.min(upper,old+.05);
+  sampleDuration=0;sampleFrames=0;
+  if(Math.abs(next-old)>.025&&now-lastAdjustment>2300){
+   renderer.setPixelRatio(Math.round(next*100)/100);
+   resize();
+   lastAdjustment=now;
+  }
+ }
+ renderer.setAnimationLoop(now=>{if(busy||document.hidden){last=now;sampleDuration=0;sampleFrames=0;return;}const period=now-last,dt=Math.min(period/1000,.1);last=now;cullDistantForest(now);monitor.begin(now,period);if(flight){const t=Math.min(1,(now-flight.start)/flight.duration),e=t*t*(3-2*t);camera.position.lerpVectors(flight.from,flight.to,e);controls.target.lerpVectors(flight.fromTarget,flight.toTarget,e);if(t===1)flight=null;}controls.update(dt);if(monitor.measure('vegetation',()=>built.meadowController.update(camera))&&!mobile)renderer.shadowMap.needsUpdate=true;rendering.update(now/1000);monitor.measure('renderSubmission',()=>rendering.render(dt));monitor.end();adaptMobileResolution(now,period);
  if(firstFrame){firstFrame=false;setLoadingProgress(100,'Hotelansicht ist bereit');
   const loading=el('loading');if(loading){loading.style.opacity='0';setTimeout(()=>loading.remove(),550);}
  }
  });
- window.luminaPerformance={read:()=>({...monitor.summary(),optimization:optimization.report,pixelRatio:renderer.getPixelRatio()})};
+ window.luminaPerformance={read:()=>({...monitor.summary(),optimization:optimization.report,pixelRatio:renderer.getPixelRatio(),renderProfile:mobile?'mobile-fluent':'cinematic'})};
  addEvents();registerTools();
  window.addEventListener('pagehide',event=>{if(event.persisted)return;renderer.setAnimationLoop(null);controls.dispose();rendering.dispose();optimization.dispose();const geometries=new Set(),materials=new Set(),textures=new Set([built.sky]);built.scene.traverse(o=>{if(o.geometry)geometries.add(o.geometry);for(const m of (Array.isArray(o.material)?o.material:[o.material]))if(m)materials.add(m);});for(const m of Object.values(built.materials))if(m?.isMaterial)materials.add(m);else if(m?.isTexture)textures.add(m);for(const m of materials){for(const t of Object.values(m))if(t?.isTexture)textures.add(t);m.dispose();}for(const g of geometries)g.dispose();for(const t of textures)t.dispose();renderer.dispose();},{once:true});
 }

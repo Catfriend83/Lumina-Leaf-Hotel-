@@ -1,5 +1,5 @@
 import {insideRegion} from './village-traffic.js?v=75';
-import {createBotanyController,flowerKinds,names} from './alpine-botany.js?v=78';
+import {createBotanyController,flowerKinds,names} from './alpine-botany.js?v=94';
 import { T, rng } from './core.js?v=75';
 import { spaLakeShore } from './spa-shore.js?v=75';
 
@@ -51,7 +51,7 @@ function addGeometry(index,geometry,matrix) {
   }
 }
 
-export function applyAlpineMeadows(scene,materials) {
+export function applyAlpineMeadows(scene,materials,{mobile=false}={}) {
   scene.updateMatrixWorld(true);
   const ground=projectionIndex(),obstacles=projectionIndex(),grounds=[],removed=[],boxes=[];
   const im=new T.Matrix4(),wm=new T.Matrix4();
@@ -170,7 +170,7 @@ export function applyAlpineMeadows(scene,materials) {
   group.userData.zones=stats;group.userData.botanicalInstances=records.reduce((n,r)=>n+r.length,0);scene.add(group);
   // The viewer immediately selects a camera-dependent LOD. Preparing all
   // export instances here blocks startup and is overwritten by the first update.
-  const controller=createBotanyController(group,records);
+  const controller=createBotanyController(group,records,{mobile});
   const baseMaterial=materials.meadow;baseMaterial.map=null;baseMaterial.bumpMap=null;baseMaterial.color.set('#ffffff');baseMaterial.vertexColors=true;baseMaterial.roughness=.97;baseMaterial.name='Alpine Blumenwiese – vollständig ersetzte Bodenvegetation';
   const v=new T.Vector3(),c=new T.Color();
   grounds.forEach(o=>{
