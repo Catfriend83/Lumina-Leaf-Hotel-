@@ -1,7 +1,7 @@
 import {preserveHotelSurroundings} from './hotel-meadow-preservation.js?v=91';
 import {rebuildReferencePlaza} from './reference-plaza.js?v=83';
 import {applyVillageDetails} from './village-details.js?v=84';
-import {replaceAlpineForest} from './alpine-forest.js?v=75';
+import {replaceAlpineForest} from './alpine-forest.js?v=94';
 import {rebuildCompletePlaza} from './complete-plaza.js?v=75';
 import {repairChurchFloor} from './church-floor.js?v=75';
 import {repairTownhallFloor} from './townhall-floor.js?v=75';
@@ -49,7 +49,7 @@ export async function createScene({createCanvas,loadTexture,onProgress=()=>{},mo
  removeVegetationOnRoad(scene,materials);clearVillageConstruction(scene,materials);applyVillagePlazaFinish(scene,materials);closeEntryPavingSeam(scene,materials);reconstructHotelVerge(scene,materials);closeHotelPavingSeams(scene,materials);clearGarageSite(scene,materials,true);buildLakePathFurnishing(scene,materials);
  scene.updateMatrixWorld(true);
  await phase(66,'Alpenwiesen und Pflanzen berechnen …');
- const meadow=applyAlpineMeadows(scene,materials,{mobile});scene.userData.alpineMeadows=meadow.report;placeTownhallOnPlaza(scene,materials,meadow.controller);refineTownhallPlaza(scene,materials,meadow.controller);thinLakePathFurnishing(scene);repairTownhallFloor(scene,materials,meadow.controller);repairChurchFloor(scene,materials,meadow.controller);rebuildCompletePlaza(scene,materials,meadow.controller);replaceAlpineForest(scene,materials,meadow.controller);
+ const meadow=applyAlpineMeadows(scene,materials,{mobile});scene.userData.alpineMeadows=meadow.report;placeTownhallOnPlaza(scene,materials,meadow.controller);refineTownhallPlaza(scene,materials,meadow.controller);thinLakePathFurnishing(scene);repairTownhallFloor(scene,materials,meadow.controller);repairChurchFloor(scene,materials,meadow.controller);rebuildCompletePlaza(scene,materials,meadow.controller);replaceAlpineForest(scene,materials,meadow.controller,{mobile});
  await phase(83,'Landschaft, Dorfplatz und Hotellobby fertigstellen …');
  const referencePlaza=rebuildReferencePlaza(scene,materials);
  applyVillageDetails(scene,materials,referencePlaza,meadow.controller);finishLobbyGarage(scene,materials,meadow.controller);scene.userData.hotelMeadowPreservation=preserveHotelSurroundings(meadow.controller,scene);
