@@ -1,5 +1,6 @@
 import {insideRegion} from './village-traffic.js?v=75';
 import {createBotanyController,flowerKinds,names} from './alpine-botany.js?v=105';
+import {inLimousineParking} from './limousine-parking.js?v=106';
 import { T, rng } from './core.js?v=75';
 import { spaLakeShore } from './spa-shore.js?v=75';
 
@@ -128,6 +129,8 @@ export function applyAlpineMeadows(scene,materials,{mobile=false}={}) {
     return false;
   }
   function plant(x,z,required=false,output=records,tracked=true){
+    // Keep the secured three-bay parking lot clear in all botanical LODs.
+    if(inLimousineParking(x,z,2.5))return false;
     const y=ground.at(x,z);if(y===null||blocked(x,z,y))return;
     const zone=zoneAt(x,z),patch=.55+.45*Math.sin(x*.37+Math.sin(z*.23)*2)*Math.cos(z*.31);
     if(!required&&random()>patch*.75+.18)return;
