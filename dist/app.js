@@ -9,6 +9,13 @@ import {assemble8K,EXPORT_8K} from './export-8k.js?v=75';
 import {OrbitControls} from './vendor/addons/controls/OrbitControls.js';
 const el=id=>document.getElementById(id);let renderer,camera,controls,built,rendering,activeView='cinematic',flight=null,busy=false,toastTimer,optimization,monitor;
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+function setLoadingProgress(percent,message){
+ const loading=el('loading');if(!loading)return;
+ const value=Math.min(100,Math.max(0,Math.round(percent)));
+ const bar=loading.querySelector('.load-line');
+ if(bar){bar.style.setProperty('--loading-percent',value+'%');bar.setAttribute('aria-valuenow',String(value));}
+ const status=loading.querySelector('p');if(status)status.textContent=message;
+}
 function toast(text,timeout=5000){clearTimeout(toastTimer);el('toast').textContent=text;el('toast').hidden=false;if(timeout)toastTimer=setTimeout(()=>el('toast').hidden=true,timeout);}
 function setView(name,animate=true){if(!cameraViews[name])throw new Error('Unbekannte Perspektive');activeView=name;const v=cameraViews[name],target=new T.Vector3(...v.target),position=new T.Vector3(...v.position);const frame=el('viewport'),fit=Math.max(1,(16/9)/(frame.clientWidth/frame.clientHeight));camera.fov=v.interior?Math.min(100,2*Math.atan(Math.tan(v.fov*Math.PI/360)*fit)*180/Math.PI):(v.fov||27.88);camera.updateProjectionMatrix();if(!v.interior)position.sub(target).multiplyScalar(fit).add(target);document.querySelectorAll('[data-view]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.view===name)));if(animate&&!reduced){flight={from:camera.position.clone(),to:position,fromTarget:controls.target.clone(),toTarget:target,start:performance.now(),duration:1100};}else{camera.position.copy(position);controls.target.copy(target);controls.update();}setRotate(false);}
 function setRotate(state){controls.autoRotate=state;el('rotate-btn').setAttribute('aria-pressed',String(state));}
@@ -16,7 +23,10 @@ async function download(url,name){if(url.includes('.glb.gz')||url.includes('.dow
 function hideHint(){el('hint').style.opacity='0';}
 function resize(){if(!renderer||busy)return;const box=el('viewport');renderer.setSize(box.clientWidth,box.clientHeight);camera.aspect=box.clientWidth/box.clientHeight;camera.updateProjectionMatrix();rendering?.resize(box.clientWidth,box.clientHeight);}
 async function start(){
- const scriptFont=new FontFace('Lumina Script','url(./assets/lumina-script.otf)');document.fonts.add(await scriptFont.load());
+ setLoadingProgress(2,'Schrift und Grafiksystem werden geladen …');
+ // A missing decorative font must not prevent the 3D model from starting.
+ try{const scriptFont=new FontFace('Lumina Script','url(./assets/lumina-script.otf)');document.fonts.add(await scriptFont.load());}
+ catch(e){console.warn('Optionale Schrift konnte nicht geladen werden.',e);}
  renderer=new T.WebGLRenderer({antialias:true,alpha:false,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,innerWidth<600?1.5:1.8));renderer.outputColorSpace=T.SRGBColorSpace;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=CINEMATIC.exposure;renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFSoftShadowMap;el('viewport').append(renderer.domElement);
  camera=new T.PerspectiveCamera(27.88,1,.1,3500);controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.dampingFactor=.075;controls.screenSpacePanning=true;controls.minDistance=4;controls.maxDistance=440;controls.maxPolarAngle=Math.PI*.492;controls.autoRotateSpeed=.65;controls.target.set(-1,5,-8);controls.zoomSpeed=.85;controls.panSpeed=.65;controls.rotateSpeed=.6;
  monitor=createPerformanceMonitor(renderer);
@@ -24,12 +34,17 @@ async function start(){
  const paths=['photo-reference.jpg','alpine-stone.png','alpine-limestone.png','granite-cobblestone.png','botanical-wrap.png','snowy-spruce.png','alpine-forest-pine.png','festive-shrub.png','limousine-side-wrap-v12.png','sunset-sky.png'];
  const loadTexture=path=>{if(!assets.has(path)){const task=loader.loadAsync(new URL(path,import.meta.url)).then(t=>{t.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());return t;});task.catch(()=>{});assets.set(path,task);}return assets.get(path);};
  for(const name of paths)loadTexture('assets/'+name);
- built=await createScene({createCanvas:(w,h)=>{const c=document.createElement('canvas');c.width=w;c.height=h;return c;},loadTexture});
+ built=await createScene({createCanvas:(w,h)=>{const c=document.createElement('canvas');c.width=w;c.height=h;return c;},loadTexture,onProgress:setLoadingProgress});
+ setLoadingProgress(97,'Grafikleistung für dein Gerät optimieren …');
  optimization=optimizeStaticScene(built,{multiDraw:!!renderer.getContext().getExtension('WEBGL_multi_draw')});
  rendering=createRendering(renderer,built,camera,{mobile:innerWidth<800,monitor});resize();setView('cinematic',false);built.meadowController.update(camera,true);controls.addEventListener('start',()=>{flight=null;hideHint();document.querySelectorAll('[data-view]').forEach(b=>b.setAttribute('aria-pressed','false'));});
  renderer.domElement.addEventListener('webglcontextlost',e=>{e.preventDefault();busy=true;toast('Die Grafik wurde unterbrochen. Bitte lade die Seite erneut.',0);});
- el('loading').style.opacity='0';setTimeout(()=>el('loading').remove(),550);
- let last=performance.now();renderer.setAnimationLoop(now=>{if(busy||document.hidden){last=now;return;}const period=now-last,dt=Math.min(period/1000,.1);last=now;monitor.begin(now,period);if(flight){const t=Math.min(1,(now-flight.start)/flight.duration),e=t*t*(3-2*t);camera.position.lerpVectors(flight.from,flight.to,e);controls.target.lerpVectors(flight.fromTarget,flight.toTarget,e);if(t===1)flight=null;}controls.update(dt);if(monitor.measure('vegetation',()=>built.meadowController.update(camera)))renderer.shadowMap.needsUpdate=true;rendering.update(now/1000);monitor.measure('renderSubmission',()=>rendering.render(dt));monitor.end();});
+ setLoadingProgress(99,'Erste 3D-Ansicht wird gerendert …');
+ let firstFrame=true,last=performance.now();renderer.setAnimationLoop(now=>{if(busy||document.hidden){last=now;return;}const period=now-last,dt=Math.min(period/1000,.1);last=now;monitor.begin(now,period);if(flight){const t=Math.min(1,(now-flight.start)/flight.duration),e=t*t*(3-2*t);camera.position.lerpVectors(flight.from,flight.to,e);controls.target.lerpVectors(flight.fromTarget,flight.toTarget,e);if(t===1)flight=null;}controls.update(dt);if(monitor.measure('vegetation',()=>built.meadowController.update(camera)))renderer.shadowMap.needsUpdate=true;rendering.update(now/1000);monitor.measure('renderSubmission',()=>rendering.render(dt));monitor.end();
+ if(firstFrame){firstFrame=false;setLoadingProgress(100,'Hotelansicht ist bereit');
+  const loading=el('loading');if(loading){loading.style.opacity='0';setTimeout(()=>loading.remove(),550);}
+ }
+ });
  window.luminaPerformance={read:()=>({...monitor.summary(),optimization:optimization.report,pixelRatio:renderer.getPixelRatio()})};
  addEvents();registerTools();
  window.addEventListener('pagehide',event=>{if(event.persisted)return;renderer.setAnimationLoop(null);controls.dispose();rendering.dispose();optimization.dispose();const geometries=new Set(),materials=new Set(),textures=new Set([built.sky]);built.scene.traverse(o=>{if(o.geometry)geometries.add(o.geometry);for(const m of (Array.isArray(o.material)?o.material:[o.material]))if(m)materials.add(m);});for(const m of Object.values(built.materials))if(m?.isMaterial)materials.add(m);else if(m?.isTexture)textures.add(m);for(const m of materials){for(const t of Object.values(m))if(t?.isTexture)textures.add(t);m.dispose();}for(const g of geometries)g.dispose();for(const t of textures)t.dispose();renderer.dispose();},{once:true});
