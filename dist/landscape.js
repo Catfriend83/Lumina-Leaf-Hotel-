@@ -10,7 +10,7 @@ import {inSpaSite,spaSiteGroundHeight,spaPoolTreeClearance} from './spa-wing.js?
 import {T,Kit,rand,rng,TAU,addLamp} from './core.js?v=75';
 import {spruce} from './vegetation.js?v=75';
 import {mountainHeight,mountainWeight,mountainSurface} from './mountains.js?v=75';
-import {buildForecourt,discardTreeOnRoad} from './forecourt.js?v=102';
+import {buildForecourt,discardTreeOnRoad} from './forecourt.js?v=107';
 import {POOL_SHIFT_X} from './pool-connection.js?v=91';
 import {createSpaLakeGeometry,buildSpaShoreLand,spaLakeShore,spaShoreRetreat,originalLakeShore} from './spa-shore.js?v=75';
 function cottage(k,m,x,z,s=1,rot=0,church=false,y=0){
