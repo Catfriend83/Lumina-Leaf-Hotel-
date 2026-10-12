@@ -21,15 +21,15 @@ import {makeSpaMaterials} from './spa-details.js?v=75';
 import {buildCar} from './car.js?v=91';
 import {buildLandscape} from './landscape.js?v=91';
 import {buildLakeActivity} from './lake-activity.js?v=75';
-import {makeRoadMaterials,removeVegetationOnRoad} from './forecourt.js?v=91';
+import {makeRoadMaterials,removeVegetationOnRoad,buildForecourt} from './forecourt.js?v=91';
 import {SPA_WING} from './spa-wing.js?v=75';
-export async function createScene({createCanvas,loadTexture,onProgress=()=>{},mobile=false}){
+export async function createScene({createCanvas,loadTexture,onProgress=()=>{},mobile=false,fastHotel=false}){
  // Allow the browser to paint the loading state between long scene build steps.
  // Geometry and build order within each step remain unchanged.
  const phase=async(percent,message)=>{onProgress(percent,message);await new Promise(resolve=>setTimeout(resolve,0));};
  await phase(8,'Materialien und Texturen laden …');
  const scene=new T.Scene();scene.name='Lumina Leaf Hotel – Rekonstruktion nach Bildvorlage';scene.userData={title:'Lumina Leaf Hotel',description:'Räumliche Annäherung an die vom Nutzer bereitgestellte Bildvorlage. Verdeckte Ansichten wurden gestalterisch ergänzt.',units:'meters',version:'91.0',guestRooms:40};
- const materials=await makeMaterials({createCanvas,loadTexture});
+ const materials=await makeMaterials({createCanvas,loadTexture,lite:fastHotel});
  for(const [key,file] of [['lobbyDamask','lobby-damask-v90.png'],['lobbyRug','lobby-rug-v90.png']]){materials[key]=await loadTexture('assets/'+file);materials[key].colorSpace=T.SRGBColorSpace;materials[key].anisotropy=8;}
  materials.exteriorScript=await loadTexture('assets/hotel-sign-script-v89.png');materials.exteriorScript.colorSpace=T.SRGBColorSpace;materials.exteriorScript.anisotropy=8;
  materials.entranceReference=await loadTexture('assets/entrance-reference-v82.png');materials.entranceReference.colorSpace=T.SRGBColorSpace;
@@ -41,6 +41,29 @@ export async function createScene({createCanvas,loadTexture,onProgress=()=>{},mo
  scene.fog=new T.FogExp2('#c9b6a6',.00065);
  scene.add(new T.HemisphereLight('#b6caff','#665038',.9));const sun=new T.DirectionalLight('#ffcd91',2.1);sun.position.set(-90,75,-55);sun.target.position.set(0,0,0);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.camera.left=-58;sun.shadow.camera.right=58;sun.shadow.camera.top=50;sun.shadow.camera.bottom=-46;sun.shadow.camera.near=1;sun.shadow.camera.far=240;sun.shadow.bias=-.00035;sun.shadow.normalBias=.065;scene.add(sun,sun.target);
  const fill=new T.DirectionalLight('#c5ddf2',.7);fill.position.set(45,50,75);scene.add(fill);
+ if(fastHotel){
+  // Fast mobile preview: reuse the actual hotel, pool, SPA and forecourt
+  // builders. Only the costly valley, village and botanical reconstructions
+  // are omitted. The full landscape remains available via ?full=1.
+  await phase(25,'Hotel-Schnellansicht vorbereiten …');
+  const ground=new T.Mesh(new T.PlaneGeometry(300,320),
+   new T.MeshStandardMaterial({name:'Grünfläche der mobilen Hotelansicht',color:'#75865b',roughness:1}));
+  ground.rotation.x=-Math.PI/2;ground.position.set(0,-.16,-30);
+  ground.name='Vereinfachter Untergrund der Hotel-Schnellansicht';
+  ground.receiveShadow=false;scene.add(ground);
+  await phase(42,'Hotel mit Lobby, Gästetrakt und Pool aufbauen …');
+  buildHotel(scene,materials);
+  await phase(74,'Straße und Limousine ergänzen …');
+  buildForecourt(scene,materials);
+  const car=buildCar(scene,materials,carWrap);
+  sun.castShadow=false;
+  scene.userData.fastMobileHotel=true;
+  scene.userData.alpineSurroundingsOmitted=true;
+  scene.updateMatrixWorld(true);
+  onProgress(96,'Schnellansicht darstellen …');
+  const meadowController={update(){return null;},prepareExport(){}};
+  return {scene,materials,car,dome,sky,sun,activity:null,meadowController,referencePlaza:null};
+ }
  await phase(22,'Alpenlandschaft und Umgebung aufbauen …');
  buildLandscape(scene,materials);
  await phase(39,'Hotel, Pool und Limousine aufbauen …');
