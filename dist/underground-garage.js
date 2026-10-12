@@ -29,6 +29,35 @@ export function buildUndergroundGarage(root,m){const c=GARAGE,g=new T.Group();g.
  const shell=(name,material,x,y,z,w,h,d,part)=>{const o=k.mesh(new T.BoxGeometry(w,h,d),material,name);o.position.set(x,y,z);o.userData={garageNew:true,garageShell:true,part};return o;};
  wall(k,concrete,'Vollständig geschlossenes tragendes Dach über beiden Rampen',-outer,outer,0,c.end+.35,garageRoofUnder,garageRoofTop,{garageShell:true,part:'fullRampRoof',fullyCovered:true});
  for(const [side,x0,x1]of [['left',-outer-.012,-outer],['right',outer,outer+.012]])wall(k,metal,'Durchgehende anthrazitfarbene Dachblende '+side,x0,x1,0,c.end+.35,garageRoofUnder,garageRoofTop,{part:'roofFascia',side});
+ // V103: Three FRONT-FACING portal wall faces use the very same original
+ // alpine stone material, hue, texture repeat and roughness as the adjacent
+ // side walls. Previously the front faces looked flat / mismatched.
+ // All faces are flush with the original wall: no portal width or height
+ // changes, and nothing intersects lettering, lights or the signal.
+ const portalFrontFaces=[
+  {name:'links',left:-outer,right:-half},
+  {name:'mitte',left:-.25,right:.25},
+  {name:'rechts',left:half,right:outer}
+ ];
+ for(const face of portalFrontFaces){
+  const low=garageFloor(0)-.28,high=garageRoofUnder(0);
+  const frontZ=.022;
+  const geometry=new T.BufferGeometry();
+  geometry.setAttribute('position',new T.Float32BufferAttribute([
+   face.left,low,frontZ,face.right,low,frontZ,
+   face.left,high,frontZ,face.right,high,frontZ
+  ],3));
+  geometry.setAttribute('uv',new T.Float32BufferAttribute([
+   face.left/3,low/3,face.right/3,low/3,
+   face.left/3,high/3,face.right/3,high/3
+  ],2));
+  geometry.setIndex([0,1,2,1,3,2]);
+  geometry.computeVertexNormals();
+  const facing=k.mesh(geometry,stone,'Steinverkleidete Garagenfront '+face.name);
+  facing.castShadow=false;
+  facing.userData={garageNew:true,garagePortalFront:true,frontFace:face.name,
+   matchesSideWalls:true,originalMaterial:true};
+ }
  // Large, bold glyphs sampled from a dedicated sign atlas remain readable
  // at the normal Android portal camera distance. Reuse the original sign
  // material pipeline rather than adding geometry or expensive text shaders.
@@ -51,7 +80,11 @@ export function buildUndergroundGarage(root,m){const c=GARAGE,g=new T.Group();g.
    highResolutionCanvas:true,crispTypography:true};
  }
  const signal=new T.Group();signal.name='Fassadenintegrierte Rot-Grün-Zufahrtsampel';signal.position.set(5.825,1.65,.095);signal.userData={garageSignal:true,state:'red',wallMounted:true,noPole:true,outsideDrivingLane:true,controls:'entry',revision:57};g.add(signal);const sk=new Kit(signal),red=clone(m.signalRed,'Tiefgarage · aktive rote Ampellinse'),green=clone(m.signalGreen,'Tiefgarage · ausgeschaltete grüne Ampellinse');red.emissiveIntensity=1;green.emissiveIntensity=1;green.emissive.set('#000000');green.color.set('#183829');sk.bevel(metal,0,0,0,.27,.63,.15,.025);for(const [y,mat]of [[.14,red],[-.14,green]]){sk.cyl(m.chrome,0,y,.085,.075,.018,Math.PI/2);sk.cyl(mat,0,y,.099,.061,.014,Math.PI/2);sk.box(metal,0,y+.092,.13,.19,.022,.10);}sk.finish();
- ribbon(k,paint,'Haltelinie ausschließlich auf der Ausfahrt',-half+.17,-.42,.84,.96,s=>garageFloor(s)+.004,{garageStopLine:true,direction:'out',mirroredFromEntry:true});
- for(const x of [-2.9,2.9]){ribbon(k,paint,'Stellplatzmarkierung im unteren Garagenbereich',x-1.2,x-1.15,32.7,36.7,s=>garageFloor(s)+.003);ribbon(k,paint,'Stellplatzmarkierung im unteren Garagenbereich',x+1.15,x+1.2,32.7,36.7,s=>garageFloor(s)+.003);for(const s of [3,8,13,18,23,28,32,36])k.box(light,x,garageRoofUnder(s)-.012,-s,3.8,.024,.065);for(const s of [3,8,13,18,23,28,34]){const l=new T.PointLight('#ffd6aa',s<23?3.2:5.2,6.4,2);l.name='Dezente Tiefgaragenbeleuchtung';l.position.set(x,Math.min(garageFloor(s)+1.85,garageRoofUnder(s)-.40),-s);l.userData={garageLight:true,station:s};g.add(l);}}
+ // Single stop line directly at the beginning of the portal's front wall
+ // (s=0), 6–19 cm inside the covered ramp. Do not duplicate it.
+ ribbon(k,paint,'Haltelinie ausschließlich auf der Ausfahrt',-half+.17,-.42,.06,.19,s=>garageFloor(s)+.006,{garageStopLine:true,direction:'out',alignedToPortalFront:true});
+ // Remove the obsolete white bay lines at the very bottom of both ramps.
+ // Preserve the warm linear ceiling lights and point lights in each lane.
+ for(const x of [-2.9,2.9]){for(const s of [3,8,13,18,23,28,32,36])k.box(light,x,garageRoofUnder(s)-.012,-s,3.8,.024,.065);for(const s of [3,8,13,18,23,28,34]){const l=new T.PointLight('#ffd6aa',s<23?3.2:5.2,6.4,2);l.name='Dezente Tiefgaragenbeleuchtung';l.position.set(x,Math.min(garageFloor(s)+1.85,garageRoofUnder(s)-.40),-s);l.userData={garageLight:true,station:s};g.add(l);}}
  for(const [x0,x1]of [[-6.185,-outer],[outer,6.185]])ribbon(k,m.cobbles,'Bündiger seitlicher Anschluss der Garagenquerung',x0,x1,0,2.1,()=>.105,{garageShoulder:true});k.finish();return g;
 }
