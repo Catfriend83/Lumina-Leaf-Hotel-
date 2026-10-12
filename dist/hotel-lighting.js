@@ -6,8 +6,8 @@ export function makeHotelExteriorMaterials(source){
  copy('stone',{roughness:.92,envMapIntensity:.45});
  copy('ivory',{roughness:.88,envMapIntensity:.4});
  copy('wood',{roughness:.82,envMapIntensity:.5});
- copy('frame',{roughness:.62,metalness:.38,envMapIntensity:.55});
- copy('glass',{roughness:.14,metalness:.08,envMapIntensity:.7,specularIntensity:.75});
+ copy('frame',{roughness:.56,metalness:.38,envMapIntensity:.55});
+ copy('glass',{roughness:.12,metalness:.08,envMapIntensity:.7,specularIntensity:.64});
  copy('gold',{roughness:.5,metalness:.72,envMapIntensity:.65});
  copy('greenLight',{emissiveIntensity:.72,roughness:.88,envMapIntensity:.2});
  copy('warm',{emissiveIntensity:1.15,roughness:.72,envMapIntensity:.35});
