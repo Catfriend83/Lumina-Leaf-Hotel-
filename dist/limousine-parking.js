@@ -33,7 +33,12 @@ export function prepareLimousineParkingTerrain(scene,m){
   if(!o.isMesh||o.isInstancedMesh||!o.geometry?.attributes?.position)return;
   if(!(o.material===m.meadow||
       o.name==='Wiesen und natürlicher Talboden'))return;
-  // Never grade pavement, structures, planters or car geometry.
+  // Never grade pavement, structures, planters or car geometry. Skip all
+  // unrelated meadow chunks BEFORE cloning or iterating their vertices.
+  o.geometry.computeBoundingBox();
+  const bounds=o.geometry.boundingBox.clone().applyMatrix4(o.matrixWorld);
+  if(bounds.max.x<p.minX-buffer||bounds.min.x>p.maxX+buffer||
+     bounds.max.z<p.minZ-buffer||bounds.min.z>p.maxZ+buffer)return;
   const g=o.geometry.clone(),attr=g.attributes.position;
   const inverse=o.matrixWorld.clone().invert();let changed=0;
   for(let i=0;i<attr.count;i++){
