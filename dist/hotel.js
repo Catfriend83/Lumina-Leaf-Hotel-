@@ -11,7 +11,7 @@ import {shrubCluster,broadLeaf,redPetal,whitePetal} from './vegetation.js?v=75';
 import {sideElevation,rearDetails} from './architecture.js?v=92';
 import {buildGuestWing,inGuestWing} from './guest-wing.js?v=89';
 import {buildGardenPath,buildGardenBedEdges} from './spa-details.js?v=75';
-import {buildIndependentSpa,clearSpaSiteGardens,spaSiteGroundHeight} from './spa-wing.js?v=75';
+import {buildIndependentSpa,clearSpaSiteGardens,spaSiteGroundHeight} from './spa-wing.js?v=98';
 import {POOL_SHIFT_X} from './pool-connection.js?v=91';
 function plant(k,m,x,y,z,s=1,random=rand){k.cyl(m.frame,x,y+.32*s,z,.35*s,.64*s);k.cyl(m.gold,x,y+.6*s,z,.36*s,.045*s);for(let i=0;i<9;i++){const a=i*2.4,tip=[x+Math.cos(a)*s*.65,y+(1.2+random()*.6)*s,z+Math.sin(a)*s*.65];k.line(m.trunk,[x,y+.54*s,z],tip,.015*s);k.put(broadLeaf,i%2?m.leaf:m.leaf2,...tip,.7*s,.85*s,.85*s,Math.sin(a)*.55,a,-Math.cos(a)*.55);}}
 function railing(k,m,x1,x2,y,z){k.box(m.glass,(x1+x2)/2,y+.52,z,x2-x1,1.04,.055);k.box(m.chrome,(x1+x2)/2,y+1.04,z,x2-x1,.047,.05);for(let x=x1;x<=x2+.1;x+=1.7)k.box(m.chrome,x,y+.52,z,.035,1.06,.045);}
