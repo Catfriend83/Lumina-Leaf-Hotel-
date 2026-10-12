@@ -15,14 +15,14 @@ import {makePlazaMaterials,applyVillagePlazaFinish} from './plaza-finish.js?v=91
 import {buildLakePathFurnishing,thinLakePathFurnishing} from './lake-path-furnishing.js?v=91';
 import {clearVillageConstruction} from './village.js?v=91';
 import {T,makeMaterials} from './core.js?v=75';
-import {buildHotel} from './hotel.js?v=99';
+import {buildHotel} from './hotel.js?v=100';
 import {makePoolMaterials} from './luxury-pool.js?v=75';
 import {makeSpaMaterials} from './spa-details.js?v=75';
 import {buildCar} from './car.js?v=91';
-import {buildLandscape} from './landscape.js?v=98';
+import {buildLandscape} from './landscape.js?v=100';
 import {buildLakeActivity} from './lake-activity.js?v=75';
-import {makeRoadMaterials,removeVegetationOnRoad,buildForecourt} from './forecourt.js?v=91';
-import {buildMobileLandscape} from './mobile-landscape.js?v=99';
+import {makeRoadMaterials,removeVegetationOnRoad,buildForecourt} from './forecourt.js?v=100';
+import {buildMobileLandscape} from './mobile-landscape.js?v=100';
 import {SPA_WING} from './spa-wing.js?v=98';
 export async function createScene({createCanvas,loadTexture,onProgress=()=>{},mobile=false,fastHotel=false}){
  // Allow the browser to paint the loading state between long scene build steps.
