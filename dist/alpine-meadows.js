@@ -84,7 +84,22 @@ export function applyAlpineMeadows(scene,materials) {
     const k=`${ix},${iz}`;if(!boxGrid.has(k))boxGrid.set(k,[]);boxGrid.get(k).push(b);
   }
   const shore=Array.from({length:180},(_,i)=>(()=>{const [x,z]=spaLakeShore(i*Math.PI*2/180);return {x,z};})());
-  function shoreDistance(x,z){let d=Infinity;for(const p of shore)d=Math.min(d,Math.hypot(x-p.x,z-p.z));return d;}
+  // Lake influence ends after 38m. Only inspect shoreline points in nearby
+  // 40m cells; this preserves the exact distances (and plant placements)
+  // whenever those distances affect the meadow zone.
+  const shoreCellSize=40,shoreCells=new Map();
+  for(const p of shore){
+    const key=Math.floor(p.x/shoreCellSize)+','+Math.floor(p.z/shoreCellSize);
+    if(!shoreCells.has(key))shoreCells.set(key,[]);
+    shoreCells.get(key).push(p);
+  }
+  function shoreDistance(x,z){
+    const ix=Math.floor(x/shoreCellSize),iz=Math.floor(z/shoreCellSize);
+    let d=Infinity;
+    for(let i=ix-1;i<=ix+1;i++)for(let j=iz-1;j<=iz+1;j++)
+      for(const p of shoreCells.get(i+','+j)||[])d=Math.min(d,Math.hypot(x-p.x,z-p.z));
+    return d;
+  }
   function zoneAt(x,z){
     const hotel=Math.hypot(x/90,(z+4)/100),village=Math.max(Math.abs((x+158)/83),Math.abs((z+159)/62));
     const smooth=(a,b,v)=>{const t=Math.max(0,Math.min(1,(v-a)/(b-a)));return t*t*(3-2*t);};
@@ -153,7 +168,9 @@ export function applyAlpineMeadows(scene,materials) {
   group.userData.coverage={grassMeshes:grounds.map(o=>o.name),occupiedTerrainCells:occupiedCells.size,completedEmptyCells:completedCells,cellSizeMeters:CELL};
   group.userData.flowerForms=flowerKinds.map(k=>names[k]);
   group.userData.zones=stats;group.userData.botanicalInstances=records.reduce((n,r)=>n+r.length,0);scene.add(group);
-  const controller=createBotanyController(group,records);controller.prepareExport();
+  // The viewer immediately selects a camera-dependent LOD. Preparing all
+  // export instances here blocks startup and is overwritten by the first update.
+  const controller=createBotanyController(group,records);
   const baseMaterial=materials.meadow;baseMaterial.map=null;baseMaterial.bumpMap=null;baseMaterial.color.set('#ffffff');baseMaterial.vertexColors=true;baseMaterial.roughness=.97;baseMaterial.name='Alpine Blumenwiese – vollständig ersetzte Bodenvegetation';
   const v=new T.Vector3(),c=new T.Color();
   grounds.forEach(o=>{
