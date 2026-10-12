@@ -23,7 +23,7 @@ import {buildLimousineParking,clearLimousineParkingVegetation,prepareLimousinePa
 import {buildLandscape} from './landscape.js?v=107';
 import {buildLakeActivity} from './lake-activity.js?v=75';
 import {makeRoadMaterials,removeVegetationOnRoad,buildForecourt} from './forecourt.js?v=107';
-import {buildMobileLandscape} from './mobile-landscape.js?v=100';
+import {buildMobileLandscape} from './mobile-landscape.js?v=107';
 import {SPA_WING} from './spa-wing.js?v=98';
 export async function createScene({createCanvas,loadTexture,onProgress=()=>{},mobile=false,fastHotel=false}){
  // Allow the browser to paint the loading state between long scene build steps.
