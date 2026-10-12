@@ -1,5 +1,5 @@
 import {T,Kit} from './core.js?v=75';
-import {GARAGE} from './underground-garage.js?v=103';
+import {GARAGE} from './underground-garage.js?v=104';
 export const GARAGE_CUT={minX:GARAGE.x-GARAGE.width/2,maxX:GARAGE.x+GARAGE.width/2,minZ:GARAGE.z-GARAGE.end-.35,maxZ:GARAGE.z};
 const overlaps=b=>b.min.x<GARAGE_CUT.maxX&&b.max.x>GARAGE_CUT.minX&&b.min.z<GARAGE_CUT.maxZ&&b.max.z>GARAGE_CUT.minZ;
 const garageMember=o=>{for(let p=o;p;p=p.parent)if(p.userData.garageStructure)return true;return false;};
