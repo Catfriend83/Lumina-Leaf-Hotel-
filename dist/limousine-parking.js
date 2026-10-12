@@ -1,18 +1,68 @@
 import {T,Kit} from './core.js?v=75';
 
-// A vacant, already graded portion of the hotel forecourt meadow, east of
-// the hotel and north of the existing approach road (front z=42).
-// The original house, pool, garage, lake and main road stay untouched.
+// V107: Shift the already complete V106 parking lot to the HOTEL SIDE where
+// the three documented pines stand: (35,16), (35,4), (37,-10).
+// Keep all of its parts/materials/vehicle meshes unchanged. The old V106
+// position (x32..68,z42..79) becomes ordinary original meadow again.
+// The original builder below uses local V106 parking coordinates; a single
+// group transform reuses the same architecture, with its frontage now facing
+// the hotel's existing road at z≈28.4. The world footprint is authoritative
+// for all vegetation removal and terrain grading.
 export const LIMO_PARK={minX:32,maxX:68,minZ:42,maxZ:79,asphaltY:-.07,
  entrances:[{x:41.0,label:'Einfahrt'},{x:60.5,label:'Ausfahrt'}],
  bays:[38.8,50,61.2],carZ:65.9,guardX:50.7};
+export const LIMO_PARK_WORLD={
+ minX:30,maxX:66,minZ:-18,maxZ:19,
+ roadZ:28.4,trees:[[35,16],[35,4],[37,-10]]
+};
 export function inLimousineParking(x,z,padding=0){
- return x>=LIMO_PARK.minX-padding&&x<=LIMO_PARK.maxX+padding&&
-        z>=LIMO_PARK.minZ-padding&&z<=LIMO_PARK.maxZ+padding;
+ const p=LIMO_PARK_WORLD;
+ return x>=p.minX-padding&&x<=p.maxX+padding&&
+        z>=p.minZ-padding&&z<=p.maxZ+padding;
 }
 
-// Remove only vegetation INSIDE the new enclosure. No hotel fixtures or
-// terrain/road meshes are deleted; the meadow is already locally level.
+// Grade only actual meadow terrain under the moved compound. Preserve the
+// complete continuous terrain mesh; pull its existing vertices below the
+// asphalt and ease the surrounding grass back to its original height.
+export function prepareLimousineParkingTerrain(scene,m){
+ const p=LIMO_PARK_WORLD,buffer=10,target=LIMO_PARK.asphaltY-.23;
+ const smooth=t=>t*t*(3-2*t),q=new T.Vector3(),local=new T.Vector3();
+ let adjusted=0,meshes=0;
+ scene.updateMatrixWorld(true);
+ scene.traverse(o=>{
+  if(!o.isMesh||o.isInstancedMesh||!o.geometry?.attributes?.position)return;
+  if(!(o.material===m.meadow||
+      o.name==='Wiesen und natürlicher Talboden'))return;
+  // Never grade pavement, structures, planters or car geometry. Skip all
+  // unrelated meadow chunks BEFORE cloning or iterating their vertices.
+  o.geometry.computeBoundingBox();
+  const bounds=o.geometry.boundingBox.clone().applyMatrix4(o.matrixWorld);
+  if(bounds.max.x<p.minX-buffer||bounds.min.x>p.maxX+buffer||
+     bounds.max.z<p.minZ-buffer||bounds.min.z>p.maxZ+buffer)return;
+  const g=o.geometry.clone(),attr=g.attributes.position;
+  const inverse=o.matrixWorld.clone().invert();let changed=0;
+  for(let i=0;i<attr.count;i++){
+   q.fromBufferAttribute(attr,i).applyMatrix4(o.matrixWorld);
+   const dx=Math.max(p.minX-q.x,0,q.x-p.maxX);
+   const dz=Math.max(p.minZ-q.z,0,q.z-p.maxZ);
+   const distance=Math.hypot(dx,dz);
+   if(distance>=buffer||q.y<=target)continue;
+   const influence=1-smooth(Math.min(1,distance/buffer));
+   const newY=q.y+(target-q.y)*influence;
+   local.set(q.x,newY,q.z).applyMatrix4(inverse);
+   attr.setY(i,local.y);changed++;
+  }
+  if(changed){g.computeVertexNormals();g.computeBoundingSphere();
+   o.geometry=g;meshes++;adjusted+=changed;}
+  else g.dispose();
+ });
+ scene.userData.limousineParkingGrade={gradedMeshes:meshes,vertices:adjusted,
+  newFootprint:{...p},oldMeadowPreserved:true,smoothBuffer:buffer};
+ return scene.userData.limousineParkingGrade;
+}
+
+// Remove only vegetation at the NEW location. Regrowth at the old V106
+// site is automatic because its coordinate exclusion has been discarded.
 export function clearLimousineParkingVegetation(scene,m){
  const plantMats=new Set(['spruce','forestPine','trunk','pine','pine2',
  'leaf','leaf2','grassBlade','shrub','flowerRed','flowerWhite',
@@ -112,7 +162,13 @@ function copyParkedLimousines(root,source,positions){
 export function buildLimousineParking(scene,m,originalCar,createCanvas){
  const p=LIMO_PARK;
  const group=new T.Group();group.name='Privater Limousinenparkplatz – Lumina Leaf Hotel';
- group.userData={privateParking:true,luxuryParking:true,version:106,
+ // World translation + road-facing reflection relocate ALL original parts
+ // together: three limousines, paving, labels, walls, guardhouse, gates and CCTV.
+ // Old x=[32,68],z=[42,79] -> new x=[30,66],z=[19,-18].
+ group.position.set(-2,0,61);
+ group.scale.z=-1;
+ group.userData={privateParking:true,luxuryParking:true,version:107,
+  relocatedFromWrongSide:true,threeOriginalTreesCleared:true,
   spaceCount:3,gateCount:2,asphaltY:p.asphaltY,
   placedOnExistingLevelHotelMeadow:true,noAdditionalSceneLights:true};
  scene.add(group);
@@ -124,7 +180,9 @@ export function buildLimousineParking(scene,m,originalCar,createCanvas){
   p.maxX-p.minX,.15,p.maxZ-p.minZ);
  // Two sloped, non-overlapping road joins (main road ends at z=39.7).
  for(const entry of p.entrances){
-  const x0=entry.x-3.32,x1=entry.x+3.32,z0=39.7,z1=p.minZ;
+  // Mirrored into road world z=28.3, directly joining the existing
+  // road at z≈28.4 without traversing an unrelated hotel surface.
+  const x0=entry.x-3.32,x1=entry.x+3.32,z0=32.7,z1=p.minZ;
   const geo=new T.BufferGeometry();
   geo.setAttribute('position',new T.Float32BufferAttribute([
    x0,-.005,z0,x1,-.005,z0,x0,y,z1,x1,y,z1],3));
@@ -132,7 +190,7 @@ export function buildLimousineParking(scene,m,originalCar,createCanvas){
    x0/2,z0/2,x1/2,z0/2,x0/2,z1/2,x1/2,z1/2],2));
   geo.setIndex([0,2,1,1,2,3]);geo.computeVertexNormals();
   const ramp=k.mesh(geo,m.asphalt,entry.label+' – sauberer Asphaltanschluss zur Hauptstraße');
-  ramp.castShadow=false;ramp.userData={parkingAccess:true,grade:.065/2.3};
+  ramp.castShadow=false;ramp.userData={parkingAccess:true,grade:.065/9.3};
  }
 
  // Neat three-bay white road markings. Top is 16mm above the asphalt,
