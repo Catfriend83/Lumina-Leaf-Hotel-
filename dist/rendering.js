@@ -9,10 +9,59 @@ import {UnrealBloomPass} from './vendor/addons/postprocessing/UnrealBloomPass.js
 import {CINEMATIC,createCinematicOutput} from './cinematic.js?v=75';
 import {installMountainClarity} from './mountain-clarity.js?v=75';
 
+// Stabilize materials and remove only byte-for-byte identical static
+// opaque surfaces. Intentionally layered roads, glass, water and decorations
+// with different materials/geometry are preserved; no scene-wide offsets.
+function stabilizeStaticRendering(scene,materials,renderer,{mobile=false}={}){
+ const seen=new Map(),duplicates=[],textures=new Set(),cap=renderer.capabilities.getMaxAnisotropy();
+ let inspected=0;
+ scene.updateMatrixWorld(true);
+ scene.traverse(o=>{
+  if(!o.isMesh||!o.visible)return;
+  const mats=Array.isArray(o.material)?o.material:[o.material];
+  for(const m of mats){
+   if(!m)continue;
+   for(const key of ['map','bumpMap','normalMap','roughnessMap']){
+    const t=m[key];if(t?.isTexture&&!t.isRenderTargetTexture)textures.add(t);
+   }
+  }
+  if(o.isInstancedMesh||o.isBatchedMesh||o.isSkinnedMesh||o.children.length||Array.isArray(o.material)||!o.geometry?.isBufferGeometry)return;
+  if(o.material.transparent||o.material.alphaTest||o.material.isShaderMaterial||o.onBeforeRender!==T.Object3D.prototype.onBeforeRender)return;
+  // Strict: same *object* geometry/material plus exactly the same 16 world
+  // matrix entries. Never approximate positions or deduplicate separate panes.
+  const key=o.geometry.uuid+'|'+o.material.uuid+'|'+o.matrixWorld.elements.join(',');
+  inspected++;
+  if(seen.has(key))duplicates.push(o);else seen.set(key,o);
+ });
+ for(const mesh of duplicates)mesh.removeFromParent();
+ let filtered=0;
+ const anisotropy=Math.min(mobile?4:8,cap);
+ for(const t of textures){
+  if(!t.image||!t.image.width||!t.image.height||t.image.width<2||t.image.height<2)continue;
+  let changed=false;
+  // Trilinear mipmapping suppresses high-frequency shimmer on oblique
+  // roofs, facades, road paint, cobbles and grass, without higher resolution.
+  if(t.generateMipmaps&&t.minFilter!==T.LinearMipmapLinearFilter){
+   t.minFilter=T.LinearMipmapLinearFilter;changed=true;
+  }
+  if(t.anisotropy<anisotropy){t.anisotropy=anisotropy;changed=true;}
+  if(changed){t.needsUpdate=true;filtered++;}
+ }
+ // Thin floor decals can share an almost equal depth with the asphalt. Bias
+ // only the existing marking materials, not glass/water/walls or ground.
+ for(const m of [materials.roadPaint,materials.vipRoadLabel])if(m){
+  m.polygonOffset=true;m.polygonOffsetFactor=-1;m.polygonOffsetUnits=-1;
+ }
+ scene.userData.renderStability={duplicateOpaqueSurfacesRemoved:duplicates.length,
+  duplicateCandidatesInspected:inspected,texturesConsidered:textures.size,
+  texturesImproved:filtered,cameraDepthOptimized:true};
+}
+
 // Real scene reflections are captured once for the static car and metalwork.
 // The portable GLB keeps its standard PBR materials.
 export function createRendering(renderer,built,camera,{mobile=false,monitor=null}={}){
  const {scene,materials,car,sun}=built;
+ stabilizeStaticRendering(scene,materials,renderer,{mobile});
  installMountainClarity(scene);updateLakePathLights(scene,camera);
  // Keep the full cinematic environment probe on desktop. Capturing six complete
  // scenes on a mobile GPU delays startup and consumes extra render-target memory.
