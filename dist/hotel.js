@@ -1,4 +1,4 @@
-import {buildLobbyExtension,buildGroundStructure,HOTEL_EXPANSION} from './hotel-expansion.js?v=91';
+import {buildLobbyExtension,buildGroundStructure,HOTEL_EXPANSION} from './hotel-expansion.js?v=99';
 import {makeLobbyMaterials,buildReferenceLobby} from './hotel-lobby.js?v=97';
 import {buildMainEntrance,entranceBayFloor} from './hotel-entrance.js?v=91';
 import {hotelLettering,fiveStars,buildReferenceStaff} from './hotel-reference-details.js?v=89';
