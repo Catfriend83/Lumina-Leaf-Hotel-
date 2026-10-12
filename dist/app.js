@@ -2,7 +2,7 @@ import {optimizeStaticScene} from './static-performance.js?v=78';
 import {createPerformanceMonitor} from './performance-monitor.js?v=78';
 import {loadModelBlob} from './model-download.js?v=75';
 import {T} from './core.js?v=75';
-import {createScene,cameraViews} from './scene.js?v=94';
+import {createScene,cameraViews} from './scene.js?v=95';
 import {createRendering} from './rendering.js?v=94';
 import {CINEMATIC} from './cinematic.js?v=75';
 import {assemble8K,EXPORT_8K} from './export-8k.js?v=75';
@@ -12,6 +12,7 @@ const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 // Handheld devices start with a GPU-friendly rendering profile; desktop retains
 // its cinematic output. This only changes viewer rendering, never exported models.
 const mobile=/Android|iPhone|iPod|Mobile/i.test(navigator.userAgent)||innerWidth<700;
+const fastHotel=mobile&&new URLSearchParams(location.search).get('full')!=='1';
 function setLoadingProgress(percent,message){
  const loading=el('loading');if(!loading)return;
  const value=Math.min(100,Math.max(0,Math.round(percent)));
@@ -20,7 +21,7 @@ function setLoadingProgress(percent,message){
  const status=loading.querySelector('p');if(status)status.textContent=message;
 }
 function toast(text,timeout=5000){clearTimeout(toastTimer);el('toast').textContent=text;el('toast').hidden=false;if(timeout)toastTimer=setTimeout(()=>el('toast').hidden=true,timeout);}
-function setView(name,animate=true){if(!cameraViews[name])throw new Error('Unbekannte Perspektive');activeView=name;const v=cameraViews[name],target=new T.Vector3(...v.target),position=new T.Vector3(...v.position);const frame=el('viewport'),fit=Math.max(1,(16/9)/(frame.clientWidth/frame.clientHeight));camera.fov=v.interior?Math.min(100,2*Math.atan(Math.tan(v.fov*Math.PI/360)*fit)*180/Math.PI):(v.fov||27.88);camera.updateProjectionMatrix();if(!v.interior)position.sub(target).multiplyScalar(fit).add(target);document.querySelectorAll('[data-view]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.view===name)));if(animate&&!reduced){flight={from:camera.position.clone(),to:position,fromTarget:controls.target.clone(),toTarget:target,start:performance.now(),duration:1100};}else{camera.position.copy(position);controls.target.copy(target);controls.update();}setRotate(false);}
+function setView(name,animate=true){if(!cameraViews[name])throw new Error('Unbekannte Perspektive');activeView=name;const v=cameraViews[name],target=new T.Vector3(...v.target),position=new T.Vector3(...v.position);const frame=el('viewport'),fit=Math.max(1,(16/9)/(frame.clientWidth/frame.clientHeight));camera.fov=v.interior?Math.min(100,2*Math.atan(Math.tan(v.fov*Math.PI/360)*fit)*180/Math.PI):(v.fov||27.88);camera.updateProjectionMatrix();if(!v.interior)position.sub(target).multiplyScalar(fit*(fastHotel?.76:1)).add(target);document.querySelectorAll('[data-view]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.view===name)));if(animate&&!reduced){flight={from:camera.position.clone(),to:position,fromTarget:controls.target.clone(),toTarget:target,start:performance.now(),duration:1100};}else{camera.position.copy(position);controls.target.copy(target);controls.update();}setRotate(false);}
 function setRotate(state){controls.autoRotate=state;el('rotate-btn').setAttribute('aria-pressed',String(state));}
 async function download(url,name){if(url.includes('.glb.gz')||url.includes('.download.json')){try{const blob=await loadModelBlob(url),local=URL.createObjectURL(blob);await download(local,name);setTimeout(()=>URL.revokeObjectURL(local),60000);}catch(e){toast('Das 3D-Modell konnte nicht heruntergeladen werden. Bitte erneut versuchen.');}return;}const a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();}
 function hideHint(){el('hint').style.opacity='0';}
@@ -30,17 +31,22 @@ async function start(){
  // A missing decorative font must not prevent the 3D model from starting.
  try{const scriptFont=new FontFace('Lumina Script','url(./assets/lumina-script.otf)');document.fonts.add(await scriptFont.load());}
  catch(e){console.warn('Optionale Schrift konnte nicht geladen werden.',e);}
- renderer=new T.WebGLRenderer({antialias:!mobile,alpha:false,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,mobile?1:1.8));renderer.outputColorSpace=T.SRGBColorSpace;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=CINEMATIC.exposure;renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFSoftShadowMap;el('viewport').append(renderer.domElement);
+ renderer=new T.WebGLRenderer({antialias:!mobile,alpha:false,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,mobile?1:1.8));renderer.outputColorSpace=T.SRGBColorSpace;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=CINEMATIC.exposure;renderer.shadowMap.enabled=!fastHotel;renderer.shadowMap.type=T.PCFSoftShadowMap;el('viewport').append(renderer.domElement);
  camera=new T.PerspectiveCamera(27.88,1,.1,3500);controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.dampingFactor=.075;controls.screenSpacePanning=true;controls.minDistance=4;controls.maxDistance=440;controls.maxPolarAngle=Math.PI*.492;controls.autoRotateSpeed=.65;controls.target.set(-1,5,-8);controls.zoomSpeed=.85;controls.panSpeed=.65;controls.rotateSpeed=.6;
  monitor=createPerformanceMonitor(renderer);
  const loader=new T.TextureLoader(),assets=new Map();
- const paths=['photo-reference.jpg','alpine-stone.png','alpine-limestone.png','granite-cobblestone.png','botanical-wrap.png','snowy-spruce.png','alpine-forest-pine.png','festive-shrub.png','limousine-side-wrap-v12.png','sunset-sky.png'];
+ const paths=fastHotel?
+  ['photo-reference.jpg','alpine-stone.png','alpine-limestone.png','granite-cobblestone.png','botanical-wrap.png','snowy-spruce.png','festive-shrub.png','limousine-side-wrap-v12.png','sunset-sky.png']:
+  ['photo-reference.jpg','alpine-stone.png','alpine-limestone.png','granite-cobblestone.png','botanical-wrap.png','snowy-spruce.png','alpine-forest-pine.png','festive-shrub.png','limousine-side-wrap-v12.png','sunset-sky.png'];
  const loadTexture=path=>{if(!assets.has(path)){const task=loader.loadAsync(new URL(path,import.meta.url)).then(t=>{t.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());return t;});task.catch(()=>{});assets.set(path,task);}return assets.get(path);};
  for(const name of paths)loadTexture('assets/'+name);
- built=await createScene({createCanvas:(w,h)=>{const c=document.createElement('canvas');c.width=w;c.height=h;return c;},loadTexture,onProgress:setLoadingProgress,mobile});
+ built=await createScene({createCanvas:(w,h)=>{const c=document.createElement('canvas');c.width=w;c.height=h;return c;},loadTexture,onProgress:setLoadingProgress,mobile,fastHotel});
  setLoadingProgress(97,'Grafikleistung für dein Gerät optimieren …');
- optimization=optimizeStaticScene(built,{multiDraw:!!renderer.getContext().getExtension('WEBGL_multi_draw')});
- rendering=createRendering(renderer,built,camera,{mobile,monitor});resize();setView('cinematic',false);built.meadowController.update(camera,true);controls.addEventListener('start',()=>{flight=null;hideHint();document.querySelectorAll('[data-view]').forEach(b=>b.setAttribute('aria-pressed','false'));});
+ // Hotel builders already batch thousands of repeated parts as InstancedMesh.
+ // Skip the extra whole-scene batching pass before the first mobile frame.
+ optimization=fastHotel?{report:{mobileHotelFastStart:true},fullDetail(){},dispose(){}}:
+   optimizeStaticScene(built,{multiDraw:!!renderer.getContext().getExtension('WEBGL_multi_draw')});
+ rendering=createRendering(renderer,built,camera,{mobile,monitor});resize();setView(fastHotel?'original':'cinematic',false);built.meadowController.update(camera,true);controls.addEventListener('start',()=>{flight=null;hideHint();document.querySelectorAll('[data-view]').forEach(b=>b.setAttribute('aria-pressed','false'));});
  // Only keep high-poly forest instances within viewing range on handhelds.
  // The actual forest geometry remains untouched for export and desktop views.
  const mobileForest=[];
@@ -85,7 +91,17 @@ async function start(){
   const loading=el('loading');if(loading){loading.style.opacity='0';setTimeout(()=>loading.remove(),550);}
  }
  });
- window.luminaPerformance={read:()=>({...monitor.summary(),optimization:optimization.report,pixelRatio:renderer.getPixelRatio(),renderProfile:mobile?'mobile-fluent':'cinematic'})};
+ window.luminaPerformance={read:()=>({...monitor.summary(),optimization:optimization.report,pixelRatio:renderer.getPixelRatio(),renderProfile:fastHotel?'mobile-hotel-first':mobile?'mobile-fluent':'cinematic'})};
+ if(mobile){
+  const modeButton=el('scene-mode-btn');
+  modeButton.hidden=false;
+  modeButton.textContent=fastHotel?'Gesamtanlage laden':'Hotel-Schnellansicht';
+  modeButton.onclick=()=>{location.search=fastHotel?'?full=1':'';};
+ }
+ if(fastHotel){
+  const available=new Set(['cinematic','original','pool','back','aerial','fitness','eingang','rezeption','tiefgarage','rampe','vorfahrt']);
+  document.querySelectorAll('[data-view]').forEach(b=>{if(!available.has(b.dataset.view))b.hidden=true;});
+ }
  addEvents();registerTools();
  window.addEventListener('pagehide',event=>{if(event.persisted)return;renderer.setAnimationLoop(null);controls.dispose();rendering.dispose();optimization.dispose();const geometries=new Set(),materials=new Set(),textures=new Set([built.sky]);built.scene.traverse(o=>{if(o.geometry)geometries.add(o.geometry);for(const m of (Array.isArray(o.material)?o.material:[o.material]))if(m)materials.add(m);});for(const m of Object.values(built.materials))if(m?.isMaterial)materials.add(m);else if(m?.isTexture)textures.add(m);for(const m of materials){for(const t of Object.values(m))if(t?.isTexture)textures.add(t);m.dispose();}for(const g of geometries)g.dispose();for(const t of textures)t.dispose();renderer.dispose();},{once:true});
 }
