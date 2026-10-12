@@ -32,7 +32,7 @@ async function start(){
  try{const scriptFont=new FontFace('Lumina Script','url(./assets/lumina-script.otf)');document.fonts.add(await scriptFont.load());}
  catch(e){console.warn('Optionale Schrift konnte nicht geladen werden.',e);}
  renderer=new T.WebGLRenderer({antialias:!mobile,alpha:false,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,mobile?1:1.8));renderer.outputColorSpace=T.SRGBColorSpace;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=CINEMATIC.exposure;renderer.shadowMap.enabled=!fastHotel;renderer.shadowMap.type=T.PCFSoftShadowMap;el('viewport').append(renderer.domElement);
- camera=new T.PerspectiveCamera(27.88,1,.1,3500);controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.dampingFactor=.075;controls.screenSpacePanning=true;controls.minDistance=4;controls.maxDistance=440;controls.maxPolarAngle=Math.PI*.492;controls.autoRotateSpeed=.65;controls.target.set(-1,5,-8);controls.zoomSpeed=.85;controls.panSpeed=.65;controls.rotateSpeed=.6;
+ camera=new T.PerspectiveCamera(27.88,1,.35,2800);controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.dampingFactor=.075;controls.screenSpacePanning=true;controls.minDistance=4;controls.maxDistance=440;controls.maxPolarAngle=Math.PI*.492;controls.autoRotateSpeed=.65;controls.target.set(-1,5,-8);controls.zoomSpeed=.85;controls.panSpeed=.65;controls.rotateSpeed=.6;
  monitor=createPerformanceMonitor(renderer);
  const loader=new T.TextureLoader(),assets=new Map();
  const paths=fastHotel?
@@ -68,19 +68,26 @@ async function start(){
  setLoadingProgress(99,'Erste 3D-Ansicht wird gerendert …');
  // Track actual frame intervals. Scale only the mobile framebuffer in small
  // steps; avoid expensive full-scene rebuilds or deleting source meshes.
- let firstFrame=true,last=performance.now(),sampleDuration=0,sampleFrames=0,lastAdjustment=0;
+ // Avoid perceptible framebuffer sharpness "flicker" from frequent DPR
+ // changes on Android. Adjust only after several consecutive stable samples.
+ let firstFrame=true,last=performance.now(),sampleDuration=0,sampleFrames=0,
+     lastAdjustment=0,slowWindows=0,fastWindows=0;
  function adaptMobileResolution(now,period){
   if(!mobile||period>250||period<=0)return;
   sampleDuration+=period;sampleFrames++;
-  if(sampleDuration<2500||sampleFrames<12)return;
+  if(sampleDuration<3000||sampleFrames<12)return;
   const average=sampleDuration/sampleFrames,old=renderer.getPixelRatio();
   const upper=Math.min(devicePixelRatio,1);
-  let next=old;
-  if(average>42)next=Math.max(.65,old-.12);
-  else if(average>34)next=Math.max(.65,old-.07);
-  else if(average<27)next=Math.min(upper,old+.05);
   sampleDuration=0;sampleFrames=0;
-  if(Math.abs(next-old)>.025&&now-lastAdjustment>2300){
+  slowWindows=average>39?slowWindows+1:0;
+  fastWindows=average<24?fastWindows+1:0;
+  // Only lower quality for sustained poor performance. Raise it after an
+  // even longer stable headroom period; don't oscillate at borderline FPS.
+  if(now-lastAdjustment<9000)return;
+  let next=old;
+  if(slowWindows>=2){next=Math.max(.65,old-.08);slowWindows=0;fastWindows=0;}
+  else if(fastWindows>=4){next=Math.min(upper,old+.04);slowWindows=0;fastWindows=0;}
+  if(Math.abs(next-old)>.025){
    renderer.setPixelRatio(Math.round(next*100)/100);
    resize();
    lastAdjustment=now;
