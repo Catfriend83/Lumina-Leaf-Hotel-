@@ -1,0 +1,45 @@
+{
+  "version": 82,
+  "starRows": 2,
+  "starsPerRow": 5,
+  "doormen": 2,
+  "receptionists": 2,
+  "symmetricPortiers": true,
+  "tallDoubleDoors": true,
+  "continuousCarpet": true,
+  "guestRooms": 32,
+  "watercraft": 8,
+  "sightlines": [
+    {
+      "x": 6.6,
+      "target": "Branding",
+      "first": "Dunkelgrüner Rezeptionsmarmor"
+    },
+    {
+      "x": 6.6,
+      "target": "Tresen",
+      "first": "Empfang"
+    },
+    {
+      "x": 8.15,
+      "target": "Branding",
+      "first": "Dunkelgrüner Rezeptionsmarmor"
+    },
+    {
+      "x": 8.15,
+      "target": "Tresen",
+      "first": "Empfang"
+    },
+    {
+      "x": 9.4,
+      "target": "Branding",
+      "first": "Dunkelgrüner Rezeptionsmarmor"
+    },
+    {
+      "x": 9.4,
+      "target": "Tresen",
+      "first": "Empfang"
+    }
+  ],
+  "validation": "Exported geometry and sightlines checked; browser/GPU visual fidelity not verified."
+}

@@ -1,0 +1,29 @@
+{
+  "version": 69,
+  "rathausTransformAndArchitectureUnchanged": true,
+  "treePositions": [
+    [
+      -169.6,
+      4.346350221546802,
+      -156.2
+    ],
+    [
+      -151.2,
+      4.648271387056832,
+      -156.2
+    ]
+  ],
+  "treeFacadeDistance": 3,
+  "treeSymmetry": true,
+  "treeModelComponentsRigidlyMoved": 302,
+  "unrelatedComponentsPreserved": 145904,
+  "lampsBefore": 52,
+  "lampsAfter": 26,
+  "removedFixtureComponents": 130,
+  "removedLampGroundSamples": 208,
+  "maxLampSpacing": 19.688861937265415,
+  "maxBenchLampDistance": 8.950152176769876,
+  "treeContactSamples": 128,
+  "maxTreeGroundGap": 2.2363444429629453e-11,
+  "unobstructedSignSightlines": 30
+}

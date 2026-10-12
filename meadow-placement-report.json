@@ -1,0 +1,10 @@
+{
+  "occupiedMeadowCellsChecked": 4627,
+  "allCoverageCellsRetainedInExport": true,
+  "version": 66,
+  "renderedPlantBasesChecked": 81067,
+  "allBasesOnExistingMeadow": true,
+  "maximumBaseOffsetMeters": 0.005021153720655036,
+  "noPlantsOnProjectedRoadPathBuildingOrWaterSurfaces": true,
+  "sampledTuftExtentClearancesChecked": 49888
+}

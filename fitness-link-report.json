@@ -1,0 +1,31 @@
+{
+  "version": 35,
+  "straightFacadeNormalLink": true,
+  "linkLengthMeters": 7.498941523273029,
+  "clearWidthMeters": 1.9,
+  "doors": 2,
+  "fitnessEquipment": {
+    "Laufband": 3,
+    "Crosstrainer": 2,
+    "Indoor-Bike": 2,
+    "Rudergerät": 1,
+    "Beinstrecker": 1,
+    "Brustpresse": 1,
+    "Lat-Zugstation": 1,
+    "Functional Trainer": 1,
+    "Kurzhantelständer": 1,
+    "Verstellbare Trainingsbank": 2,
+    "Kettlebell-Regal": 1,
+    "Yoga-Matte": 2,
+    "Mobility-Zubehör": 1,
+    "Handtuchschrank": 1,
+    "Wasserstation": 1
+  },
+  "centralAisleMeters": 1.9,
+  "equipmentFootprintsDisjoint": true,
+  "columnsAndPoolPlateClear": true,
+  "preservedPoolAndUpperSpaParts": 900,
+  "preservedOtherParts": 43742,
+  "garageRoadCarLakeMountainsPreserved": true,
+  "existingLightsPreserved": true
+}

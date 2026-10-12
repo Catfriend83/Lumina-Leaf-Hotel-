@@ -1,0 +1,17 @@
+{
+  "version": 75,
+  "trees": 3150,
+  "species": {
+    "Bergahorn": 378,
+    "Fichte": 853,
+    "Weißtanne": 880,
+    "Rotbuche": 409,
+    "Waldkiefer": 630
+  },
+  "protectedComponentsPreserved": 39070,
+  "mainVillageHotelPathsLakeAndTerrainPreserved": true,
+  "removedHotelRearHouses": 7,
+  "removedHouseParts": 6406,
+  "oldConiferMaterialsAbsent": true,
+  "solidCrowns": true
+}

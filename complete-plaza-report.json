@@ -1,0 +1,18 @@
+{
+  "version": 72,
+  "repairedArea": 1929.6841410296101,
+  "stoneArea": 1530.5135737145674,
+  "walkArea": 399.1705673150624,
+  "sourceSurfaces": 13,
+  "vertices": 14921,
+  "triangles": 27000,
+  "removedInternalEdgeTriangles": 834,
+  "originalPavingMicroHoles": 85,
+  "remainingIntentionalHoles": 7,
+  "sharedNormals": true,
+  "unrelatedComponentsPreserved": 146209,
+  "allBuildingsTreesFountainBenchesAndLightsUnchanged": true,
+  "identicalOriginalMaterials": true,
+  "worldAlignedStoneAndJointUV": true,
+  "maxUVError": 0.00000762939453125
+}

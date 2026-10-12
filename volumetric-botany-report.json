@@ -1,0 +1,320 @@
+{
+  "version": 66,
+  "closedUprightSolidPlants": 39,
+  "LODTransitionsVerified": true,
+  "singleDetailLevelPerPlant": true,
+  "geometry": [
+    {
+      "species": 0,
+      "level": 0,
+      "triangles": 356,
+      "volume": 0.00009565740400402267,
+      "height": 1.0101171769201756,
+      "closed": true
+    },
+    {
+      "species": 0,
+      "level": 1,
+      "triangles": 204,
+      "volume": 0.00006788790072732918,
+      "height": 1.010000018402934,
+      "closed": true
+    },
+    {
+      "species": 0,
+      "level": 2,
+      "triangles": 110,
+      "volume": 0.000037578011193395296,
+      "height": 1.010000018402934,
+      "closed": true
+    },
+    {
+      "species": 1,
+      "level": 0,
+      "triangles": 212,
+      "volume": 0.00007942359290843024,
+      "height": 1.047159556299448,
+      "closed": true
+    },
+    {
+      "species": 1,
+      "level": 1,
+      "triangles": 150,
+      "volume": 0.00006250488049861755,
+      "height": 1.04700961522758,
+      "closed": true
+    },
+    {
+      "species": 1,
+      "level": 2,
+      "triangles": 110,
+      "volume": 0.000037356230667826954,
+      "height": 1.04700961522758,
+      "closed": true
+    },
+    {
+      "species": 2,
+      "level": 0,
+      "triangles": 270,
+      "volume": 0.0004719817400473134,
+      "height": 1.0880190562456846,
+      "closed": true
+    },
+    {
+      "species": 2,
+      "level": 1,
+      "triangles": 152,
+      "volume": 0.0002872215947723988,
+      "height": 1.0599999707192183,
+      "closed": true
+    },
+    {
+      "species": 2,
+      "level": 2,
+      "triangles": 56,
+      "volume": 0.00012336347080946065,
+      "height": 1.0599999707192183,
+      "closed": true
+    },
+    {
+      "species": 3,
+      "level": 0,
+      "triangles": 270,
+      "volume": 0.0004719817400473134,
+      "height": 1.0880190562456846,
+      "closed": true
+    },
+    {
+      "species": 3,
+      "level": 1,
+      "triangles": 152,
+      "volume": 0.0002872215947723988,
+      "height": 1.0599999707192183,
+      "closed": true
+    },
+    {
+      "species": 3,
+      "level": 2,
+      "triangles": 56,
+      "volume": 0.00012336347080946065,
+      "height": 1.0599999707192183,
+      "closed": true
+    },
+    {
+      "species": 4,
+      "level": 0,
+      "triangles": 188,
+      "volume": 0.00021022668065061315,
+      "height": 0.9191328249871731,
+      "closed": true
+    },
+    {
+      "species": 4,
+      "level": 1,
+      "triangles": 116,
+      "volume": 0.00013828859077409927,
+      "height": 0.9189999978989363,
+      "closed": true
+    },
+    {
+      "species": 4,
+      "level": 2,
+      "triangles": 44,
+      "volume": 0.00006638048372913235,
+      "height": 0.9189999978989363,
+      "closed": true
+    },
+    {
+      "species": 5,
+      "level": 0,
+      "triangles": 304,
+      "volume": 0.00014032019113102438,
+      "height": 1.0881095826625824,
+      "closed": true
+    },
+    {
+      "species": 5,
+      "level": 1,
+      "triangles": 160,
+      "volume": 0.00008498571951551907,
+      "height": 1.0879999678581953,
+      "closed": true
+    },
+    {
+      "species": 5,
+      "level": 2,
+      "triangles": 84,
+      "volume": 0.000046851518633947464,
+      "height": 1.0879999678581953,
+      "closed": true
+    },
+    {
+      "species": 6,
+      "level": 0,
+      "triangles": 288,
+      "volume": 0.0004377554746426316,
+      "height": 1.0956474468111992,
+      "closed": true
+    },
+    {
+      "species": 6,
+      "level": 1,
+      "triangles": 90,
+      "volume": 0.00015158614500110853,
+      "height": 1.0956611558794975,
+      "closed": true
+    },
+    {
+      "species": 6,
+      "level": 2,
+      "triangles": 54,
+      "volume": 0.00008843497557151627,
+      "height": 0.9756792709231377,
+      "closed": true
+    },
+    {
+      "species": 7,
+      "level": 0,
+      "triangles": 384,
+      "volume": 0.00018816206000560426,
+      "height": 1.150152599439025,
+      "closed": true
+    },
+    {
+      "species": 7,
+      "level": 1,
+      "triangles": 160,
+      "volume": 0.00009194225340871656,
+      "height": 1.1500000040978193,
+      "closed": true
+    },
+    {
+      "species": 7,
+      "level": 2,
+      "triangles": 84,
+      "volume": 0.000051364896786722625,
+      "height": 1.1500000040978193,
+      "closed": true
+    },
+    {
+      "species": 8,
+      "level": 0,
+      "triangles": 644,
+      "volume": 0.00010779677575937111,
+      "height": 0.8601374048739672,
+      "closed": true
+    },
+    {
+      "species": 8,
+      "level": 1,
+      "triangles": 382,
+      "volume": 0.00007818001416865435,
+      "height": 0.8599999826401472,
+      "closed": true
+    },
+    {
+      "species": 8,
+      "level": 2,
+      "triangles": 122,
+      "volume": 0.000029753217306657143,
+      "height": 0.8300000112503767,
+      "closed": true
+    },
+    {
+      "species": 9,
+      "level": 0,
+      "triangles": 476,
+      "volume": 0.0001288344458674251,
+      "height": 1.1001076865941286,
+      "closed": true
+    },
+    {
+      "species": 9,
+      "level": 1,
+      "triangles": 240,
+      "volume": 0.00008097647125734432,
+      "height": 1.1000000517815351,
+      "closed": true
+    },
+    {
+      "species": 9,
+      "level": 2,
+      "triangles": 128,
+      "volume": 0.0000452326598304958,
+      "height": 1.1000000517815351,
+      "closed": true
+    },
+    {
+      "species": 10,
+      "level": 0,
+      "triangles": 864,
+      "volume": 0.00011699760534820249,
+      "height": 1.0713712964206934,
+      "closed": true
+    },
+    {
+      "species": 10,
+      "level": 1,
+      "triangles": 452,
+      "volume": 0.0000729708501321264,
+      "height": 0.9862481039017439,
+      "closed": true
+    },
+    {
+      "species": 10,
+      "level": 2,
+      "triangles": 122,
+      "volume": 0.00002861647201274088,
+      "height": 0.9299999754875898,
+      "closed": true
+    },
+    {
+      "species": 11,
+      "level": 0,
+      "triangles": 652,
+      "volume": 0.0001277997788314659,
+      "height": 1.1749041210860014,
+      "closed": true
+    },
+    {
+      "species": 11,
+      "level": 1,
+      "triangles": 320,
+      "volume": 0.00008532665370301253,
+      "height": 1.1747577469795942,
+      "closed": true
+    },
+    {
+      "species": 11,
+      "level": 2,
+      "triangles": 110,
+      "volume": 0.00003855169212274378,
+      "height": 1.1200000327080488,
+      "closed": true
+    },
+    {
+      "species": 12,
+      "level": 0,
+      "triangles": 594,
+      "volume": 0.00018640316864255033,
+      "height": 0.9868052303791046,
+      "closed": true
+    },
+    {
+      "species": 12,
+      "level": 1,
+      "triangles": 272,
+      "volume": 0.00009621790306928994,
+      "height": 0.986683277413249,
+      "closed": true
+    },
+    {
+      "species": 12,
+      "level": 2,
+      "triangles": 122,
+      "volume": 0.00004541193169778566,
+      "height": 0.9400000255554914,
+      "closed": true
+    }
+  ]
+}

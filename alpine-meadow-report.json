@@ -1,0 +1,52 @@
+{
+  "version": 66,
+  "groundMeshes": 8,
+  "terrainVerticesAndTopologyUnchanged": true,
+  "oldTextureRemoved": true,
+  "oldGrassInstancesRemoved": 0,
+  "protectedPhysicalComponentsUnchanged": 65267,
+  "newBotanicalInstances": 81067,
+  "previousBotanicalInstances": 58828,
+  "printedGroundFlowersRemoved": true,
+  "solidVegetation": true,
+  "originalBotanicalShapesRetained": true,
+  "flowerSpecies": 12,
+  "coverage": {
+    "grassMeshes": [
+      "Bündiger bestehender Hotelrasen",
+      "Alpine Wiesen und Talboden",
+      "Bündiger Übergang vom Dorf zur bestehenden Landschaft",
+      "Fein modellierte Wiesen und natürliche Uferübergänge",
+      "Durchgängiges Gelände mit ebenen Hausstandflächen und sanften Böschungen",
+      "Geschlossene Wiesenflächen um die eigenständige Hotelvorfahrt",
+      "Geschlossener Übergang zwischen bestehender und reparierter Hotelwiese",
+      "Rekonstruierter geschlossener Boden unter dem Gehweganschluss"
+    ],
+    "occupiedTerrainCells": 4627,
+    "completedEmptyCells": 32,
+    "cellSizeMeters": 20
+  },
+  "zones": {
+    "Offene Landschaft": {
+      "sites": 34895,
+      "minHeight": 0.2845204811403304,
+      "maxHeight": 0.7990231057262315
+    },
+    "Dorf": {
+      "sites": 24016,
+      "minHeight": 0.21396055467605626,
+      "maxHeight": 0.5915824493221077
+    },
+    "Seeufer": {
+      "sites": 3833,
+      "minHeight": 0.26577388859793694,
+      "maxHeight": 0.6664391986458801
+    },
+    "Hotel": {
+      "sites": 25264,
+      "minHeight": 0.17250192550825888,
+      "maxHeight": 0.5367903961782802
+    }
+  },
+  "browserVerification": "unavailable in managed environment"
+}

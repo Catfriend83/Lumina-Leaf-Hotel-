@@ -1,0 +1,36 @@
+{
+  "version": 56,
+  "rampLengthMeters": 32,
+  "loweringMeters": 3.6,
+  "laneWidthMeters": 5.3,
+  "maxMeasuredGrade": 0.1285715103149414,
+  "upperAndLowerEasingMeters": 4,
+  "minimumCoveredClearanceMeters": 3.0407142857142864,
+  "actualRampSamples": 130,
+  "clearTrenchSamples": 378,
+  "vehicleClearanceSamples": 378,
+  "integratedLabels": [
+    "AUSFAHRT",
+    "EINFAHRT"
+  ],
+  "wallMountedSignal": true,
+  "upperDrainageGrates": 2,
+  "continuousWallLEDs": 2,
+  "rampLightSources": 14,
+  "closedWallAndCeilingContacts": true,
+  "protectedPhysicalComponents": 64769,
+  "all21VillageBuildingsPreserved": true,
+  "excavation": {
+    "garageExcavation": true,
+    "bounds": {
+      "minX": -18.715,
+      "maxX": -6.515000000000001,
+      "minZ": -8.950000000000001,
+      "maxZ": 28.4
+    },
+    "clippedSurfaces": 8,
+    "removedObstructions": 33,
+    "revision": 56
+  },
+  "browserVerification": "unavailable in managed environment"
+}

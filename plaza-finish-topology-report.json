@@ -1,0 +1,13 @@
+{
+  "version": 49,
+  "innerCoreArea": 1890.638293029107,
+  "plazaArea": 1440.83630454459,
+  "existingPavingRefinished": 673.2065992242369,
+  "grassFilled": 767.6297053203531,
+  "sidewalkOverlap": 0.0,
+  "roadOverlap": 0.0,
+  "buildingOverlap": 0.0,
+  "bedsOverlap": 0.0,
+  "unchangedWalkTriangles": 4641,
+  "unchangedTerrainTriangles": 130408
+}

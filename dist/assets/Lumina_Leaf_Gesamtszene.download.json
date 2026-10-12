@@ -1,0 +1,31 @@
+{
+  "format": "gzip-parts-v1",
+  "bytes": 44033225,
+  "sha256": "7303bd64ddc6e974efaccecff2f9b21eca559568e0ebcc48948d56e9b551da65",
+  "parts": [
+    {
+      "file": "Lumina_Leaf_Gesamtszene.glb.gz.part01",
+      "bytes": 8388608
+    },
+    {
+      "file": "Lumina_Leaf_Gesamtszene.glb.gz.part02",
+      "bytes": 8388608
+    },
+    {
+      "file": "Lumina_Leaf_Gesamtszene.glb.gz.part03",
+      "bytes": 8388608
+    },
+    {
+      "file": "Lumina_Leaf_Gesamtszene.glb.gz.part04",
+      "bytes": 8388608
+    },
+    {
+      "file": "Lumina_Leaf_Gesamtszene.glb.gz.part05",
+      "bytes": 8388608
+    },
+    {
+      "file": "Lumina_Leaf_Gesamtszene.glb.gz.part06",
+      "bytes": 2090185
+    }
+  ]
+}

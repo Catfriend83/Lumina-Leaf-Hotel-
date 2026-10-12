@@ -1,0 +1,16 @@
+{
+  "version": 79,
+  "geometryAndUVsUnchanged": true,
+  "hotelInstances": 10771,
+  "exteriorFixtures": 113,
+  "greenLights": 32,
+  "greenLightIntensityRatio": 0.65,
+  "greenFixtureEmissionRatio": 0.22499999999999998,
+  "haloOpacityRatio": 0.3384615384615384,
+  "originalGreenColoursAndLightPositions": true,
+  "sharedMaterialsUnchanged": true,
+  "courtyardPoolSpaGarageGardensUnchanged": true,
+  "globalBloomUnchanged": true,
+  "photoTextureAndMappingPreserved": true,
+  "scope": "Hotel exterior lighting and reflection response; no browser/GPU visual inspection available"
+}

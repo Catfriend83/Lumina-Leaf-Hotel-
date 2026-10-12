@@ -1,0 +1,15 @@
+{
+  "version": 50,
+  "preservedFoundations": 10,
+  "houses": 10,
+  "individualArchitectures": 10,
+  "unchangedFootprintsAndRoadAccess": true,
+  "upperTimberHouses": 4,
+  "timberFramingHouses": 2,
+  "balconies": 8,
+  "wraparoundBalconies": 2,
+  "atticBalconies": 1,
+  "preservedEntrances": 10,
+  "protectedPublicBuildingsAndPlazaUnchanged": true,
+  "preservedPhysicalComponents": 42157
+}

@@ -1,0 +1,7 @@
+# Alpine meadow, version 66
+
+The existing upright solid grass and six flower forms are retained and joined by six additional botanical forms: meadow sage spikes, branched forget-me-nots, alpine asters, forked red campion petals, yellow hawksbeard heads and broad cranesbill flowers. Twelve flower forms cover white, yellow, violet, blue, pink, light violet, cream and restrained reddish accents. All forms retain real stems, closed petals and three distance-dependent geometry levels.
+
+The old vegetation is removed by the scene builder before installing one meadow system. No cards or printed flowers are used. A stratified field covers the complete grass-bearing valley, followed by conservative filling of empty eligible terrain cells. All eight original grass meshes share the same understory and botanical system. Camera-local fine vegetation replaces the coarser population in close views throughout the valley. Distant coverage anchors remain visible and are preserved in the full export. Terrain topology remains unchanged, and planting excludes roads, paving, buildings, water, flower beds and the VIP bay.
+
+Hotel, village, shore and open landscape retain their differentiated heights. Small complementary flower patches mix organically with the full palette. Full exports retain detailed foreground and compact solid plants elsewhere; portable exports reduce plant repetition without changing the architecture.

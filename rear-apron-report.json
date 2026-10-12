@@ -1,0 +1,13 @@
+{
+  "version": 60,
+  "rearApronEndX": 26.35,
+  "asphaltDatum": -0.005,
+  "matchingAsphaltMaterial": true,
+  "asphaltCoverageSamples": 8320,
+  "existingPathPiecesPreserved": 9,
+  "architectureAndCarComponentsPreserved": 1882,
+  "houseInstancesPreserved": 13925,
+  "vipBayMarkingsPreserved": 3,
+  "trafficRoutesPreserved": true,
+  "browserVerification": "unavailable in managed environment"
+}

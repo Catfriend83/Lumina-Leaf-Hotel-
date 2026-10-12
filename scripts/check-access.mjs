@@ -1,0 +1,22 @@
+import fs from 'node:fs';
+import assert from 'node:assert/strict';
+import * as T from '../dist/vendor/three.module.js';
+const bytes=fs.readFileSync('dist/assets/Lumina_Leaf_Gesamtszene.glb'),size=bytes.readUInt32LE(12),g=JSON.parse(bytes.subarray(20,20+size)),data=bytes.subarray(28+size);
+const parents=new Map();g.nodes.forEach((n,i)=>n.children?.forEach(j=>parents.set(j,i)));
+const world=new Map();
+function matrix(i){if(world.has(i))return world.get(i);const n=g.nodes[i],local=n.matrix?new T.Matrix4().fromArray(n.matrix):new T.Matrix4().compose(new T.Vector3().fromArray(n.translation||[0,0,0]),new T.Quaternion().fromArray(n.rotation||[0,0,0,1]),new T.Vector3().fromArray(n.scale||[1,1,1]));const result=parents.has(i)?matrix(parents.get(i)).clone().multiply(local):local;world.set(i,result);return result;}
+function accessor(i){const a=g.accessors[i],v=g.bufferViews[a.bufferView],n={SCALAR:1,VEC2:2,VEC3:3,VEC4:4}[a.type],width={5126:4,5125:4,5123:2,5121:1}[a.componentType],offset=(v.byteOffset||0)+(a.byteOffset||0),stride=v.byteStride||n*width,read={5126:'readFloatLE',5125:'readUInt32LE',5123:'readUInt16LE',5121:'readUInt8'}[a.componentType];return Array.from({length:a.count},(_,j)=>Array.from({length:n},(_,k)=>data[read](offset+j*stride+k*width)));}
+const carpet=g.nodes.filter(n=>n.extras?.continuousCarpet);assert.equal(carpet.length,1,'Exactly one continuous carpet');
+const carpetPrim=g.meshes[carpet[0].mesh].primitives[0],carpetPoints=accessor(carpetPrim.attributes.POSITION);assert.equal(carpetPoints.length,4);assert.equal(accessor(carpetPrim.indices).length,6);
+const lanes=g.nodes.filter(n=>n.extras?.garageLane);assert.equal(lanes.length,2);lanes.forEach(n=>assert(n.extras.clearWidthMeters>5.7));
+assert(!g.nodes.some(n=>/Originaldetails beleuchtete Garageneinfahrt|Steinwand der Poolterrasse aus der Vorlage/.test(n.name||'')),'No old wall photo over the wider garage');
+const carIndex=g.nodes.findIndex(n=>n.name==='Schwarze Lumina Leaf Stretchlimousine');assert(carIndex>=0);
+const carBox=new T.Box3();
+function carBounds(i){const n=g.nodes[i];if(n.mesh!==undefined){const attrs=n.extensions?.EXT_mesh_gpu_instancing?.attributes;let transforms=[matrix(i)];if(attrs){const a=Object.fromEntries(Object.entries(attrs).map(([k,v])=>[k,accessor(v)])),count=Object.values(a)[0].length;transforms=Array.from({length:count},(_,j)=>matrix(i).clone().multiply(new T.Matrix4().compose(new T.Vector3().fromArray(a.TRANSLATION?.[j]||[0,0,0]),new T.Quaternion().fromArray(a.ROTATION?.[j]||[0,0,0,1]),new T.Vector3().fromArray(a.SCALE?.[j]||[1,1,1]))));}for(const p of g.meshes[n.mesh].primitives){const a=g.accessors[p.attributes.POSITION],box=new T.Box3(new T.Vector3().fromArray(a.min),new T.Vector3().fromArray(a.max));for(const m of transforms)carBox.union(box.clone().applyMatrix4(m));}}n.children?.forEach(carBounds);}
+carBounds(carIndex);assert.deepEqual(g.nodes[carIndex].translation,[5.09,.04,30.2],'Limousine stands at the entrance curb');assert.deepEqual(g.nodes[carIndex].rotation,undefined,'Car parallel to curb');
+const approachIndex=g.nodes.findIndex(n=>n.extras?.garageApproach);assert(approachIndex>=0);const approachPrim=g.meshes[g.nodes[approachIndex].mesh].primitives[0],points=accessor(approachPrim.attributes.POSITION).map(p=>new T.Vector3().fromArray(p).applyMatrix4(matrix(approachIndex))),indices=accessor(approachPrim.indices).flat();
+const clearance=carBox.clone().expandByVector(new T.Vector3(.75,0,.75));
+function clip(poly,axis,edge,sign){const result=[];for(let i=0;i<poly.length;i++){const a=poly[i],b=poly[(i+1)%poly.length],da=(a[axis]-edge)*sign,db=(b[axis]-edge)*sign;if(da>=0)result.push(a);if((da>=0)!==(db>=0))result.push(a.clone().lerp(b,da/(da-db)));}return result;}
+for(let j=0;j<indices.length;j+=3){let polygon=indices.slice(j,j+3).map(i=>points[i]);for(const [axis,edge,sign] of [['x',clearance.min.x,1],['x',clearance.max.x,-1],['z',clearance.min.z,1],['z',clearance.max.z,-1]])polygon=clip(polygon,axis,edge,sign);assert(polygon.length<3,'Driveway overlaps limousine clearance');}
+const door=carpet[0].extras.entry,end=carpet[0].extras.end;assert(Math.hypot(end[0]-door[0],end[2]-door[2])>25);
+console.log(JSON.stringify({garageLaneWidthsMeters:lanes.map(n=>n.extras.clearWidthMeters),continuousCarpets:carpet.length,carpetLengthMeters:Math.hypot(end[0]-door[0],end[2]-door[2]),drivewayCarClearanceMeters:.75,limousineAtEntranceCurb:true}));

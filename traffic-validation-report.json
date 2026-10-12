@@ -1,0 +1,18 @@
+{
+  "version": 38,
+  "roundaboutDiameter": 17.6,
+  "circulatoryWidth": 4.8,
+  "branches": 3,
+  "plazaBenches": 6,
+  "greenIslands": 4,
+  "preserved": 45659,
+  "updatedTrafficParts": 115,
+  "updatedPlazaParts": 37,
+  "localPlantingChanges": 22,
+  "preservedTerrainVertices": 139954,
+  "sharedCurbJoins": 2435,
+  "verifiedMarkings": 59,
+  "testedGroundPoints": 1192,
+  "minimumGroundGap": 0.02741000592955567,
+  "asphaltMatchesHotel": true
+}

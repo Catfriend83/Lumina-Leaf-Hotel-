@@ -1,0 +1,22 @@
+{
+  "version": 39,
+  "individualHouses": 10,
+  "hippedRoofs": 2,
+  "innFrontClear": true,
+  "crossingRoundaboutEdgeDistance": 16.237044554867293,
+  "roundaboutDiameter": 17.6,
+  "circulatoryWidth": 4.8,
+  "branches": 3,
+  "plazaBenches": 6,
+  "greenIslands": 4,
+  "preserved": 40282,
+  "updatedTrafficParts": 17,
+  "updatedPlazaParts": 6167,
+  "localPlantingChanges": 12,
+  "preservedTerrainVertices": 139483,
+  "sharedCurbJoins": 2435,
+  "verifiedMarkings": 55,
+  "testedGroundPoints": 1204,
+  "minimumGroundGap": 0.010234733715388078,
+  "asphaltMatchesHotel": true
+}

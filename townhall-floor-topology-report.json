@@ -1,0 +1,8 @@
+{
+  "version": 70,
+  "missingPavingArea": 9.05510290884543e-11,
+  "footprintDifference": 1.7464629313095552e-05,
+  "overlappingTriangleArea": 1.2680943939358258e-07,
+  "matchedRetainedRimVertices": 205,
+  "maxRetainedRimHeightDifference": 9.5367431640625e-07
+}

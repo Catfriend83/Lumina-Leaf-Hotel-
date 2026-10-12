@@ -1,0 +1,27 @@
+{
+  "version": 46,
+  "center": [
+    -152.76857196541155,
+    -155.98609902793066
+  ],
+  "exactSymmetry": true,
+  "trees": 4,
+  "plazaBenches": 4,
+  "fountains": 1,
+  "planters": 6,
+  "planterModelsAndPlantingIdentical": true,
+  "lamps": 52,
+  "maxLampSpacing": 9.844430968632764,
+  "bins": 12,
+  "oneBinPerBench": true,
+  "coverageSamples": 1440,
+  "contacts": 160,
+  "maxContactError": 5.440092820663267e-15,
+  "preservedComponents": 42924,
+  "fitnessEquipment": 21,
+  "carpetWidth": 1.5,
+  "carpetSinglePiece": true,
+  "carpetThresholdConnected": true,
+  "rathausSignWidth": 3.8,
+  "rathausCanopyRemoved": true
+}

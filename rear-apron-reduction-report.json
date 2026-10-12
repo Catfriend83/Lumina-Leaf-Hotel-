@@ -1,0 +1,16 @@
+{
+  "version": 61,
+  "rearApronEndX": 20.67,
+  "referenceAxis": "first outer path-border face",
+  "restoredMeadowSamples": 4331,
+  "flushEdgeSamples": 61,
+  "asphaltDatum": -0.005,
+  "matchingAsphaltMaterial": true,
+  "asphaltCoverageSamples": 3705,
+  "existingPathPiecesPreserved": 9,
+  "architectureAndCarComponentsPreserved": 1882,
+  "houseInstancesPreserved": 13925,
+  "vipBayMarkingsPreserved": 3,
+  "trafficRoutesPreserved": true,
+  "browserVerification": "unavailable in managed environment"
+}

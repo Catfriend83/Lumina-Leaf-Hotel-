@@ -1,0 +1,21 @@
+{
+  "version": 34,
+  "oneSpaOnePool": true,
+  "spaEntirelyBehindGarage": true,
+  "spaGarageGapMeters": 1.4368189541661414,
+  "spaPartsRigidlyRelocated": 1157,
+  "preservedOtherParts": 38495,
+  "changedLocalParts": 3820,
+  "distantTerrainVerticesPreserved": 101091,
+  "garageShellParts": 7,
+  "wallRoofGapMeters": 0,
+  "wallFloorGapMeters": 0,
+  "facadeMountedSignal": true,
+  "signalHasNoPole": true,
+  "freeGarageLanes": 2,
+  "spaConnectionBehindGarage": true,
+  "loungers": 12,
+  "embroideredTowels": 12,
+  "poolWallLights": 12,
+  "existingEveningLightsPreserved": true
+}

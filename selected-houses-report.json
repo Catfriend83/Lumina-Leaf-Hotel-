@@ -1,0 +1,77 @@
+{
+  "version": 73,
+  "houses": [
+    {
+      "id": "haus-7",
+      "number": 1,
+      "architecture": "Klassisches Bauernhaus mit Blumengalerie",
+      "balcony": {
+        "width": 6.88,
+        "projection": 1.24,
+        "deck": 3.1,
+        "wrap": false
+      },
+      "upperWoodFraction": 0.66,
+      "gableWoodFraction": 1,
+      "positionUnchanged": true
+    },
+    {
+      "id": "haus-4",
+      "number": 2,
+      "architecture": "Helles elegantes Alpenlandhaus",
+      "balcony": {
+        "width": 5.695,
+        "projection": 1.24,
+        "deck": 3.1,
+        "wrap": false
+      },
+      "upperWoodFraction": 0.55,
+      "gableWoodFraction": 1,
+      "positionUnchanged": true
+    },
+    {
+      "id": "haus-1",
+      "number": 3,
+      "architecture": "Traditionelles oberbayerisches Bauernhaus",
+      "balcony": {
+        "width": 8.459999999999999,
+        "projection": 1.24,
+        "deck": 3.1,
+        "wrap": false
+      },
+      "upperWoodFraction": 0.75,
+      "gableWoodFraction": 1,
+      "positionUnchanged": true
+    },
+    {
+      "id": "haus-5",
+      "number": 4,
+      "architecture": "Helles bayerisches Landhaus",
+      "balcony": {
+        "width": 4.140000000000001,
+        "projection": 1.24,
+        "deck": 3.1,
+        "wrap": false
+      },
+      "upperWoodFraction": 0.45,
+      "gableWoodFraction": 0.62,
+      "positionUnchanged": true
+    },
+    {
+      "id": "haus-10",
+      "number": 5,
+      "architecture": "Holzbetontes Alpenhaus",
+      "balcony": {
+        "width": 7.2,
+        "projection": 1.24,
+        "deck": 3.1,
+        "wrap": false
+      },
+      "upperWoodFraction": 0.78,
+      "gableWoodFraction": 1,
+      "positionUnchanged": true
+    }
+  ],
+  "unrelatedComponentsPreserved": 60681,
+  "allBuildingLocationsAndFootprintsUnchanged": true
+}

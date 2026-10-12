@@ -1,0 +1,21 @@
+{
+  "version": 90,
+  "baseVersion": 89,
+  "sofas": 2,
+  "armchairs": 4,
+  "coffeeTables": 2,
+  "sideTables": 4,
+  "referenceCrystalTableLamps": 4,
+  "crystalChandeliers": 2,
+  "ornateRugs": 2,
+  "freeCentralAisleMeters": 5.475199999999999,
+  "furnitureOverlaps": 0,
+  "exteriorSignPanel": {
+    "width": 17.8,
+    "height": 1.62
+  },
+  "letteringAndFiveStarsPreserved": true,
+  "retainedPhysicalComponents": 127519,
+  "unrelatedSceneChanges": 0,
+  "browserPBRVerified": false
+}

@@ -1,0 +1,21 @@
+{
+  "version": 33,
+  "poolOnIndependentSpa": true,
+  "spaGarageSeparationMeters": 37.724901578890304,
+  "poolRoadClearanceMeters": 5.288734317775852,
+  "preservedParts": 40378,
+  "rigidlyRelocatedParts": 876,
+  "preservedPoolSpecificParts": 526,
+  "changedLocalSiteParts": 2257,
+  "alteredSiteVertices": 67,
+  "unchangedDistantVertices": 105270,
+  "loungers": 12,
+  "embroideredTowels": 12,
+  "foldedTowelLayers": 36,
+  "poolWallLights": 12,
+  "privacySections": 5,
+  "garageLanes": 2,
+  "poolBearingPlateContactsBasin": true,
+  "minimumSpaRoomClearanceMeters": 3.09,
+  "existingLightsPreserved": true
+}

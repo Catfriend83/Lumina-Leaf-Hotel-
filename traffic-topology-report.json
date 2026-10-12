@@ -1,0 +1,24 @@
+{
+  "roadArea": 2943.42558785697,
+  "walkArea": 2935.2910574274338,
+  "curbArea": 288.02429929203385,
+  "roadWalkOverlap": 0.0,
+  "roadCurbOverlap": 0.0,
+  "walkCurbOverlap": 0.0,
+  "roundaboutRemoved": true,
+  "intersectionBranches": 3,
+  "triangles": {
+    "road": 2127,
+    "walk": 5077,
+    "curb": 3480
+  },
+  "loopArea": 1279.5882630116466,
+  "loopWaterOverlap": 0.0,
+  "restWaterOverlap": 0.0,
+  "asphaltWidth": 2.5,
+  "lakeLoopLength": 511.91041036889925,
+  "loopClosed": true,
+  "walkWaterOverlap": 0.0,
+  "squareArea": 816.0,
+  "townhallRoadOverlap": 0.0
+}

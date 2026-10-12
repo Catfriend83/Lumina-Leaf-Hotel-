@@ -1,0 +1,15 @@
+{
+  "version": 59,
+  "target": "haus-8",
+  "stonePlinthMeters": 0.45,
+  "upperAndGableTimber": true,
+  "balconyPreserved": true,
+  "housePositionPreserved": true,
+  "otherArchitectureAndCarComponentsPreserved": 1881,
+  "otherHouseInstancesPreserved": 12609,
+  "asphaltCoverageSamples": 2730,
+  "asphaltHeight": -0.005,
+  "matchingAsphaltMaterial": true,
+  "trafficRoutesPreserved": true,
+  "browserVerification": "unavailable in managed environment"
+}

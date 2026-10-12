@@ -1,0 +1,22 @@
+{
+  "version": 45,
+  "minimumHouseSeparation": 2.889136431046551,
+  "houseAccessLength": 17.529538038303595,
+  "houseAccessClear": true,
+  "roadChangesConfinedToSpur": true,
+  "lakeLoopAndSeatsExact": true,
+  "surfaceChanges": {
+    "road": {
+      "changedArea": 189.5939840194559,
+      "unrelatedChanges": 0.0
+    },
+    "walk": {
+      "changedArea": 192.34772633411538,
+      "unrelatedChanges": 0.0
+    },
+    "curb": {
+      "changedArea": 29.308741355507273,
+      "unrelatedChanges": 0.0
+    }
+  }
+}

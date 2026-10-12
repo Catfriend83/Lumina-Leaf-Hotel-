@@ -1,0 +1,18 @@
+{
+  "version": 53,
+  "totalBuildings": 21,
+  "modifiedBuildings": [
+    "kapelle",
+    "haus-8"
+  ],
+  "unchangedBuildings": 19,
+  "stainedGlassWindows": 8,
+  "clockFaces": 4,
+  "entranceSignRelocated": true,
+  "foundationContactSamples": 500,
+  "changedTerrainVertices": 722,
+  "unchangedTerrainVertices": 70952,
+  "preservedPhysicalComponents": 61758,
+  "shopPlazaRoadsAndChurchPlantersPreserved": true,
+  "buildingsDoNotIntersect": true
+}

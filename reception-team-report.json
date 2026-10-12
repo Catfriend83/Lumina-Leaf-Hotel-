@@ -1,0 +1,29 @@
+{
+  "version": 86,
+  "employees": [
+    {
+      "name": "Empfangsmitarbeiterin links – dunkelblonde Locken",
+      "height": 1.7200000286102295,
+      "depth": 0.2959305867552757,
+      "deskClearance": 0.17700000703334817,
+      "triangles": 262304,
+      "closedVolume": true
+    },
+    {
+      "name": "Empfangsmitarbeiterin rechts – glattes blondes Haar",
+      "height": 1.7200000286102295,
+      "depth": 0.29459767043590546,
+      "deskClearance": 0.17833555340766916,
+      "triangles": 260264,
+      "closedVolume": true
+    }
+  ],
+  "spacingMeters": 2.6000000000000005,
+  "centerX": 8,
+  "preservedLobbyMeshes": 58,
+  "unchangedLobby": true,
+  "individualTextures": true,
+  "lightingUnchanged": true,
+  "browserLightVerification": false,
+  "method": "Photo-textured reconstructed volumes; depth and unseen geometry approximate."
+}

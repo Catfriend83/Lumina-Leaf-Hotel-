@@ -1,0 +1,54 @@
+{
+  "version": 81,
+  "scope": "reference-built lobby and local entrance lighting",
+  "checks": {
+    "sharedMaterialsUnchanged": true,
+    "exteriorGeometryAndMaterialsUnchanged": true,
+    "exteriorStaffUnchanged": true,
+    "entranceGeometryUnchanged": true,
+    "upperHotelUnchanged": true,
+    "facadeFixturesUnchanged": true,
+    "onlyTwoLocalLightsAdjusted": true,
+    "receptionists": 2,
+    "sightlines": [
+      {
+        "from": 6.6,
+        "to": "branding",
+        "first": "Dunkelgr\u00fcner Rezeptionsmarmor",
+        "pass": true
+      },
+      {
+        "from": 6.6,
+        "to": "desk",
+        "first": "Empfang",
+        "pass": true
+      },
+      {
+        "from": 8,
+        "to": "branding",
+        "first": "Dunkelgr\u00fcner Rezeptionsmarmor",
+        "pass": true
+      },
+      {
+        "from": 8,
+        "to": "desk",
+        "first": "Empfang",
+        "pass": true
+      },
+      {
+        "from": 9.4,
+        "to": "branding",
+        "first": "Dunkelgr\u00fcner Rezeptionsmarmor",
+        "pass": true
+      },
+      {
+        "from": 9.4,
+        "to": "desk",
+        "first": "Empfang",
+        "pass": true
+      }
+    ],
+    "lobbyTriangles": 79442
+  },
+  "visualQa": "Browser/GPU preview unavailable; geometry, material scope and entrance sightlines verified in a real scene build."
+}

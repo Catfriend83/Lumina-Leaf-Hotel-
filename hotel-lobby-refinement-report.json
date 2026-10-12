@@ -1,0 +1,13 @@
+{
+  "version": 92,
+  "baseVersion": 91,
+  "removedSeatingGroups": 2,
+  "remainingSeatingGroups": 2,
+  "replacementTableLamps": 13,
+  "lampHeightMeters": 0.315,
+  "rugText": "Lumina Leaf Hotel",
+  "rugStars": 5,
+  "unrelatedChangedObjects": 0,
+  "retainedObjects": 128941,
+  "removedOrReplacedObjects": 1884
+}

@@ -1,0 +1,21 @@
+{
+  "version": 41,
+  "buildings": 13,
+  "individualHouses": 10,
+  "townhalls": 1,
+  "foundationSamples": 1053,
+  "maxFoundationError": 0.0015506236017994723,
+  "benchFeet": 22,
+  "maxBenchGap": 0,
+  "preserved": 41131,
+  "preservedTerrainVertices": 134262,
+  "sharedCurbJoins": 2435,
+  "verifiedMarkings": 55,
+  "crossingPreserved": true,
+  "innFrontClear": true,
+  "squareArea": 816,
+  "lakeLoopLength": 506.7870895447811,
+  "maxLoopGrade": 0.010317771606329186,
+  "loopClosed": true,
+  "walkWaterOverlap": 0
+}

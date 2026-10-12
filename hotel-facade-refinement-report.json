@@ -1,0 +1,17 @@
+{
+  "version": 89,
+  "baseVersion": 88,
+  "removedLawnLamps": 6,
+  "removedLampPhysicalComponents": 60,
+  "removedLuggageTrolleys": 1,
+  "removedTrolleyPhysicalComponents": 12,
+  "sideWashIntensityReduction": 0.5,
+  "sideLightsReduced": 28,
+  "frontAndRearLightsUnchanged": 13,
+  "facadeFixtures": 145,
+  "guestRooms": 40,
+  "stars": 5,
+  "retainedPhysicalComponents": 127430,
+  "unexpectedChanges": 0,
+  "browserPBRVerified": false
+}

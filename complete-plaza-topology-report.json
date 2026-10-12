@@ -1,0 +1,21 @@
+{
+  "version": 72,
+  "repairedArea": 1929.6841410296101,
+  "stoneArea": 1530.5135737145674,
+  "walkArea": 399.1705673150624,
+  "sourceSurfaces": 13,
+  "vertices": 14921,
+  "triangles": 27000,
+  "removedInternalEdgeTriangles": 834,
+  "originalPavingMicroHoles": 85,
+  "remainingIntentionalHoles": 7,
+  "sharedNormals": true,
+  "uncoveredArea": 0.0034621713170310195,
+  "excessArea": 0.0025155779554456325,
+  "overlapArea": 0.0,
+  "internalOpenEdges": 0,
+  "materialBoundaryAreaError": 0.005739233661199944,
+  "sharedSeamVertices": 1005,
+  "finitePositionsAndUnitNormals": true,
+  "exportedUnderlyingOverlap": 0.0
+}

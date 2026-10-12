@@ -1,0 +1,23 @@
+{
+  "version": 44,
+  "removedWeeds": 12,
+  "preservedObjects": 43715,
+  "unchangedWalkTriangles": 4952,
+  "unchangedTerrainTriangles": 131304,
+  "sidewalkSamples": 992,
+  "maxSidewalkError": 9.897217445598017e-8,
+  "coverageSamples": 1982,
+  "sharedFillEdges": 1303,
+  "maxFillEdgeGap": 0.00004100799560546875,
+  "contactSamples": 20,
+  "planters": 2,
+  "sidewalkMaterialUnchanged": true,
+  "plazaMaterialDistinct": true,
+  "plazaArea": 973.3776270463998,
+  "existingPavingRefinished": 662.116977956068,
+  "grassFilled": 311.2606490903318,
+  "sidewalkOverlap": 0,
+  "roadOverlap": 0,
+  "buildingOverlap": 0,
+  "bedsOverlap": 0
+}

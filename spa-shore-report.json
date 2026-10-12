@@ -1,0 +1,16 @@
+{
+  "version": 36,
+  "onlyLocalShorelineChanged": true,
+  "oldLakeAreaSquareMeters": 17570.01700530047,
+  "newLakeAreaSquareMeters": 15864.183008598924,
+  "lakeAreaReductionPercent": 9.708778290806064,
+  "changedShoreVertices": 47,
+  "unchangedShoreVertices": 145,
+  "minimumSpaAndPathClearanceMeters": 18.246705924048932,
+  "allEightBoatsRemainOnWater": true,
+  "minimumAnimatedBoatEnvelopeClearanceMeters": 3.988943826312504,
+  "preservedSceneParts": 44365,
+  "relocatedLocalShoreRocks": 16,
+  "terrainMountainsBuildingsGymPoolGalleryCarRoadPreserved": true,
+  "waterMaterialAndExistingLightingPreserved": true
+}

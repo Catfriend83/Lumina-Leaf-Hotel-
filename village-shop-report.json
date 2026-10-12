@@ -1,0 +1,19 @@
+{
+  "version": 48,
+  "shops": 1,
+  "shopFrontFacesPlaza": true,
+  "relocatedHouse": "haus-6",
+  "housePosition": [
+    -123,
+    -190
+  ],
+  "preservedHouseArchitectureParts": 411,
+  "benches": 4,
+  "bankFrontClearance": 2.150000000000003,
+  "footProbes": 8,
+  "foundationProbes": 88,
+  "protectedRoadAndLakeSurfacesUnchanged": true,
+  "protectedObjectsUnchanged": true,
+  "remoteTerrainVertices": 37419,
+  "preservedPhysicalComponents": 44212
+}

@@ -1,0 +1,356 @@
+{
+  "version": 52,
+  "totalBuildings": 21,
+  "adaptedBuildings": 20,
+  "residentialBuildings": 17,
+  "previouslyGenericOuterHouses": 7,
+  "publicBuildings": 3,
+  "individualArchitectures": 20,
+  "legacyCottagesRemaining": 0,
+  "foundationContactSamples": 500,
+  "shopUnchanged": true,
+  "originalPlotsAndRoadsPreserved": true,
+  "plazaAndChurchTroughsPreserved": true,
+  "townhallSignUnobstructed": true,
+  "innBalconyAccessible": true,
+  "buildingsDoNotIntersect": true,
+  "preservedPhysicalComponents": 49655,
+  "inventory": [
+    {
+      "id": "randhaus-1",
+      "kind": "house",
+      "architecture": "Schlichtes Landhaus am Waldrand",
+      "position": [
+        50,
+        1.008553188098995,
+        -50
+      ],
+      "footprint": {
+        "width": 6.29,
+        "depth": 6.12
+      },
+      "changed": true,
+      "styleVersion": 52
+    },
+    {
+      "id": "randhaus-2",
+      "kind": "house",
+      "architecture": "Gartenhaus am östlichen Seeufer",
+      "position": [
+        60.18324982515728,
+        1.1301091737673534,
+        -74
+      ],
+      "footprint": {
+        "width": 6.29,
+        "depth": 6.12
+      },
+      "changed": true,
+      "styleVersion": 52
+    },
+    {
+      "id": "randhaus-3",
+      "kind": "house",
+      "architecture": "Balkonhaus im Voralpenstil",
+      "position": [
+        62.66001920141654,
+        1.1418263899677132,
+        -98
+      ],
+      "footprint": {
+        "width": 6.29,
+        "depth": 6.12
+      },
+      "changed": true,
+      "styleVersion": 52
+    },
+    {
+      "id": "randhaus-4",
+      "kind": "house",
+      "architecture": "Kleines Fachwerkhaus am Dorfrand",
+      "position": [
+        55.555938443039786,
+        4.045042737911752,
+        -122
+      ],
+      "footprint": {
+        "width": 6.29,
+        "depth": 6.12
+      },
+      "changed": true,
+      "styleVersion": 52
+    },
+    {
+      "id": "randhaus-5",
+      "kind": "house",
+      "architecture": "Holzbetontes Bauernhaus am Hang",
+      "position": [
+        44.24723423716692,
+        6.117790457341949,
+        -146
+      ],
+      "footprint": {
+        "width": 6.29,
+        "depth": 6.12
+      },
+      "changed": true,
+      "styleVersion": 52
+    },
+    {
+      "id": "randhaus-6",
+      "kind": "house",
+      "architecture": "Landhaus mit Fachwerkgiebel",
+      "position": [
+        37.29210847035374,
+        5.404869838366354,
+        -170
+      ],
+      "footprint": {
+        "width": 6.29,
+        "depth": 6.12
+      },
+      "changed": true,
+      "styleVersion": 52
+    },
+    {
+      "id": "randhaus-7",
+      "kind": "house",
+      "architecture": "Alpenhaus mit Seitengalerie",
+      "position": [
+        39.954061661772165,
+        5.595469037656743,
+        -194
+      ],
+      "footprint": {
+        "width": 6.29,
+        "depth": 6.12
+      },
+      "changed": true,
+      "styleVersion": 52
+    },
+    {
+      "id": "kapelle",
+      "kind": "chapel",
+      "architecture": "Oberbayerische Dorfkapelle mit Rundbogenfenstern",
+      "position": [
+        -176,
+        4.33,
+        -150
+      ],
+      "footprint": {
+        "width": 8,
+        "depth": 12
+      },
+      "changed": true,
+      "styleVersion": 52
+    },
+    {
+      "id": "gasthaus",
+      "kind": "inn",
+      "architecture": "Bayerisches Landgasthaus mit geschnitzter Holzgalerie",
+      "position": [
+        -145,
+        4.5825,
+        -167.5
+      ],
+      "footprint": {
+        "width": 15,
+        "depth": 11
+      },
+      "changed": true,
+      "styleVersion": 52
+    },
+    {
+      "id": "rathaus",
+      "kind": "townhall",
+      "architecture": "Oberbayerisches Rathaus mit Holzgiebel",
+      "position": [
+        -164.5,
+        4.31,
+        -165
+      ],
+      "footprint": {
+        "width": 11.5,
+        "depth": 8
+      },
+      "changed": true,
+      "styleVersion": 52
+    },
+    {
+      "id": "haus-1",
+      "kind": "house",
+      "architecture": "Bayerisches Gartenhaus",
+      "position": [
+        -202,
+        4.06054659502218,
+        -157
+      ],
+      "footprint": {
+        "width": 9,
+        "depth": 9
+      },
+      "changed": true,
+      "styleVersion": 52
+    },
+    {
+      "id": "haus-2",
+      "kind": "house",
+      "architecture": "Alpenhaus mit umlaufender Galerie",
+      "position": [
+        -178,
+        4.14827741857709,
+        -184
+      ],
+      "footprint": {
+        "width": 9,
+        "depth": 11
+      },
+      "changed": true,
+      "styleVersion": 52
+    },
+    {
+      "id": "haus-3",
+      "kind": "pension",
+      "architecture": "Breites oberbayerisches Bauernhaus",
+      "position": [
+        -160,
+        4.292585019148179,
+        -190
+      ],
+      "footprint": {
+        "width": 11,
+        "depth": 10
+      },
+      "changed": true,
+      "styleVersion": 52
+    },
+    {
+      "id": "haus-4",
+      "kind": "house",
+      "architecture": "Kompaktes Dorfhaus mit Fachwerk",
+      "position": [
+        -138,
+        5.078335737803808,
+        -195
+      ],
+      "footprint": {
+        "width": 8.5,
+        "depth": 9
+      },
+      "changed": true,
+      "styleVersion": 52
+    },
+    {
+      "id": "haus-5",
+      "kind": "house",
+      "architecture": "Landhaus mit seitlichem Holzbalkon",
+      "position": [
+        -211,
+        3.9,
+        -170
+      ],
+      "footprint": {
+        "width": 9,
+        "depth": 10
+      },
+      "changed": true,
+      "styleVersion": 52
+    },
+    {
+      "id": "haus-6",
+      "kind": "pension",
+      "architecture": "Alpenpension mit zwei Holzgalerien",
+      "position": [
+        -123,
+        4.504243709416878,
+        -190
+      ],
+      "footprint": {
+        "width": 10,
+        "depth": 9
+      },
+      "changed": true,
+      "styleVersion": 52
+    },
+    {
+      "id": "haus-7",
+      "kind": "house",
+      "architecture": "Kleines bayerisches Wohnhaus",
+      "position": [
+        -183,
+        4.36,
+        -124
+      ],
+      "footprint": {
+        "width": 8,
+        "depth": 9
+      },
+      "changed": true,
+      "styleVersion": 52
+    },
+    {
+      "id": "haus-8",
+      "kind": "house",
+      "architecture": "Elegantes Landhaus mit Fachwerkgiebel",
+      "position": [
+        -196,
+        4.654143754571619,
+        -120
+      ],
+      "footprint": {
+        "width": 8.5,
+        "depth": 10
+      },
+      "changed": true,
+      "styleVersion": 52
+    },
+    {
+      "id": "haus-9",
+      "kind": "house",
+      "architecture": "Rustikales Holzhaus auf Putzsockel",
+      "position": [
+        -211,
+        4.480418858353138,
+        -138
+      ],
+      "footprint": {
+        "width": 8,
+        "depth": 9
+      },
+      "changed": true,
+      "styleVersion": 52
+    },
+    {
+      "id": "haus-10",
+      "kind": "house",
+      "architecture": "Familienhaus mit kleiner Blumengalerie",
+      "position": [
+        -203,
+        3.9565261877398097,
+        -180
+      ],
+      "footprint": {
+        "width": 8,
+        "depth": 9
+      },
+      "changed": true,
+      "styleVersion": 52
+    },
+    {
+      "id": "dorfladen",
+      "kind": "shop",
+      "architecture": "Bayerisches Dorfhaus mit Nahversorger im Erdgeschoss",
+      "position": [
+        -131,
+        4.733629948801895,
+        -154
+      ],
+      "footprint": {
+        "width": 10,
+        "depth": 9
+      },
+      "changed": false,
+      "styleVersion": 51
+    }
+  ]
+}

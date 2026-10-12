@@ -1,0 +1,19 @@
+{
+  "version": 54,
+  "totalBuildings": 21,
+  "modifiedBuildings": [
+    "kapelle"
+  ],
+  "unchangedBuildings": 20,
+  "stainedGlassWindows": 9,
+  "clockFaces": 4,
+  "recessedChoir": true,
+  "churchParcelUnchanged": true,
+  "churchGutters": 4,
+  "churchDownpipes": 4,
+  "portalLanterns": 2,
+  "foundationContactSamples": 500,
+  "preservedPhysicalComponents": 64544,
+  "shopPlazaRoadsTerrainAndChurchPlantersPreserved": true,
+  "buildingsDoNotIntersect": true
+}

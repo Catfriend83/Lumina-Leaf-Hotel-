@@ -1,0 +1,29 @@
+import {T,Kit} from './core.js?v=75';
+import {GARAGE} from './underground-garage.js?v=91';
+export const GARAGE_CUT={minX:GARAGE.x-GARAGE.width/2,maxX:GARAGE.x+GARAGE.width/2,minZ:GARAGE.z-GARAGE.end-.35,maxZ:GARAGE.z};
+const overlaps=b=>b.min.x<GARAGE_CUT.maxX&&b.max.x>GARAGE_CUT.minX&&b.min.z<GARAGE_CUT.maxZ&&b.max.z>GARAGE_CUT.minZ;
+const garageMember=o=>{for(let p=o;p;p=p.parent)if(p.userData.garageStructure)return true;return false;};
+// Exact attribute deduplication preserves every source position, normal and UV.
+export function subtractGarageFootprint(geometry,cutBounds=GARAGE_CUT){const GARAGE_CUT=cutBounds,names=Object.keys(geometry.attributes),out=Object.fromEntries(names.map(n=>[n,[]])),indices=[],vertices=new Map(),index=geometry.index,position=geometry.attributes.position,count=index?.count??position.count;
+ const vertex=i=>Object.fromEntries(names.map(n=>{const a=geometry.attributes[n];return[n,Array.from({length:a.itemSize},(_,j)=>a.array[i*a.itemSize+j])];}));
+ const mix=(a,b,t)=>Object.fromEntries(names.map(n=>[n,a[n].map((v,j)=>v+(b[n][j]-v)*t)]));
+ const clip=(poly,axis,edge,sign)=>{const result=[];for(let j=0;j<poly.length;j++){const a=poly[j],b=poly[(j+1)%poly.length],da=sign*(a.position[axis]-edge),db=sign*(b.position[axis]-edge),ia=da>=-1e-9,ib=db>=-1e-9;if(ia)result.push(a);if(ia!==ib)result.push(mix(a,b,da/(da-db)));}return result;};
+ const emit=poly=>{for(let j=1;j<poly.length-1;j++){const tri=[poly[0],poly[j],poly[j+1]].map(v=>Object.fromEntries(names.map(n=>[n,v[n].map(Math.fround)]))),a=new T.Vector3(...tri[0].position),b=new T.Vector3(...tri[1].position),c=new T.Vector3(...tri[2].position);if(b.sub(a).cross(c.sub(a)).lengthSq()<1e-20)continue;for(const v of tri){const key=names.map(n=>v[n].join(',')).join('|');let id=vertices.get(key);if(id===undefined){id=vertices.size;vertices.set(key,id);for(const n of names)out[n].push(...v[n]);}indices.push(id);}}};
+ for(let i=0;i<count;i+=3){const ids=[0,1,2].map(j=>index?index.getX(i+j):i+j),poly=ids.map(vertex),xs=poly.map(v=>v.position[0]),zs=poly.map(v=>v.position[2]);if(Math.max(...xs)<=GARAGE_CUT.minX||Math.min(...xs)>=GARAGE_CUT.maxX||Math.max(...zs)<=GARAGE_CUT.minZ||Math.min(...zs)>=GARAGE_CUT.maxZ){emit(poly);continue;}let remain=poly;for(const [axis,edge,sign]of [[0,GARAGE_CUT.minX,1],[0,GARAGE_CUT.maxX,-1],[2,GARAGE_CUT.minZ,1],[2,GARAGE_CUT.maxZ,-1]]){if(!remain.length)break;emit(clip(remain,axis,edge,-sign));remain=clip(remain,axis,edge,sign);}}
+ const g=new T.BufferGeometry();for(const n of names){const a=geometry.attributes[n];g.setAttribute(n,new T.Float32BufferAttribute(out[n],a.itemSize,a.normalized));}g.setIndex(indices);g.computeBoundingBox();g.computeBoundingSphere();return g;
+}
+export function clearGarageSite(scene,m,legacy=false){const cutBounds=legacy?{...GARAGE_CUT,minX:GARAGE_CUT.minX+3,maxX:GARAGE_CUT.maxX+3}:GARAGE_CUT;const overlaps=b=>b.min.x<cutBounds.maxX&&b.max.x>cutBounds.minX&&b.min.z<cutBounds.maxZ&&b.max.z>cutBounds.minZ;scene.updateMatrixWorld(true);const surface=new Set([m.meadow,m.cobbles,m.asphalt]),plants=new Set(['spruce','forestPine','trunk','pine','pine2','leaf','leaf2','grassBlade','shrub','flowerRed','flowerWhite','flowerGold','warm','soil'].map(n=>m[n])),add=[],remove=[];let clipped=0,cleared=0;
+ scene.traverse(o=>{if(!o.isMesh||garageMember(o)||(legacy&&o.userData.expandedEntranceApron))return;o.geometry.computeBoundingBox();if(o.isInstancedMesh&&(surface.has(o.material)||plants.has(o.material))){const kept=[],matrix=new T.Matrix4();for(let i=0;i<o.count;i++){o.getMatrixAt(i,matrix);const world=matrix.clone().premultiply(o.matrixWorld),box=o.geometry.boundingBox.clone().applyMatrix4(world);if(!overlaps(box)||box.min.y>(plants.has(o.material)?4.5:1.2)||box.max.y<-.4){kept.push(matrix.clone());continue;}if(surface.has(o.material)){const cut=subtractGarageFootprint(o.geometry.clone().applyMatrix4(world),cutBounds);if(cut.attributes.position.count){const mesh=new T.Mesh(cut,o.material);mesh.name='Sauber ausgeschnittener Vorplatz an der Tiefgarage';mesh.receiveShadow=true;mesh.castShadow=o.castShadow;mesh.userData={garageGroundCut:true,sourceName:o.name};add.push(mesh);}clipped++;}else cleared++;}if(kept.length!==o.count){o.count=kept.length;kept.forEach((a,i)=>o.setMatrixAt(i,a));o.instanceMatrix.needsUpdate=true;o.computeBoundingBox();o.computeBoundingSphere();}}
+ else if(!o.isInstancedMesh&&surface.has(o.material)&&overlaps(o.geometry.boundingBox.clone().applyMatrix4(o.matrixWorld))){const cut=subtractGarageFootprint(o.geometry.clone().applyMatrix4(o.matrixWorld),cutBounds);o.geometry=cut.applyMatrix4(o.matrixWorld.clone().invert());o.userData.garageGroundCut=true;clipped++;if(!cut.attributes.position.count)remove.push(o);}});for(const o of remove)o.removeFromParent();for(const o of add)scene.add(o);
+ const marker=new T.Object3D();marker.name='Geschlossene Geländeaussparung für die neue Tiefgarage';marker.userData={garageExcavation:true,bounds:GARAGE_CUT,clippedSurfaces:clipped,removedObstructions:cleared,revision:56};scene.add(marker);return {clipped,cleared};
+}
+
+export function finishLobbyGarage(scene,m,controller){
+ const g=new T.Group();g.name='Geschlossener Vorplatz neben der versetzten Tiefgarage';g.userData={garageRelocationApron:true,shiftMeters:3};scene.add(g);const k=new Kit(g),left=GARAGE_CUT.maxX,right=left+3;
+ // Close the strip released by the old ramp, then cut only the new ramp footprint.
+ k.box(m.cobbles,(left+right)/2,-.065,(GARAGE_CUT.minZ+26.3)/2,3,.09,26.3-GARAGE_CUT.minZ);
+ k.box(m.cobbles,(left+right)/2,.065,27.2,3,.08,1.8);
+ k.finish();
+ clearGarageSite(scene,m);
+ controller.records.forEach(rows=>{for(let i=rows.length-1;i>=0;i--){const r=rows[i];if(r.x>GARAGE_CUT.minX&&r.x<right&&r.z>GARAGE_CUT.minZ&&r.z<GARAGE_CUT.maxZ)rows.splice(i,1);}});controller.prepareExport();
+}

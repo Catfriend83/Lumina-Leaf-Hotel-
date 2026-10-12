@@ -1,0 +1,9 @@
+{
+  "version": 68,
+  "plazaCoverageDifferenceSquareMeters": 0.00013375741506385582,
+  "wholeBuildingAndEavesOnPlaza": true,
+  "trafficOverlapSquareMeters": 0,
+  "minimumTrafficClearanceMeters": 0.9370000000000117,
+  "bodyOutsidePavingSquareMeters": 5.122377305076112e-05,
+  "localTerrainPatchSquareMeters": 177.3749103063988
+}

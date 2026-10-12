@@ -1,0 +1,68 @@
+{
+  "version": 83,
+  "center": [
+    -153.44608489561557,
+    -156.50533971822756
+  ],
+  "centerMethod": "Area centroid of the actual inner stone paving with the four former tree openings restored; building footprints excluded",
+  "area": 1539.5771733650472,
+  "filledOpenings": [
+    {
+      "area": 2.26615615578703,
+      "vertices": 288
+    },
+    {
+      "area": 2.266151824487679,
+      "vertices": 273
+    },
+    {
+      "area": 2.2661536682007863,
+      "vertices": 261
+    },
+    {
+      "area": 2.2659784169773047,
+      "vertices": 257
+    }
+  ],
+  "removedObjects": [
+    "Präziser Rathaus-Platzabschluss soil – Durchgehender Natursteinbelag des inneren Dorfplatzes",
+    "Symmetrischer Platzbaum 1",
+    "Geplante Baumscheibe 0",
+    "Eingefasstes symmetrisches Baumbeet 1",
+    "Symmetrischer Platzbaum 2",
+    "Geplante Baumscheibe 1",
+    "Eingefasstes symmetrisches Baumbeet 2",
+    "Symmetrischer Platzbaum 3",
+    "Geplante Baumscheibe 2",
+    "Symmetrischer Platzbaum 4",
+    "Geplante Baumscheibe 3",
+    "Sitzbank Seealm",
+    "Sitzbank Seealm",
+    "Sitzbank Seealm",
+    "Sitzbank Seealm",
+    "Geländeangepasstes Fundament des zentralen Dorfbrunnens",
+    "Zentraler Natursteinbrunnen Seealm",
+    "Geometrische Ordnung des vollständigen inneren Dorfplatzes",
+    "Eingefasstes symmetrisches Baumbeet 0",
+    "Eingefasstes symmetrisches Baumbeet 3",
+    "Neuer Waldbaum 0",
+    "Neuer Waldbaum 1",
+    "Neuer Waldbaum 2",
+    "Neuer Waldbaum 3"
+  ],
+  "benches": 4,
+  "frontClearanceMeters": 1,
+  "fountainOuterRadius": 2.2,
+  "benchAxisRadius": 3.48,
+  "levelFurnitureHeight": 4.4707497926353295,
+  "preservedUnrelatedMeshes": 1998,
+  "measuredFrontClearances": [
+    0.9999999999999885,
+    0.9999999999999885,
+    0.9999999999999885,
+    0.9999999999999885
+  ],
+  "oldCircularAssemblies": 0,
+  "groundContactsVerified": true,
+  "pavingUVPhaseVerified": true
+}

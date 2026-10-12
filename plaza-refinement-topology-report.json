@@ -1,0 +1,12 @@
+{
+  "version": 69,
+  "repairedPathArea": 2.3020606655487557,
+  "stoneOverhangRemaining": 1.8330495379564184e-05,
+  "stonePathOverlap": 4.254042086872677e-06,
+  "coverageDifference": 2.0863693638607714e-06,
+  "projectedTriangleAreaDifference": 9.828959960600514e-06,
+  "oldTreeBedsClosed": true,
+  "newTreeBedsClosed": true,
+  "heightSamples": 597,
+  "maxHeightDifference": 4.653749665628482e-06
+}

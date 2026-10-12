@@ -1,0 +1,18 @@
+{
+  "version": 62,
+  "target": "rathaus",
+  "plasterGroundFloor": true,
+  "timberStartMeters": 3.4,
+  "stonePlinthMeters": 0.45,
+  "timberUpperAndGable": true,
+  "woodMapColorRoughnessMatchGasthaus": true,
+  "foldingShutters": true,
+  "sign": "Rathaus",
+  "signStyle": "Gasthaus Seealm",
+  "townhallPoseAndFootprintPreserved": true,
+  "windowArrangementChecked": 29,
+  "protectedArchitectureComponents": 1880,
+  "otherBuildingInstancesPreserved": 17066,
+  "roadsAndGroundPreserved": true,
+  "browserVerification": "unavailable in managed environment"
+}

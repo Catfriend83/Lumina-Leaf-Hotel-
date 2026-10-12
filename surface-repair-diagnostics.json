@@ -1,0 +1,21 @@
+{
+  "version": 58,
+  "method": "CPU triangle rasterization of actual exported meshes with orange background; no browser PBR verification",
+  "views": [
+    {
+      "view": "entry",
+      "backgroundPixelsAtGroundBefore": 867,
+      "backgroundPixelsAtGroundAfter": 0
+    },
+    {
+      "view": "hotel",
+      "backgroundPixelsAtGroundBefore": 4926,
+      "backgroundPixelsAtGroundAfter": 0
+    },
+    {
+      "view": "join",
+      "backgroundPixelsAtGroundBefore": 3131,
+      "backgroundPixelsAtGroundAfter": 0
+    }
+  ]
+}

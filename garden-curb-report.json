@@ -1,0 +1,23 @@
+{
+  "version": 63,
+  "curbWidthMeters": 0.3,
+  "frontCurbTopMeters": 0.12,
+  "oneClosedConnectedCurb": true,
+  "manifoldEdges": 3618,
+  "bedContourFollowed": true,
+  "mergedWithVipCurb": true,
+  "removedLampPositions": [
+    [
+      -31.4,
+      30
+    ],
+    [
+      28.6,
+      30
+    ]
+  ],
+  "removedLampComponents": 20,
+  "otherComponentsPreserved": 66107,
+  "flowerbedPathAsphaltTerrainLimousineAndArchitectureUnchanged": true,
+  "browserVerification": "unavailable in managed environment"
+}

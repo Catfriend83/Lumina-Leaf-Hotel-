@@ -1,0 +1,45 @@
+{
+  "version": 75,
+  "checks": [
+    {
+      "view": "meadow",
+      "visiblePlants": 33023,
+      "milliseconds": 439
+    },
+    {
+      "view": "rathaus",
+      "visiblePlants": 31798,
+      "milliseconds": 34
+    },
+    {
+      "view": "gasthaus",
+      "visiblePlants": 33019,
+      "milliseconds": 37
+    },
+    {
+      "view": "dorfeinfahrt",
+      "visiblePlants": 30312,
+      "milliseconds": 32
+    },
+    {
+      "view": "car",
+      "visiblePlants": 37312,
+      "milliseconds": 452
+    },
+    {
+      "view": "valley--500,-400",
+      "visiblePlants": 26588,
+      "nearPlants": 6997
+    },
+    {
+      "view": "valley-450,-350",
+      "visiblePlants": 26579,
+      "nearPlants": 6996
+    },
+    {
+      "view": "valley--350,180",
+      "visiblePlants": 26507,
+      "nearPlants": 6911
+    }
+  ]
+}

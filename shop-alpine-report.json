@@ -1,0 +1,15 @@
+{
+  "version": 51,
+  "shops": 1,
+  "storeys": 2,
+  "upperTimberStorey": true,
+  "traditionalBalconyWidth": 6.6,
+  "balconyDoorAndFloorFlush": true,
+  "displayWindows": 2,
+  "shopEntranceAndInteriorRetained": true,
+  "foundationUnchanged": true,
+  "frontOrientationUnchanged": true,
+  "existingTreesMirroredAndUnchanged": true,
+  "otherBuildingsPlazaRoadsAndLandscapeUnchanged": true,
+  "preservedPhysicalComponents": 53189
+}

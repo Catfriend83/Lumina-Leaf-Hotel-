@@ -1,0 +1,12 @@
+{
+  "version": 77,
+  "baseVersion": 75,
+  "scope": "Lake-only rendering optimization; runtime callbacks and geometry verified, no Android FPS/GPU measurement",
+  "lakeReflectionSceneRendersPerFrame": 0,
+  "lakeReflectionRenderTargets": 0,
+  "mobileNormalSamples": 1,
+  "desktopNormalSamples": 2,
+  "reflectionStrength": 0.18,
+  "geometryAndTransformUnchanged": true,
+  "poolReflectionPreserved": true
+}

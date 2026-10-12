@@ -1,0 +1,10 @@
+{
+  "version": 46,
+  "centroidError": 0.0,
+  "protectedRoadAndLakeSurfacesIdentical": true,
+  "roadsideSidewalkChangedArea": 0.0,
+  "carpetOneContinuousPolygon": true,
+  "carpetArea": 49.21245279530673,
+  "fitnessEquipmentOverlap": 0,
+  "minimumEquipmentClearance": 0.3900000020861578
+}

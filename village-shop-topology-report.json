@@ -1,0 +1,11 @@
+{
+  "version": 48,
+  "houseNeighborGap": 4.22249047208906,
+  "houseRoadGap": 4.543688817221275,
+  "houseAccessLength": 5.943803804331839,
+  "shopAccessLength": 4.848729115360868,
+  "shopRoadOverlap": 0,
+  "entrancesClearOfBuildingsAndTrees": true,
+  "protectedTrafficShapesIdentical": true,
+  "unrelatedSidewalkChangedArea": 0
+}

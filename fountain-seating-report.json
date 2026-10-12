@@ -1,0 +1,16 @@
+{
+  "version": 47,
+  "shift": [
+    -1.2,
+    1.6
+  ],
+  "fountainUnchanged": true,
+  "benches": 4,
+  "identicalBenchDesign": true,
+  "equalFrontClearance": 2.9999999999999973,
+  "allFaceFountain": true,
+  "contactProbes": 72,
+  "maxGap": 3.552713678800501e-15,
+  "preservedPhysicalComponents": 44744,
+  "treesUnchanged": true
+}

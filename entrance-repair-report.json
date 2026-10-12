@@ -1,0 +1,16 @@
+{
+  "version": 55,
+  "choirWindowBarsRemoved": 2,
+  "churchWindowsPreserved": 9,
+  "signCount": 1,
+  "signReflectedAcrossRoad": true,
+  "roadStationAndOffsetUnchanged": true,
+  "modifiedTerrainVertices": 418,
+  "unchangedTerrainVertices": 71256,
+  "meadowMaterialUVAndTopologyPreserved": true,
+  "foundationContactSamples": 500,
+  "preservedPhysicalComponents": 64925,
+  "all21BuildingsPreserved": true,
+  "churchOtherwisePreserved": true,
+  "roadsPlazaLakeHotelPreserved": true
+}

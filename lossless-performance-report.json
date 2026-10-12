@@ -1,0 +1,205 @@
+{
+  "version": 78,
+  "baseVersion": 77,
+  "scope": "Original geometry/placement and CPU verification; no browser GPU or Android FPS measurement",
+  "sceneBuildCpuMilliseconds": 103887.05,
+  "treeMarkers": 3150,
+  "results": [
+    {
+      "mode": "spatial-instancing",
+      "setupCpuMilliseconds": 76.88,
+      "report": {
+        "fullGeometry": true,
+        "multiDraw": false,
+        "batchedDrawGroups": 0,
+        "batchedInstances": 0,
+        "spatialChunks": 1214,
+        "spatialInstances": 4883,
+        "sharedMaterials": 50,
+        "staticTransforms": 5770
+      },
+      "views": [
+        {
+          "view": "cinematic",
+          "before": {
+            "triangles": 32417552,
+            "drawCalls": 28
+          },
+          "after": {
+            "triangles": 19309200,
+            "drawCalls": 307
+          }
+        },
+        {
+          "view": "aerial",
+          "before": {
+            "triangles": 32417552,
+            "drawCalls": 28
+          },
+          "after": {
+            "triangles": 8456896,
+            "drawCalls": 114
+          }
+        },
+        {
+          "view": "village",
+          "before": {
+            "triangles": 32417552,
+            "drawCalls": 28
+          },
+          "after": {
+            "triangles": 2508528,
+            "drawCalls": 153
+          }
+        },
+        {
+          "view": "rathaus",
+          "before": {
+            "triangles": 32417552,
+            "drawCalls": 28
+          },
+          "after": {
+            "triangles": 3427504,
+            "drawCalls": 126
+          }
+        },
+        {
+          "view": "lake",
+          "before": {
+            "triangles": 32417552,
+            "drawCalls": 28
+          },
+          "after": {
+            "triangles": 2622368,
+            "drawCalls": 162
+          }
+        },
+        {
+          "view": "back",
+          "before": {
+            "triangles": 32417552,
+            "drawCalls": 28
+          },
+          "after": {
+            "triangles": 3002640,
+            "drawCalls": 109
+          }
+        }
+      ],
+      "originalMatricesAndVerticesPreserved": true
+    },
+    {
+      "mode": "native-multi-draw",
+      "setupCpuMilliseconds": 282.26,
+      "report": {
+        "fullGeometry": true,
+        "multiDraw": true,
+        "batchedDrawGroups": 50,
+        "batchedInstances": 26221,
+        "spatialChunks": 0,
+        "spatialInstances": 0,
+        "sharedMaterials": 11,
+        "staticTransforms": 50
+      },
+      "views": [
+        {
+          "view": "cinematic",
+          "before": {
+            "triangles": 35483348,
+            "drawCalls": 185
+          },
+          "after": {
+            "triangles": 14907208,
+            "drawCalls": 29
+          }
+        },
+        {
+          "view": "aerial",
+          "before": {
+            "triangles": 35483348,
+            "drawCalls": 185
+          },
+          "after": {
+            "triangles": 1305712,
+            "drawCalls": 29
+          }
+        },
+        {
+          "view": "village",
+          "before": {
+            "triangles": 35504836,
+            "drawCalls": 154
+          },
+          "after": {
+            "triangles": 1916308,
+            "drawCalls": 31
+          }
+        },
+        {
+          "view": "rathaus",
+          "before": {
+            "triangles": 35361500,
+            "drawCalls": 111
+          },
+          "after": {
+            "triangles": 1143740,
+            "drawCalls": 18
+          }
+        },
+        {
+          "view": "lake",
+          "before": {
+            "triangles": 35745096,
+            "drawCalls": 277
+          },
+          "after": {
+            "triangles": 2078304,
+            "drawCalls": 49
+          }
+        },
+        {
+          "view": "back",
+          "before": {
+            "triangles": 35483336,
+            "drawCalls": 184
+          },
+          "after": {
+            "triangles": 1126752,
+            "drawCalls": 29
+          }
+        }
+      ],
+      "originalMatricesAndVerticesPreserved": true
+    }
+  ],
+  "plantViews": [
+    {
+      "view": "cinematic",
+      "cpuUpdateMilliseconds": 82.68,
+      "plants": 24630
+    },
+    {
+      "view": "village",
+      "cpuUpdateMilliseconds": 49.08,
+      "plants": 25732
+    },
+    {
+      "view": "rathaus",
+      "cpuUpdateMilliseconds": 38.89,
+      "plants": 30019
+    },
+    {
+      "view": "lake",
+      "cpuUpdateMilliseconds": 38.13,
+      "plants": 33045
+    },
+    {
+      "view": "back",
+      "cpuUpdateMilliseconds": 30.03,
+      "plants": 26686
+    }
+  ],
+  "unchangedPlantSelection": true,
+  "renderResolutionUnchanged": true,
+  "waterShaderUnchanged": true
+}

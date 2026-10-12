@@ -1,0 +1,19 @@
+{
+  "version": 71,
+  "repairedArea": 541.833630914279,
+  "stoneArea": 472.3961389026689,
+  "walkArea": 69.43749201161,
+  "sourceSurfaces": 6,
+  "vertices": 5042,
+  "triangles": 8412,
+  "retainedRimVertices": 1350,
+  "removedInternalEdgeTriangles": 140,
+  "existingBuildingsAndTreeHolesPreserved": true,
+  "unrelatedComponentsPreserved": 146214,
+  "allBuildingsTreesFountainBenchesAndLightsUnchanged": true,
+  "identicalOriginalMaterials": true,
+  "worldAlignedStoneAndJointUV": true,
+  "maxUVError": 0.00000762939453125,
+  "closedFormerSymbolSightlines": 441,
+  "stoneAndPathSharedSeamVertices": 162
+}

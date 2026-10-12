@@ -1,0 +1,32 @@
+{
+  "version": 58,
+  "mainRoadShiftMeters": 20,
+  "separateHotelEntryExit": true,
+  "approachWidthMeters": 4.2,
+  "minimumCenterlineRadiiMeters": {
+    "main": 15.172114234664337,
+    "entry": 14.535069015152661,
+    "exit": 38.56503137730822
+  },
+  "continuousRoadSamples": 694,
+  "singleAsphaltUnion": true,
+  "limousineComponentsPreserved": 1636,
+  "vipBayMarkingsPreserved": 3,
+  "vipSignPreserved": true,
+  "fullRampRoofSamples": 378,
+  "minimumRoofClearanceMeters": 3.2549999046325686,
+  "closedWallRoofContacts": 152,
+  "entrySeamTerrainContacts": 182,
+  "protectedPhysicalComponents": 64943,
+  "allVillageBuildingsPreserved": true,
+  "garageStopLineMirroredToExit": true,
+  "allOtherGaragePartsPreserved": true,
+  "existingRoadLayoutPreserved": true,
+  "hotelWalkOuterEdgeClosed": true,
+  "grassUpperEdgesClosed": true,
+  "entryTerrainGradedVertices": 400,
+  "curbCapReplacedWithAsphalt": true,
+  "missingSoilUnderPavingRestored": true,
+  "townhallStatus": "awaiting specific Metzgerei facade reference; existing townhall unchanged",
+  "browserVerification": "unavailable in managed environment"
+}

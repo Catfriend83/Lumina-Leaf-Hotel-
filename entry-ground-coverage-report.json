@@ -1,0 +1,14 @@
+{
+  "version": 58,
+  "areaBounds": [
+    -218,
+    -168,
+    -143,
+    -98
+  ],
+  "sampleSpacingMeters": 0.1,
+  "testedSurfacePoints": 225951,
+  "uncoveredGroundPoints": 0,
+  "reversedSurfaceTriangles": 0,
+  "existingTerrainAndTrafficCoverageContinuous": true
+}

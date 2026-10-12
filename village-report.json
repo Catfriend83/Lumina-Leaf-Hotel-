@@ -1,0 +1,28 @@
+{
+  "version": 37,
+  "dwellings": 10,
+  "chapels": 1,
+  "inns": 1,
+  "accesses": 12,
+  "roadLengths": {
+    "uferstrasse": 359.42769983571,
+    "dorfgasse": 158.86549989250366
+  },
+  "walkLengths": {
+    "promenade": 97.01316878191582,
+    "platz-ufer-weg": 39.6847453723908
+  },
+  "maxGrades": {
+    "uferstrasse": 0.038896915877945686,
+    "dorfgasse": 0.010295627176905105,
+    "promenade": 0.007335975407138581,
+    "platz-ufer-weg": 0.09260513223295964
+  },
+  "terrainSamples": 606,
+  "minimumTerrainGap": 0.07171074092754637,
+  "preserved": 37715,
+  "replacedVillageParts": 6361,
+  "localVegetationChanges": 541,
+  "localShoreStoneHeightsAdjusted": 22,
+  "preservedDistantTerrainVertices": 136524
+}

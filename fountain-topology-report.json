@@ -1,0 +1,7 @@
+{
+  "version": 47,
+  "insideExistingPaving": true,
+  "minimumBankToBuilding": 1.9223530571618574,
+  "minimumBankToBank": 5.918483758531366,
+  "minimumBankToTreeBed": 7.507303691981056
+}

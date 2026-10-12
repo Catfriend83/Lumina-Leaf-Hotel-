@@ -1,0 +1,181 @@
+{
+  "version": 88,
+  "baseVersion": 86,
+  "forwardExtensionMeters": 2.55,
+  "additionalStoreys": 1,
+  "additionalStoreyWorldHeight": 2.9412000000000003,
+  "guestRooms": 40,
+  "removedExteriorPeople": 4,
+  "removedExteriorBodyParts": 118,
+  "receptionistsPreserved": 2,
+  "starsPerRow": 5,
+  "brightExteriorStars": true,
+  "continuousCarpet": true,
+  "floorProbes": [
+    [
+      -1,
+      1.9,
+      0.34829999984622
+    ],
+    [
+      -1,
+      2.4,
+      0.34829999984622007
+    ],
+    [
+      -1,
+      3.8,
+      0.34829999984622
+    ],
+    [
+      2,
+      1.9,
+      0.34829999984622007
+    ],
+    [
+      2,
+      2.4,
+      0.34829999984622
+    ],
+    [
+      2,
+      3.8,
+      0.34829999984622
+    ],
+    [
+      4.7,
+      1.9,
+      0.34829999984622
+    ],
+    [
+      4.7,
+      2.4,
+      0.34829999984622007
+    ],
+    [
+      4.7,
+      3.8,
+      0.34829999984621995
+    ],
+    [
+      8.15,
+      1.9,
+      0.34829999984622
+    ],
+    [
+      8.15,
+      2.4,
+      0.34829999984622
+    ],
+    [
+      8.15,
+      3.8,
+      0.34829999984622
+    ],
+    [
+      11.3,
+      1.9,
+      0.34829999984622
+    ],
+    [
+      11.3,
+      2.4,
+      0.34829999984622
+    ],
+    [
+      11.3,
+      3.8,
+      0.34829999984622
+    ],
+    [
+      14,
+      1.9,
+      0.34829999984622
+    ],
+    [
+      14,
+      2.4,
+      0.34829999984622
+    ],
+    [
+      14,
+      3.8,
+      0.34829999984621995
+    ],
+    [
+      17,
+      1.9,
+      0.34829999984622
+    ],
+    [
+      17,
+      2.4,
+      0.34829999984622
+    ],
+    [
+      17,
+      3.8,
+      0.34829999984622
+    ],
+    [
+      8.15,
+      3.95,
+      0.34829999984622007
+    ],
+    [
+      8.15,
+      4.3,
+      0.3141196332585441
+    ],
+    [
+      8.15,
+      4.8,
+      0.26529052247374124
+    ],
+    [
+      8.15,
+      5.2,
+      0.22622723384589885
+    ],
+    [
+      8.15,
+      5.53,
+      0.19400002072792893
+    ]
+  ],
+  "sightlines": [
+    {
+      "x": 6.6,
+      "label": "Branding",
+      "first": "Dunkelgrüner Rezeptionsmarmor"
+    },
+    {
+      "x": 6.6,
+      "label": "Tresen",
+      "first": "Empfang"
+    },
+    {
+      "x": 8.15,
+      "label": "Branding",
+      "first": "Dunkelgrüner Rezeptionsmarmor"
+    },
+    {
+      "x": 8.15,
+      "label": "Tresen",
+      "first": "Empfang"
+    },
+    {
+      "x": 9.4,
+      "label": "Branding",
+      "first": "Dunkelgrüner Rezeptionsmarmor"
+    },
+    {
+      "x": 9.4,
+      "label": "Tresen",
+      "first": "Empfang"
+    }
+  ],
+  "minimumFixtureClearance": 0.2768000000000004,
+  "retainedUnrelatedPhysicalComponents": 126417,
+  "browserPBRVerified": false
+}

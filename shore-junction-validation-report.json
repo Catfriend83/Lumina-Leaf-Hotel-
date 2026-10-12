@@ -1,0 +1,42 @@
+{
+  "roundaboutRemoved": true,
+  "intersectionBranches": 3,
+  "asphaltMatchesHotel": true,
+  "curbsMatchHotel": true,
+  "benchModelsIdentical": true,
+  "maxBenchModelDelta": 0.00009948015213012695,
+  "movedHouse": {
+    "id": "haus-7",
+    "position": [
+      -183,
+      -124
+    ],
+    "accessLength": 7.281943862802296
+  },
+  "oldPlotRestored": true,
+  "oldPlotHeightVariation": 3.39017646181685,
+  "lakeSeats": 12,
+  "allLakeSeatsWaterSide": true,
+  "asphaltWidth": 2.5,
+  "sharedMeadowEdges": 1019,
+  "maxMeadowEdgeGap": 0.0007012486457824707,
+  "version": 43,
+  "buildings": 13,
+  "individualHouses": 10,
+  "townhalls": 1,
+  "foundationSamples": 1053,
+  "maxFoundationError": 0.009823216271617419,
+  "benchFeet": 36,
+  "maxBenchGap": 0,
+  "preserved": 23602,
+  "preservedTerrainVertices": 132664,
+  "sharedCurbJoins": 2187,
+  "verifiedMarkings": 58,
+  "crossingPreserved": true,
+  "innFrontClear": true,
+  "squareArea": 816,
+  "lakeLoopLength": 511.91041036889925,
+  "maxLoopGrade": 0.002998724517891867,
+  "loopClosed": true,
+  "walkWaterOverlap": 0
+}

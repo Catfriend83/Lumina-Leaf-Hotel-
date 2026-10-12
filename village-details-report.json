@@ -1,0 +1,94 @@
+{
+  "version": 84,
+  "fountainCenter": [
+    -153.44608489561557,
+    -153.50533971822756
+  ],
+  "previousFountainCenter": [
+    -153.44608489561557,
+    -156.50533971822756
+  ],
+  "shiftMeters": [
+    0,
+    3
+  ],
+  "benchFrontClearanceMeters": 1,
+  "turfRepair": {
+    "openings": 2,
+    "trimmedTriangles": 816,
+    "unchangedOriginalVertices": 72658,
+    "marginMeters": 0.06
+  },
+  "closedVegetationMasks": 4,
+  "removedPlants": 0,
+  "oldEntrancePostsRemoved": 2,
+  "entranceText": "Seealm",
+  "entranceSubtitle": "am Bergsee",
+  "townhallText": "Rathaus Seealm",
+  "unchangedTownhallSignDimensions": [
+    3.5,
+    0.54
+  ],
+  "preservedUnrelatedMeshes": 1955,
+  "measuredBenchClearances": [
+    0.9999999999999885,
+    0.9999999999999885,
+    0.9999999999999885,
+    0.9999999999999885
+  ],
+  "benchGroundContact": true,
+  "continuousPavingUV": true,
+  "shopTopSurfaceSamples": [
+    [
+      -138.3002855488,
+      -150.070130116,
+      4.532191763837172
+    ],
+    [
+      -137.90028554879999,
+      -150.070130116,
+      4.550498312594275
+    ],
+    [
+      -138.7002855488,
+      -150.070130116,
+      4.510108970421864
+    ],
+    [
+      -138.3002855488,
+      -149.670130116,
+      4.529015950921934
+    ],
+    [
+      -138.3002855488,
+      -150.470130116,
+      4.532003428157669
+    ],
+    [
+      -137.4685719654,
+      -159.186099028,
+      4.565685283509474
+    ],
+    [
+      -137.0685719654,
+      -159.186099028,
+      4.5591048920845765
+    ],
+    [
+      -137.8685719654,
+      -159.186099028,
+      4.571881980731742
+    ],
+    [
+      -137.4685719654,
+      -158.786099028,
+      4.572519530188622
+    ],
+    [
+      -137.4685719654,
+      -159.586099028,
+      4.562209540498536
+    ]
+  ],
+  "liveGrassIntrusions": 0
+}

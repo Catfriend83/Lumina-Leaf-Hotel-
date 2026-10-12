@@ -1,0 +1,25 @@
+{
+  "version": 49,
+  "rightTreeMirrored": true,
+  "leftTreeLocal": [
+    -4.5769159017860375,
+    6.913023016538375
+  ],
+  "rightTreeLocal": [
+    4.576915901786066,
+    6.913023016538347
+  ],
+  "otherTreesUnchanged": true,
+  "fountainUnchanged": true,
+  "benches": 4,
+  "frontClearanceMeters": [
+    0.9999999999999973,
+    0.9999999999999973,
+    0.9999999999999973,
+    0.9999999999999973
+  ],
+  "identicalBenchDesign": true,
+  "contactProbes": 24,
+  "maxContactGap": 7.879170205171704e-9,
+  "preservedPhysicalComponents": 45042
+}

@@ -1,0 +1,13 @@
+{
+  "version": 80,
+  "centralPierAndFixtureRemoved": true,
+  "realReceptionVisible": true,
+  "clearReceptionRays": 3,
+  "portalMasonryChecks": 21,
+  "symmetricWarmSideFixtures": 2,
+  "existingStaffPreserved": 2,
+  "carpetAndOutsideGeometryPreserved": true,
+  "thresholdMeetsOriginalCarpet": true,
+  "allExistingLightSourcesUnchanged": true,
+  "scope": "Main hotel entrance only; geometry/raycast validation, no browser visual test available"
+}
