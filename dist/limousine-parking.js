@@ -21,6 +21,41 @@ export function inLimousineParking(x,z,padding=0){
         z>=p.minZ-padding&&z<=p.maxZ+padding;
 }
 
+// Grade only actual meadow terrain under the moved compound. Preserve the
+// complete continuous terrain mesh; pull its existing vertices below the
+// asphalt and ease the surrounding grass back to its original height.
+export function prepareLimousineParkingTerrain(scene,m){
+ const p=LIMO_PARK_WORLD,buffer=10,target=LIMO_PARK.asphaltY-.23;
+ const smooth=t=>t*t*(3-2*t),q=new T.Vector3(),local=new T.Vector3();
+ let adjusted=0,meshes=0;
+ scene.updateMatrixWorld(true);
+ scene.traverse(o=>{
+  if(!o.isMesh||o.isInstancedMesh||!o.geometry?.attributes?.position)return;
+  if(!(o.material===m.meadow||
+      o.name==='Wiesen und natürlicher Talboden'))return;
+  // Never grade pavement, structures, planters or car geometry.
+  const g=o.geometry.clone(),attr=g.attributes.position;
+  const inverse=o.matrixWorld.clone().invert();let changed=0;
+  for(let i=0;i<attr.count;i++){
+   q.fromBufferAttribute(attr,i).applyMatrix4(o.matrixWorld);
+   const dx=Math.max(p.minX-q.x,0,q.x-p.maxX);
+   const dz=Math.max(p.minZ-q.z,0,q.z-p.maxZ);
+   const distance=Math.hypot(dx,dz);
+   if(distance>=buffer||q.y<=target)continue;
+   const influence=1-smooth(Math.min(1,distance/buffer));
+   const newY=q.y+(target-q.y)*influence;
+   local.set(q.x,newY,q.z).applyMatrix4(inverse);
+   attr.setY(i,local.y);changed++;
+  }
+  if(changed){g.computeVertexNormals();g.computeBoundingSphere();
+   o.geometry=g;meshes++;adjusted+=changed;}
+  else g.dispose();
+ });
+ scene.userData.limousineParkingGrade={gradedMeshes:meshes,vertices:adjusted,
+  newFootprint:{...p},oldMeadowPreserved:true,smoothBuffer:buffer};
+ return scene.userData.limousineParkingGrade;
+}
+
 // Remove only vegetation at the NEW location. Regrowth at the old V106
 // site is automatic because its coordinate exclusion has been discarded.
 export function clearLimousineParkingVegetation(scene,m){
