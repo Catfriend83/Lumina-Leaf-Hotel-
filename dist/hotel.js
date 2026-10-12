@@ -1,5 +1,5 @@
 import {buildLobbyExtension,buildGroundStructure,HOTEL_EXPANSION} from './hotel-expansion.js?v=91';
-import {makeLobbyMaterials,buildReferenceLobby} from './hotel-lobby.js?v=92';
+import {makeLobbyMaterials,buildReferenceLobby} from './hotel-lobby.js?v=97';
 import {buildMainEntrance,entranceBayFloor} from './hotel-entrance.js?v=91';
 import {hotelLettering,fiveStars,buildReferenceStaff} from './hotel-reference-details.js?v=89';
 import {makeHotelExteriorMaterials,makeHotelSideLighting,softenHotelFacadeLights} from './hotel-lighting.js?v=89';
