@@ -108,7 +108,11 @@ function wallDecor(parent,m){
 }
 function chandelier(parent,m,x,z,r,index){
  const g=new T.Group();g.name='Klassischer Kristall-Kronleuchter '+index;g.position.set(x,5.85,z);
- g.userData={crystalChandelier:true,axis:'Lobby-Laengsachse',index,diameter:2*r,mountingHeight:5.85,orientation:0};
+ // Rotate each identical fixture 90 degrees about the ceiling normal. Since
+ // this chandelier is circular, the visible longitudinal ordering is defined
+ // by z positions rather than the ring's orientation.
+ g.rotation.y=Math.PI/2;
+ g.userData={crystalChandelier:true,axis:'Lobby-Laengsachse',index,diameter:2*r,mountingHeight:5.85,orientation:Math.PI/2};
  parent.add(g);const k=new Kit(g);
  k.cyl(m.gold,0,.27,0,.055,.48);k.cyl(m.gold,0,.48,0,.24,.04);
  for(const [radius,y] of [[r,0],[r*.82,-.28],[r*.52,-.53]])k.put(new T.TorusGeometry(radius,.035,8,64),m.gold,0,y,0,1,1,1,Math.PI/2);

@@ -2,7 +2,7 @@ import {optimizeStaticScene} from './static-performance.js?v=78';
 import {createPerformanceMonitor} from './performance-monitor.js?v=78';
 import {loadModelBlob} from './model-download.js?v=75';
 import {T} from './core.js?v=75';
-import {createScene,cameraViews} from './scene.js?v=98';
+import {createScene,cameraViews} from './scene.js?v=99';
 import {createRendering} from './rendering.js?v=94';
 import {CINEMATIC} from './cinematic.js?v=75';
 import {assemble8K,EXPORT_8K} from './export-8k.js?v=75';
@@ -99,7 +99,7 @@ async function start(){
   modeButton.onclick=()=>{location.search=fastHotel?'?full=1':'';};
  }
  if(fastHotel){
-  const available=new Set(['cinematic','original','pool','back','aerial','fitness','eingang','rezeption','vorfahrt','village','lake','seehaeuser','kirchenchor','dorfeinfahrt','rathaus','gasthaus','kapelle','landhaeuser','dorfladen','rundweg','meadow']);
+  const available=new Set(['cinematic','original','pool','back','aerial','fitness','eingang','rezeption','vorfahrt','tiefgarage','rampe','village','lake','seehaeuser','kirchenchor','dorfeinfahrt','rathaus','gasthaus','kapelle','landhaeuser','dorfladen','rundweg','meadow']);
   document.querySelectorAll('[data-view]').forEach(b=>{if(!available.has(b.dataset.view))b.hidden=true;});
  }
  addEvents();registerTools();

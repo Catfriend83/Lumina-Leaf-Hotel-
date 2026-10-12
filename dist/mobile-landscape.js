@@ -1,5 +1,6 @@
 import {T,Kit,rng} from './core.js?v=75';
 import {landHeight} from './landscape.js?v=98';
+import {GARAGE_CUT,subtractGarageFootprint} from './garage-site.js?v=99';
 import {mountainHeight} from './mountains.js?v=75';
 import {spaLakeShore} from './spa-shore.js?v=75';
 import {spaPoolTreeClearance} from './spa-wing.js?v=98';
@@ -25,7 +26,10 @@ export function buildMobileLandscape(scene,m){
  const fp=far.getAttribute('position'),farColors=new Float32Array(fp.count*3);
  for(let i=0;i<fp.count;i++){
   const x=fp.getX(i),z=fp.getZ(i),d=Math.hypot(x,z+80);
-  const base=-.9+smooth(250,780,d)*(5+3*Math.sin(x*.006)*Math.cos(z*.008));
+  // This far-field base sits below the real garage ramp and lake. The
+  // near terrain carries the visible surface, so there is no false green
+  // floor showing through the downward-sloping asphalt.
+  const base=-8.8+smooth(260,780,d)*(12.9+3*Math.sin(x*.006)*Math.cos(z*.008));
   const h=mountainHeight(x,z,base);
   fp.setY(i,h-.15);
   const v=.78+.13*Math.sin(x*.008+z*.012)+.08*Math.cos(x*.021-z*.014);
@@ -55,8 +59,14 @@ export function buildMobileLandscape(scene,m){
   if(lakeContains(x,z))continue;
   kept.push(a,b,c);
  }
- near.setIndex(kept);near.computeVertexNormals();
- const valley=new T.Mesh(near,lawn);valley.name='Wiesen und natürlicher Talboden';
+ near.setIndex(kept);
+ // Cut the *precise* rotated-garage world footprint from the reduced-detail
+ // meadow. V96 had left an opaque lawn over the asphalt descent; the ramp
+ // itself was already correctly sloped but hidden by this new surface.
+ const clearedGround=subtractGarageFootprint(near,GARAGE_CUT);
+ near.dispose();clearedGround.computeVertexNormals();
+ const valley=new T.Mesh(clearedGround,lawn);
+ valley.userData={garageGroundCut:true,garageOpeningPreserved:true};valley.name='Wiesen und natürlicher Talboden';
  valley.receiveShadow=false;group.add(valley);
  // Original shoreline coordinates and lake position; simple water shader only.
  const lakeVertices=[-94,-.2,-55],lakeIndices=[];
