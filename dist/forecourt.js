@@ -1,7 +1,7 @@
 import {buildGardenCurb} from './garden-curb.js?v=101';
 import {T,Kit,rng} from './core.js?v=75';
 import {GARAGE_CROSSING} from './pool-connection.js?v=91';
-import {buildHotelDrive,hotelDriveOverlaps} from './hotel-drive.js?v=91';
+import {buildHotelDrive,hotelDriveOverlaps} from './hotel-drive.js?v=102';
 
 export const ROAD_BOUNDS={minX:-58.5,maxX:66.5,minZ:28.1,maxZ:39.7};
 export const FORECOURT={curbFaceZ:28.4,roadY:-.005,carPosition:[5.09,.04,30.2],bay:{minX:-3.053,maxX:13.922,minZ:28.4,maxZ:32.5},laneDividerZ:(ROAD_BOUNDS.minZ+ROAD_BOUNDS.maxZ)/2,farCurbZ:39.7};
@@ -87,7 +87,13 @@ export function buildForecourt(root,m){
  };
  // No curb crosses either opening and none protrudes into the exit lane.
  for(const [left,right] of [[-58.5,GARAGE_CROSSING.minX],[GARAGE_CROSSING.maxX,1.0]])curb(left,right,28.25);
- group.userData.garageExitCurbRemoved=true;
+ // Restore the STRAIGHT roadside boundary mistakenly removed in V101.
+ // It follows the grass edge OUTSIDE the left portal (x=-21.80).
+ // The separate L-shaped curb was removed in hotel-drive.js instead.
+ const restoredZ0=28.31,restoredZ1=33.42,restoredWidth=.23;
+ k.bevel(curbFinish,GARAGE_CROSSING.minX-restoredWidth/2,.0575,
+  (restoredZ0+restoredZ1)/2,restoredWidth,.125,restoredZ1-restoredZ0,.022);
+ group.userData.garageExitStraightCurbRestored=true;
  buildGardenCurb(group,m);
  const ramp=new T.BufferGeometry();ramp.setAttribute('position',new T.Float32BufferAttribute([1,.105,27.9,1,-.005,28.4,6.3,-.005,28.4,6.3,.105,27.9],3));ramp.setAttribute('uv',new T.Float32BufferAttribute([0,0,0,.25,2.65,.25,2.65,0],2));ramp.setIndex([0,1,2,0,2,3]);ramp.computeVertexNormals();const rampMesh=k.mesh(ramp,m.cobbles,'Abgesenkter Bordstein am roten Teppich');rampMesh.userData={entranceCurbRamp:true};rampMesh.castShadow=false;
  // Thin, matte thermoplastic lines sit on the asphalt, rather than glowing.
