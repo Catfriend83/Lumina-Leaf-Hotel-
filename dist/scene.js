@@ -22,7 +22,7 @@ import {buildCar} from './car.js?v=91';
 import {buildLandscape} from './landscape.js?v=98';
 import {buildLakeActivity} from './lake-activity.js?v=75';
 import {makeRoadMaterials,removeVegetationOnRoad,buildForecourt} from './forecourt.js?v=91';
-import {buildMobileLandscape} from './mobile-landscape.js?v=98';
+import {buildMobileLandscape} from './mobile-landscape.js?v=99';
 import {SPA_WING} from './spa-wing.js?v=98';
 export async function createScene({createCanvas,loadTexture,onProgress=()=>{},mobile=false,fastHotel=false}){
  // Allow the browser to paint the loading state between long scene build steps.
@@ -52,10 +52,13 @@ export async function createScene({createCanvas,loadTexture,onProgress=()=>{},mo
   buildHotel(scene,materials);
   await phase(83,'Hotelvorfahrt und Limousine ergänzen …');
   buildForecourt(scene,materials);
+  // Remove any remaining street/paving overlays at the real garage entry.
+  // Garage walls, ramp, roof and asphalt are protected by garageMember().
+  clearGarageSite(scene,materials);
   const car=buildCar(scene,materials,carWrap);
   sun.castShadow=false;
   scene.userData.fastMobileHotel=true;
-  scene.userData.alpineSurroundingsOmitted=true;
+  scene.userData.alpineSurroundingsOmitted=false;
   scene.updateMatrixWorld(true);
   onProgress(96,'Schnellansicht darstellen …');
   const meadowController={update(){return null;},prepareExport(){}};
@@ -66,7 +69,7 @@ export async function createScene({createCanvas,loadTexture,onProgress=()=>{},mo
  await phase(39,'Hotel, Pool und Limousine aufbauen …');
  buildHotel(scene,materials);const car=buildCar(scene,materials,carWrap);const activity=buildLakeActivity(scene,materials);
  await phase(52,'Straßen, Dorf und Außenanlagen vorbereiten …');
- removeVegetationOnRoad(scene,materials);clearVillageConstruction(scene,materials);applyVillagePlazaFinish(scene,materials);closeEntryPavingSeam(scene,materials);reconstructHotelVerge(scene,materials);closeHotelPavingSeams(scene,materials);clearGarageSite(scene,materials,true);buildLakePathFurnishing(scene,materials);
+ removeVegetationOnRoad(scene,materials);clearVillageConstruction(scene,materials);applyVillagePlazaFinish(scene,materials);closeEntryPavingSeam(scene,materials);reconstructHotelVerge(scene,materials);closeHotelPavingSeams(scene,materials);clearGarageSite(scene,materials);buildLakePathFurnishing(scene,materials);
  scene.updateMatrixWorld(true);
  await phase(66,'Alpenwiesen und Pflanzen berechnen …');
  const meadow=applyAlpineMeadows(scene,materials,{mobile});scene.userData.alpineMeadows=meadow.report;placeTownhallOnPlaza(scene,materials,meadow.controller);refineTownhallPlaza(scene,materials,meadow.controller);thinLakePathFurnishing(scene);repairTownhallFloor(scene,materials,meadow.controller);repairChurchFloor(scene,materials,meadow.controller);rebuildCompletePlaza(scene,materials,meadow.controller);replaceAlpineForest(scene,materials,meadow.controller,{mobile});
