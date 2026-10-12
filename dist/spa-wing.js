@@ -1,6 +1,6 @@
 import {T,Kit,rng} from './core.js?v=75';
 import {broadLeaf} from './vegetation.js?v=75';
-import {buildLuxuryPool,POOL_LAYOUT} from './luxury-pool.js?v=75';
+import {buildLuxuryPool,POOL_LAYOUT} from './luxury-pool.js?v=98';
 import {buildStraightSpaLink,SPA_LINK} from './spa-link.js?v=75';
 import {buildFitnessStudio} from './fitness-studio.js?v=75';
 
