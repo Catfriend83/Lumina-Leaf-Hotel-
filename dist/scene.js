@@ -23,7 +23,11 @@ import {buildLandscape} from './landscape.js?v=91';
 import {buildLakeActivity} from './lake-activity.js?v=75';
 import {makeRoadMaterials,removeVegetationOnRoad} from './forecourt.js?v=91';
 import {SPA_WING} from './spa-wing.js?v=75';
-export async function createScene({createCanvas,loadTexture}){
+export async function createScene({createCanvas,loadTexture,onProgress=()=>{}}){
+ // Allow the browser to paint the loading state between long scene build steps.
+ // Geometry and build order within each step remain unchanged.
+ const phase=async(percent,message)=>{onProgress(percent,message);await new Promise(resolve=>setTimeout(resolve,0));};
+ await phase(8,'Materialien und Texturen laden …');
  const scene=new T.Scene();scene.name='Lumina Leaf Hotel – Rekonstruktion nach Bildvorlage';scene.userData={title:'Lumina Leaf Hotel',description:'Räumliche Annäherung an die vom Nutzer bereitgestellte Bildvorlage. Verdeckte Ansichten wurden gestalterisch ergänzt.',units:'meters',version:'91.0',guestRooms:40};
  const materials=await makeMaterials({createCanvas,loadTexture});
  for(const [key,file] of [['lobbyDamask','lobby-damask-v90.png'],['lobbyRug','lobby-rug-v90.png']]){materials[key]=await loadTexture('assets/'+file);materials[key].colorSpace=T.SRGBColorSpace;materials[key].anisotropy=8;}
@@ -37,18 +41,26 @@ export async function createScene({createCanvas,loadTexture}){
  scene.fog=new T.FogExp2('#c9b6a6',.00065);
  scene.add(new T.HemisphereLight('#b6caff','#665038',.9));const sun=new T.DirectionalLight('#ffcd91',2.1);sun.position.set(-90,75,-55);sun.target.position.set(0,0,0);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.camera.left=-58;sun.shadow.camera.right=58;sun.shadow.camera.top=50;sun.shadow.camera.bottom=-46;sun.shadow.camera.near=1;sun.shadow.camera.far=240;sun.shadow.bias=-.00035;sun.shadow.normalBias=.065;scene.add(sun,sun.target);
  const fill=new T.DirectionalLight('#c5ddf2',.7);fill.position.set(45,50,75);scene.add(fill);
- buildLandscape(scene,materials);buildHotel(scene,materials);const car=buildCar(scene,materials,carWrap);const activity=buildLakeActivity(scene,materials);
+ await phase(22,'Alpenlandschaft und Umgebung aufbauen …');
+ buildLandscape(scene,materials);
+ await phase(39,'Hotel, Pool und Limousine aufbauen …');
+ buildHotel(scene,materials);const car=buildCar(scene,materials,carWrap);const activity=buildLakeActivity(scene,materials);
+ await phase(52,'Straßen, Dorf und Außenanlagen vorbereiten …');
  removeVegetationOnRoad(scene,materials);clearVillageConstruction(scene,materials);applyVillagePlazaFinish(scene,materials);closeEntryPavingSeam(scene,materials);reconstructHotelVerge(scene,materials);closeHotelPavingSeams(scene,materials);clearGarageSite(scene,materials,true);buildLakePathFurnishing(scene,materials);
  scene.updateMatrixWorld(true);
+ await phase(66,'Alpenwiesen und Pflanzen berechnen …');
  const meadow=applyAlpineMeadows(scene,materials);scene.userData.alpineMeadows=meadow.report;placeTownhallOnPlaza(scene,materials,meadow.controller);refineTownhallPlaza(scene,materials,meadow.controller);thinLakePathFurnishing(scene);repairTownhallFloor(scene,materials,meadow.controller);repairChurchFloor(scene,materials,meadow.controller);rebuildCompletePlaza(scene,materials,meadow.controller);replaceAlpineForest(scene,materials,meadow.controller);
+ await phase(83,'Landschaft, Dorfplatz und Hotellobby fertigstellen …');
  const referencePlaza=rebuildReferencePlaza(scene,materials);
  applyVillageDetails(scene,materials,referencePlaza,meadow.controller);finishLobbyGarage(scene,materials,meadow.controller);scene.userData.hotelMeadowPreservation=preserveHotelSurroundings(meadow.controller,scene);
+ await phase(92,'3D-Geometrie für die Darstellung optimieren …');
  // Batch repeated static geometry across the entire scene for mobile GPUs.
  const batches=new Map(),old=[];
  scene.traverse(o=>{if(!o.isInstancedMesh||o.userData.alpineBotany)return;for(let ancestor=o;ancestor;ancestor=ancestor.parent)if(ancestor===car||ancestor===activity.group)return;old.push(o);const key=o.geometry.uuid+o.material.uuid;let batch=batches.get(key);if(!batch){batch={geometry:o.geometry,material:o.material,matrices:[],cast:o.castShadow};batches.set(key,batch);}for(let i=0;i<o.count;i++){const matrix=new T.Matrix4();o.getMatrixAt(i,matrix);matrix.premultiply(o.matrixWorld);batch.matrices.push(matrix);}});
  for(const o of old)o.removeFromParent();
  for(const b of batches.values()){if(!b.matrices.length)continue;const mesh=new T.InstancedMesh(b.geometry,b.material,b.matrices.length);mesh.name=b.material.name;mesh.castShadow=b.cast;mesh.receiveShadow=true;b.matrices.forEach((matrix,i)=>mesh.setMatrixAt(i,matrix));mesh.computeBoundingSphere();scene.add(mesh);}
  scene.updateMatrixWorld(true);
+ onProgress(96,'3D-Ansicht initialisieren …');
  return {scene,materials,car,dome,sky,sun,activity,meadowController:meadow.controller,referencePlaza};
 }
 const spaCamera=(x,y,z)=>{const c=Math.cos(SPA_WING.rotation),s=Math.sin(SPA_WING.rotation);return [SPA_WING.x+c*x+s*z,SPA_WING.floor+y,SPA_WING.z-s*x+c*z];};
