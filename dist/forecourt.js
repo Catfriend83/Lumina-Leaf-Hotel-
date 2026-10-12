@@ -1,7 +1,7 @@
 import {buildGardenCurb} from './garden-curb.js?v=101';
 import {T,Kit,rng} from './core.js?v=75';
 import {GARAGE_CROSSING} from './pool-connection.js?v=91';
-import {buildHotelDrive,hotelDriveOverlaps} from './hotel-drive.js?v=91';
+import {buildHotelDrive,hotelDriveOverlaps} from './hotel-drive.js?v=102';
 
 export const ROAD_BOUNDS={minX:-58.5,maxX:66.5,minZ:28.1,maxZ:39.7};
 export const FORECOURT={curbFaceZ:28.4,roadY:-.005,carPosition:[5.09,.04,30.2],bay:{minX:-3.053,maxX:13.922,minZ:28.4,maxZ:32.5},laneDividerZ:(ROAD_BOUNDS.minZ+ROAD_BOUNDS.maxZ)/2,farCurbZ:39.7};
