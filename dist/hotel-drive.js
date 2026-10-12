@@ -8,9 +8,38 @@ export function hotelRoadContains(x,z){return D.road.polygons.some(p=>inRing(x,z
 export function hotelDriveOverlaps(box){if(box.max.x<D.bounds.minX||box.min.x>D.bounds.maxX||box.max.z<D.bounds.minZ||box.min.z>D.bounds.maxZ)return false;const pad=.25;for(let x=box.min.x-pad;x<=box.max.x+pad;x+=Math.max(.4,(box.max.x-box.min.x)/5))for(let z=box.min.z-pad;z<=box.max.z+pad;z+=Math.max(.4,(box.max.z-box.min.z)/5))if(hotelRoadContains(x,z))return true;return false;}
 function surface(k,m,name,data,height,extras={}){const g=new T.BufferGeometry(),p=data.vertices.flatMap(([x,z])=>[x,height(x,z),z]);g.setAttribute('position',new T.Float32BufferAttribute(p,3));g.setAttribute('uv',new T.Float32BufferAttribute(data.vertices.flatMap(([x,z])=>[x/2,z/2]),2));const pos=g.attributes.position,indices=[];for(let i=0;i<data.indices.length;i+=3){let [a,b,c]=data.indices.slice(i,i+3);const area=(pos.getZ(b)-pos.getZ(a))*(pos.getX(c)-pos.getX(a))-(pos.getX(b)-pos.getX(a))*(pos.getZ(c)-pos.getZ(a));if(Math.abs(area)<1e-9)continue;if(area<0)[b,c]=[c,b];indices.push(a,b,c);}g.setIndex(indices);g.computeVertexNormals();const mesh=k.mesh(g,m,name);mesh.castShadow=false;mesh.userData={hotelDrive:true,...extras};return mesh;}
 function line(k,m,points,width,name,y=.002){const p=[],uv=[],ix=[];for(let i=0;i<points.length;i++){const a=points[Math.max(0,i-1)],b=points[Math.min(points.length-1,i+1)],dx=b[0]-a[0],dz=b[1]-a[1],l=Math.hypot(dx,dz);for(const sign of [-1,1]){const x=points[i][0]-dz/l*width/2*sign,z=points[i][1]+dx/l*width/2*sign;p.push(x,y,z);uv.push(x/2,z/2);}if(i){const n=(i-1)*2;ix.push(n,n+1,n+2,n+1,n+3,n+2);}}const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(p,3));g.setAttribute('uv',new T.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();const mesh=k.mesh(g,m,name);mesh.castShadow=false;mesh.userData={hotelDriveMarking:true};return mesh;}
-export function buildHotelDrive(group,m){const k=new Kit(group);surface(k,m.asphalt,'Hauptstraße mit eigenständiger Hotelvorfahrt',D.road,()=>-.005,{hotelRoad:true,mainWidth:D.mainWidth,approachWidth:D.driveWidth,shiftMeters:D.shiftMeters,singleAsphaltUnion:true,separateApproachAndExit:true});const cap=[],curbIndices=[];for(let i=0;i<D.curb.indices.length;i+=3){const ids=D.curb.indices.slice(i,i+3);(ids.every(j=>D.curb.vertices[j][0]<D.bounds.minX+.01&&D.curb.vertices[j][1]<34)?cap:curbIndices).push(...ids);}surface(k,m.ivory,'Sauber vereinigte Bordsteine der Hotelvorfahrt',{...D.curb,indices:curbIndices},()=>.12,{hotelDriveCurb:true});if(cap.length)surface(k,m.asphalt,'Bündiger Asphalt statt überhöhtem Querbalken am Straßenanschluss',{...D.curb,indices:cap},()=>-.005,{hotelRoadJoinRepair:true,removedCurbCap:true});surface(k,m.cobbles,'An die verschobene Hauptstraße angepasster Gehweg',D.walk,()=>.12,{hotelDriveWalk:true});
+// V102: The L-shaped white curb in front of the garage exit is a discrete
+// polygon in the original road geometry. Its end turns into the left exit
+// lane at x=-18.715, z=28.4. Remove ONLY this polygon (index 2), not the
+// separate straight curb beside the garage or any other road border.
+const garageExitLCurb=D.curb.polygons[2].outer;
+function inGarageExitLCurb(x,z){
+ let inside=false;
+ for(let i=0,j=garageExitLCurb.length-1;i<garageExitLCurb.length;j=i++){
+  const a=garageExitLCurb[i],b=garageExitLCurb[j];
+  if((a[1]>z)!==(b[1]>z)&&x<(b[0]-a[0])*(z-a[1])/(b[1]-a[1])+a[0])inside=!inside;
+ }
+ return inside;
+}
+export function buildHotelDrive(group,m){
+ const k=new Kit(group);
+ surface(k,m.asphalt,'Hauptstraße mit eigenständiger Hotelvorfahrt',D.road,()=>-.005,{hotelRoad:true,mainWidth:D.mainWidth,approachWidth:D.driveWidth,shiftMeters:D.shiftMeters,singleAsphaltUnion:true,separateApproachAndExit:true});
+ const cap=[],curbIndices=[],removedLIndices=[];
+ for(let i=0;i<D.curb.indices.length;i+=3){
+  const ids=D.curb.indices.slice(i,i+3);
+  const cx=ids.reduce((s,j)=>s+D.curb.vertices[j][0],0)/3;
+  const cz=ids.reduce((s,j)=>s+D.curb.vertices[j][1],0)/3;
+  if(inGarageExitLCurb(cx,cz)){removedLIndices.push(...ids);continue;}
+  (ids.every(j=>D.curb.vertices[j][0]<D.bounds.minX+.01&&D.curb.vertices[j][1]<34)?cap:curbIndices).push(...ids);
+ }
+ surface(k,m.ivory,'Erhaltene Bordsteine der Hotelvorfahrt ohne L-Sperre',{...D.curb,indices:curbIndices},()=>.12,{hotelDriveCurb:true,garageExitLCurbRemoved:true});
+ if(cap.length)surface(k,m.asphalt,'Bündiger Asphalt statt überhöhtem Querbalken am Straßenanschluss',{...D.curb,indices:cap},()=>-.005,{hotelRoadJoinRepair:true,removedCurbCap:true});
+ // Reuse the exact removed surface triangulation at asphalt height: there
+ // cannot be a slit, floating strip or mismatched material after removal.
+ if(removedLIndices.length)surface(k,m.asphalt,'Asphalt statt L-förmigem Bordstein vor der Ausfahrt',{...D.curb,indices:removedLIndices},()=>-.004,{garageExitLCurbRemoval:true,flushAsphalt:true});
+ surface(k,m.cobbles,'An die verschobene Hauptstraße angepasster Gehweg',D.walk,()=>.12,{hotelDriveWalk:true});
  // Closed curb skirts reach below the real meadow. No suspended curb plates.
- const p=[],uv=[],ix=[];for(const poly of D.curb.polygons)for(const ring of [poly.outer,...poly.holes])for(let i=0;i<ring.length;i++){const a=ring[i],b=ring[(i+1)%ring.length];if(a[0]<D.bounds.minX+.01&&b[0]<D.bounds.minX+.01&&a[1]<34&&b[1]<34)continue;const n=p.length/3;p.push(a[0],.12,a[1],a[0],-.28,a[1],b[0],.12,b[1],b[0],-.28,b[1]);uv.push(0,0,0,1,1,0,1,1);ix.push(n,n+1,n+2,n+2,n+1,n+3);}const skirt=new T.BufferGeometry();skirt.setAttribute('position',new T.Float32BufferAttribute(p,3));skirt.setAttribute('uv',new T.Float32BufferAttribute(uv,2));skirt.setIndex(ix);skirt.computeVertexNormals();const edge=m.ivory.clone();edge.name='Geschlossene Bordsteine der Hotelvorfahrt';edge.side=T.DoubleSide;k.mesh(skirt,edge,'Geschlossene Straßenrandanschlüsse bis ins Gelände');
+ const p=[],uv=[],ix=[];for(const [polygonIndex,poly] of D.curb.polygons.entries()){if(polygonIndex===2)continue;for(const ring of [poly.outer,...poly.holes])for(let i=0;i<ring.length;i++){const a=ring[i],b=ring[(i+1)%ring.length];if(a[0]<D.bounds.minX+.01&&b[0]<D.bounds.minX+.01&&a[1]<34&&b[1]<34)continue;const n=p.length/3;p.push(a[0],.12,a[1],a[0],-.28,a[1],b[0],.12,b[1],b[0],-.28,b[1]);uv.push(0,0,0,1,1,0,1,1);ix.push(n,n+1,n+2,n+2,n+1,n+3);}}const skirt=new T.BufferGeometry();skirt.setAttribute('position',new T.Float32BufferAttribute(p,3));skirt.setAttribute('uv',new T.Float32BufferAttribute(uv,2));skirt.setIndex(ix);skirt.computeVertexNormals();const edge=m.ivory.clone();edge.name='Geschlossene Bordsteine der Hotelvorfahrt';edge.side=T.DoubleSide;k.mesh(skirt,edge,'Geschlossene Straßenrandanschlüsse bis ins Gelände');
  for(let i=3;i<D.main.length-6;i+=12)line(k,m.roadPaint,D.main.slice(i,i+7),.12,'Gleichmäßige Mittelmarkierung auf der verschobenen Straße');
  for(const x of [-25,25]){const s=new T.Shape();s.moveTo(x+.70,35.56);for(const q of [[x-.05,35.56],[x-.05,35.34],[x-.78,35.7],[x-.05,36.06],[x-.05,35.84],[x+.70,35.84]])s.lineTo(...q);s.closePath();const g=new T.ShapeGeometry(s),pos=g.attributes.position;for(let i=0;i<pos.count;i++)pos.setXYZ(i,pos.getX(i),.004,pos.getY(i));const idx=g.index;for(let i=0;i<idx.count;i+=3){const a=new T.Vector3().fromBufferAttribute(pos,idx.getX(i)),b=new T.Vector3().fromBufferAttribute(pos,idx.getX(i+1)),c=new T.Vector3().fromBufferAttribute(pos,idx.getX(i+2));if(b.sub(a).cross(c.sub(a)).y<0){const q=idx.getX(i+1);idx.setX(i+1,idx.getX(i+2));idx.setX(i+2,q);}}g.computeVertexNormals();const o=k.mesh(g,m.roadPaint,'Dezenter Richtungspfeil der Hotelvorfahrt');o.userData={hotelDriveDirection:'west'};}
  const marker=new T.Object3D();marker.name='Getrennte Hotelzufahrt und Hotelabfahrt';marker.userData={hotelDrivePlan:true,revision:57,mainCenterline:D.main,entry:D.entry,exit:D.exit,drive:D.drive,mainWidth:D.mainWidth,driveWidth:D.driveWidth,minimumRadii:D.minimumRadii,vipBayPreserved:true,garageApproachSeparated:true};group.add(marker);k.finish();

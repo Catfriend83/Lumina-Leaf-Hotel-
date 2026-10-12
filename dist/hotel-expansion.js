@@ -23,7 +23,9 @@ export function buildLobbyExtension(parent,exterior,m,sideLight=exterior){
  for(const x of [-2,2,14,18])for(const z of [3.5,7.5,11.5])k.cyl(m.diffuser,x,6.255,z,.085,.025);
  // Symmetrical front bays leave the unchanged six-metre centre portal clear.
  const piers=[-5.6,-1.7,2.2,4.85,11.15,13.8,17.7,21.6];
- for(const x of piers){k.box(exterior.stone,x,3.69,13.22,.4,6.9,.7);if(x!==4.85&&x!==11.15)facadeLamp(k,exterior,x,.24,13.64,6.9);}
+ // The front stone piers remain intact; only the green facade fixtures in
+ // the exterior ground-floor reception frontage are removed.
+ for(const x of piers)k.box(exterior.stone,x,3.69,13.22,.4,6.9,.7);
  for(const [a,b] of [[-5.4,-1.9],[-1.5,2.0],[2.4,4.65],[11.35,13.6],[14,17.5],[17.9,21.4]]){
   k.box(exterior.glass,(a+b)/2,3.828,13.15,b-a,6.55,.038);
   k.box(exterior.frame,(a+b)/2,3.828,13.14,.038,6.55,.055);
@@ -45,6 +47,8 @@ export function buildLobbyExtension(parent,exterior,m,sideLight=exterior){
   for(const y of [.59,6.79])k.box(exterior.frame,shoulder,y,1.90,2.54,.06,.10);
   const wash=facadeWash(parent,sx,2.02,7.5,{orientation:side*Math.PI/2,range:10,intensity:2});wash.color.set('#89bfa0');wash.userData.sideFacadeLight=true;
  }
- for(const x of [0,16]){facadeWash(parent,x,2.02,13.68,{range:7,intensity:2.8});const light=new T.PointLight('#ffd8a6',9,10,2);light.name='Sanftes Licht der erweiterten Lounge';light.position.set(x,5.3,8);g.add(light);}
+ // No green light spill at the entrance. Retain the existing warm interior
+ // reception lights and all side-facade fixtures exactly as authored.
+ for(const x of [0,16]){const light=new T.PointLight('#ffd8a6',9,10,2);light.name='Sanftes Licht der erweiterten Lounge';light.position.set(x,5.3,8);g.add(light);}
  k.finish();return g;
 }

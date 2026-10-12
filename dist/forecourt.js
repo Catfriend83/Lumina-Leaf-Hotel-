@@ -1,7 +1,7 @@
-import {buildGardenCurb} from './garden-curb.js?v=75';
+import {buildGardenCurb} from './garden-curb.js?v=101';
 import {T,Kit,rng} from './core.js?v=75';
 import {GARAGE_CROSSING} from './pool-connection.js?v=91';
-import {buildHotelDrive,hotelDriveOverlaps} from './hotel-drive.js?v=91';
+import {buildHotelDrive,hotelDriveOverlaps} from './hotel-drive.js?v=102';
 
 export const ROAD_BOUNDS={minX:-58.5,maxX:66.5,minZ:28.1,maxZ:39.7};
 export const FORECOURT={curbFaceZ:28.4,roadY:-.005,carPosition:[5.09,.04,30.2],bay:{minX:-3.053,maxX:13.922,minZ:28.4,maxZ:32.5},laneDividerZ:(ROAD_BOUNDS.minZ+ROAD_BOUNDS.maxZ)/2,farCurbZ:39.7};
@@ -47,13 +47,53 @@ export function buildForecourt(root,m){
  const group=new T.Group();group.name='Asphaltstraße und VIP-Hotelvorfahrt';group.userData={hotelForecourt:true};root.add(group);const k=new Kit(group),f=FORECOURT;
  const flat=(name,material,x0,x1,z0,z1,y)=>{const g=new T.PlaneGeometry(x1-x0,z1-z0);g.rotateX(-Math.PI/2);g.translate((x0+x1)/2,y,(z0+z1)/2);const p=g.attributes.position,uv=g.attributes.uv;for(let i=0;i<p.count;i++)uv.setXY(i,p.getX(i)/2,p.getZ(i)/2);const mesh=k.mesh(g,material,name);mesh.castShadow=false;return mesh;};
  buildHotelDrive(group,m);
+ // Reconnect the exit lane to the existing asphalt. The road polygon begins at
+ // x=-18.715 alongside the portal, while the actual garage wall starts near
+ // x=-21.715; that left strip was mistakenly left as exposed terrain.
+ // A single textured quad fills only that forecourt gap, without rebuilding
+ // either ramp or the road beyond the garage approach.
+ const garageExitLeft=GARAGE_CROSSING.minX,joinRoadX=-18.60,frontZ=28.4,mergeZ=33.82;
+ const fillGeometry=new T.BufferGeometry();
+ fillGeometry.setAttribute('position',new T.Float32BufferAttribute([
+  garageExitLeft,-.0035,frontZ,
+  garageExitLeft,-.0035,mergeZ,
+  joinRoadX,-.0035,mergeZ,
+  joinRoadX,-.0035,frontZ
+ ],3));
+ fillGeometry.setAttribute('uv',new T.Float32BufferAttribute([
+  garageExitLeft/2,frontZ/2,garageExitLeft/2,mergeZ/2,
+  joinRoadX/2,mergeZ/2,joinRoadX/2,frontZ/2
+ ],2));
+ fillGeometry.setIndex([0,1,2,0,2,3]);fillGeometry.computeVertexNormals();
+ const exitFill=k.mesh(fillGeometry,m.asphalt,'Durchgehend reparierter Asphalt vor der Garagenausfahrt');
+ exitFill.castShadow=false;
+ exitFill.userData={garageExitRoadRepair:true,flushAsphalt:true,joinsMainRoad:true,geometryTriangles:2};
  // Keep the existing open garage crossing; the north pavement never bridges it.
  for(const [left,right,endZ] of [[-58.5,GARAGE_CROSSING.minX,28.1],[GARAGE_CROSSING.maxX,1.0,28.1],[1.0,6.3,27.9],[6.3,66.5,28.1]]){
   const walk=flat('Gehweg am Hotel mit freier Garagenquerung',m.cobbles,left,right,26.3,endZ,.105);walk.userData={hotelSidewalk:true};
  }
- const curb=(left,right,z,height=.125)=>k.box(m.ivory,(left+right)/2,height/2-.005,z,right-left,height,.30);
- // A lowered entrance crossing meets the existing carpet without a high curb step.
+ // Exactly the two existing sidewalk curbs END at the garage portals.
+ // Rounded edge profiles soften mobile aliasing, without adding a new curb
+ // between the exit ramp and asphalt. The V100 white longitudinal divider
+ // on the exit carriageway is deliberately removed in V101.
+ const curbFinish=m.ivory.clone();
+ curbFinish.name='Fein abgerundeter Bordstein am Garagenvorfeld';
+ curbFinish.roughness=.94;
+ curbFinish.color.multiplyScalar(.92);
+ const curb=(left,right,z,height=.125)=>{
+  const radius=.022;
+  k.bevel(curbFinish,(left+right)/2,height/2-.005,z,
+   right-left,height,.27,radius);
+ };
+ // No curb crosses either opening and none protrudes into the exit lane.
  for(const [left,right] of [[-58.5,GARAGE_CROSSING.minX],[GARAGE_CROSSING.maxX,1.0]])curb(left,right,28.25);
+ // Restore the STRAIGHT roadside boundary mistakenly removed in V101.
+ // It follows the grass edge OUTSIDE the left portal (x=-21.80).
+ // The separate L-shaped curb was removed in hotel-drive.js instead.
+ const restoredZ0=28.31,restoredZ1=33.42,restoredWidth=.23;
+ k.bevel(curbFinish,GARAGE_CROSSING.minX-restoredWidth/2,.0575,
+  (restoredZ0+restoredZ1)/2,restoredWidth,.125,restoredZ1-restoredZ0,.022);
+ group.userData.garageExitStraightCurbRestored=true;
  buildGardenCurb(group,m);
  const ramp=new T.BufferGeometry();ramp.setAttribute('position',new T.Float32BufferAttribute([1,.105,27.9,1,-.005,28.4,6.3,-.005,28.4,6.3,.105,27.9],3));ramp.setAttribute('uv',new T.Float32BufferAttribute([0,0,0,.25,2.65,.25,2.65,0],2));ramp.setIndex([0,1,2,0,2,3]);ramp.computeVertexNormals();const rampMesh=k.mesh(ramp,m.cobbles,'Abgesenkter Bordstein am roten Teppich');rampMesh.userData={entranceCurbRamp:true};rampMesh.castShadow=false;
  // Thin, matte thermoplastic lines sit on the asphalt, rather than glowing.

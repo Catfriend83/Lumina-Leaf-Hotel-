@@ -1,4 +1,4 @@
-import {buildClassicLounge} from './hotel-classic-lounge.js?v=92';
+import {buildClassicLounge} from './hotel-classic-lounge.js?v=99';
 import {T,Kit,person,TAU} from './core.js?v=75';
 import {hotelLettering,fiveStars} from './hotel-reference-details.js?v=82';
 import {buildReceptionTeam} from './reception-team.js?v=86';
