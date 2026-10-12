@@ -41,6 +41,23 @@ async function start(){
  setLoadingProgress(97,'Grafikleistung für dein Gerät optimieren …');
  optimization=optimizeStaticScene(built,{multiDraw:!!renderer.getContext().getExtension('WEBGL_multi_draw')});
  rendering=createRendering(renderer,built,camera,{mobile,monitor});resize();setView('cinematic',false);built.meadowController.update(camera,true);controls.addEventListener('start',()=>{flight=null;hideHint();document.querySelectorAll('[data-view]').forEach(b=>b.setAttribute('aria-pressed','false'));});
+ // Only keep high-poly forest instances within viewing range on handhelds.
+ // The actual forest geometry remains untouched for export and desktop views.
+ const mobileForest=[];
+ if(mobile)built.scene.traverse(o=>{
+  if(!o.visible||!(o.isInstancedMesh||o.isBatchedMesh)||!/Alpiner Mischwald/i.test(o.material?.name||''))return;
+  if(!o.boundingSphere)o.computeBoundingSphere();
+  if(!o.boundingSphere)return;
+  const sphere=o.boundingSphere.clone().applyMatrix4(o.matrixWorld);
+  mobileForest.push({object:o,x:sphere.center.x,z:sphere.center.z,radius:sphere.radius});
+ });
+ let lastForestCull=-Infinity;
+ function cullDistantForest(now){
+  if(!mobile||now-lastForestCull<350)return;
+  lastForestCull=now;
+  const x=camera.position.x,z=camera.position.z;
+  for(const item of mobileForest)item.object.visible=Math.hypot(x-item.x,z-item.z)-item.radius<315;
+ }
  renderer.domElement.addEventListener('webglcontextlost',e=>{e.preventDefault();busy=true;toast('Die Grafik wurde unterbrochen. Bitte lade die Seite erneut.',0);});
  setLoadingProgress(99,'Erste 3D-Ansicht wird gerendert …');
  // Track actual frame intervals. Scale only the mobile framebuffer in small
@@ -63,7 +80,7 @@ async function start(){
    lastAdjustment=now;
   }
  }
- renderer.setAnimationLoop(now=>{if(busy||document.hidden){last=now;sampleDuration=0;sampleFrames=0;return;}const period=now-last,dt=Math.min(period/1000,.1);last=now;monitor.begin(now,period);if(flight){const t=Math.min(1,(now-flight.start)/flight.duration),e=t*t*(3-2*t);camera.position.lerpVectors(flight.from,flight.to,e);controls.target.lerpVectors(flight.fromTarget,flight.toTarget,e);if(t===1)flight=null;}controls.update(dt);if(monitor.measure('vegetation',()=>built.meadowController.update(camera))&&!mobile)renderer.shadowMap.needsUpdate=true;rendering.update(now/1000);monitor.measure('renderSubmission',()=>rendering.render(dt));monitor.end();adaptMobileResolution(now,period);
+ renderer.setAnimationLoop(now=>{if(busy||document.hidden){last=now;sampleDuration=0;sampleFrames=0;return;}const period=now-last,dt=Math.min(period/1000,.1);last=now;cullDistantForest(now);monitor.begin(now,period);if(flight){const t=Math.min(1,(now-flight.start)/flight.duration),e=t*t*(3-2*t);camera.position.lerpVectors(flight.from,flight.to,e);controls.target.lerpVectors(flight.fromTarget,flight.toTarget,e);if(t===1)flight=null;}controls.update(dt);if(monitor.measure('vegetation',()=>built.meadowController.update(camera))&&!mobile)renderer.shadowMap.needsUpdate=true;rendering.update(now/1000);monitor.measure('renderSubmission',()=>rendering.render(dt));monitor.end();adaptMobileResolution(now,period);
  if(firstFrame){firstFrame=false;setLoadingProgress(100,'Hotelansicht ist bereit');
   const loading=el('loading');if(loading){loading.style.opacity='0';setTimeout(()=>loading.remove(),550);}
  }
