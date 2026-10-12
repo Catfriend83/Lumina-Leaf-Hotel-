@@ -10,12 +10,12 @@ const curbTop=z=>gardenWalkHeight(z-8)+.15-.03*smooth((z-5)/10);
 
 export function buildGardenCurb(root,m){
  const half=GARDEN_CURB.width/2,left=[],right=[];
- for(let z=-41;z<=26.75+.0001;z+=.25){const x=gardenCurbCenter(z),dx=(gardenCurbCenter(z+.001)-gardenCurbCenter(z-.001))/.002,n=Math.hypot(dx,1);left.push([x-half/n,z+half*dx/n]);right.push([x+half/n,z-half*dx/n]);}
+ for(let z=-41;z<=26.75+.0001;z+=.125){const x=gardenCurbCenter(z),dx=(gardenCurbCenter(z+.001)-gardenCurbCenter(z-.001))/.002,n=Math.hypot(dx,1);left.push([x-half/n,z+half*dx/n]);right.push([x+half/n,z-half*dx/n]);}
  // A tangential quarter-circle joins the existing VIP curb, rather than ending
  // in a separate butt joint. The right arm of that curb is part of this mesh.
  const straightCount=left.length,c=[17.4,26.75],r=GARDEN_CURB.turnRadius;
- for(let i=1;i<=32;i++){const a=i*Math.PI/64;left.push([c[0]+(r-half)*Math.cos(a),c[1]+(r-half)*Math.sin(a)]);}
- const limit=Math.asin((28.1-c[1])/(r+half));for(let i=1;i<=24;i++){const a=i*limit/24;right.push([c[0]+(r+half)*Math.cos(a),c[1]+(r+half)*Math.sin(a)]);}
+ for(let i=1;i<=64;i++){const a=i*Math.PI/128;left.push([c[0]+(r-half)*Math.cos(a),c[1]+(r-half)*Math.sin(a)]);}
+ const limit=Math.asin((28.1-c[1])/(r+half));for(let i=1;i<=48;i++){const a=i*limit/48;right.push([c[0]+(r+half)*Math.cos(a),c[1]+(r+half)*Math.sin(a)]);}
  const contour=[[6.3,28.1],...left.toReversed(),...right,[66.5,28.1],[66.5,28.4],[6.3,28.4]],faces=[],positions=[],indices=[],rightOffset=1+left.length;
  // Paired cross-sections retain the hillside grade without degenerate cap fans
  // along long straight sections. Only the flat joined head is triangulated.
