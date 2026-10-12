@@ -79,10 +79,9 @@ export function buildForecourt(root,m){
  // exit. This eliminates broken tiny pavement segments at the portal corner;
  // the right entrance lane and all non-garage curbs remain unchanged.
  const curbThickness=.23,curbZ0=28.31,curbZ1=33.42;
- const exitCurb=k.box(m.ivory,GARAGE_CROSSING.minX-curbThickness/2,.0575,
+ k.box(m.ivory,GARAGE_CROSSING.minX-curbThickness/2,.0575,
   (curbZ0+curbZ1)/2,curbThickness,.125,curbZ1-curbZ0);
- exitCurb.name='Sauberer durchgehender Bordstein links vor der Tiefgarage';
- exitCurb.userData={garageExitCurbRepair:true,cleanStraightEdge:true};
+ group.userData.garageExitCurbRepair=true;
  buildGardenCurb(group,m);
  const ramp=new T.BufferGeometry();ramp.setAttribute('position',new T.Float32BufferAttribute([1,.105,27.9,1,-.005,28.4,6.3,-.005,28.4,6.3,.105,27.9],3));ramp.setAttribute('uv',new T.Float32BufferAttribute([0,0,0,.25,2.65,.25,2.65,0],2));ramp.setIndex([0,1,2,0,2,3]);ramp.computeVertexNormals();const rampMesh=k.mesh(ramp,m.cobbles,'Abgesenkter Bordstein am roten Teppich');rampMesh.userData={entranceCurbRamp:true};rampMesh.castShadow=false;
  // Thin, matte thermoplastic lines sit on the asphalt, rather than glowing.
