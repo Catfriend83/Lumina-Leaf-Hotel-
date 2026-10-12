@@ -63,7 +63,7 @@ async function start(){
    lastAdjustment=now;
   }
  }
- renderer.setAnimationLoop(now=>{if(busy||document.hidden){last=now;sampleDuration=0;sampleFrames=0;return;}const period=now-last,dt=Math.min(period/1000,.1);last=now;monitor.begin(now,period);if(flight){const t=Math.min(1,(now-flight.start)/flight.duration),e=t*t*(3-2*t);camera.position.lerpVectors(flight.from,flight.to,e);controls.target.lerpVectors(flight.fromTarget,flight.toTarget,e);if(t===1)flight=null;}controls.update(dt);if(monitor.measure('vegetation',()=>built.meadowController.update(camera)))renderer.shadowMap.needsUpdate=true;rendering.update(now/1000);monitor.measure('renderSubmission',()=>rendering.render(dt));monitor.end();adaptMobileResolution(now,period);
+ renderer.setAnimationLoop(now=>{if(busy||document.hidden){last=now;sampleDuration=0;sampleFrames=0;return;}const period=now-last,dt=Math.min(period/1000,.1);last=now;monitor.begin(now,period);if(flight){const t=Math.min(1,(now-flight.start)/flight.duration),e=t*t*(3-2*t);camera.position.lerpVectors(flight.from,flight.to,e);controls.target.lerpVectors(flight.fromTarget,flight.toTarget,e);if(t===1)flight=null;}controls.update(dt);if(monitor.measure('vegetation',()=>built.meadowController.update(camera))&&!mobile)renderer.shadowMap.needsUpdate=true;rendering.update(now/1000);monitor.measure('renderSubmission',()=>rendering.render(dt));monitor.end();adaptMobileResolution(now,period);
  if(firstFrame){firstFrame=false;setLoadingProgress(100,'Hotelansicht ist bereit');
   const loading=el('loading');if(loading){loading.style.opacity='0';setTimeout(()=>loading.remove(),550);}
  }
