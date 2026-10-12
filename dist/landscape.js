@@ -6,7 +6,7 @@ import {VILLAGE_GROUND} from './village-ground-data.js?v=75';
 import {TERRAIN_CUTS} from './terrain-cuts.js?v=75';
 import {buildAlpineVillage,discardVillageTree} from './village.js?v=91';
 import {villageGroundHeight,villageMeshGroundHeight,closestRoute,PROMENADE,MAIN_ROAD,LAKE_RESTS,constructionInfluence,BUILDINGS,VILLAGE_LANE,SQUARE_LINK} from './village-layout.js?v=75';
-import {inSpaSite,spaSiteGroundHeight} from './spa-wing.js?v=75';
+import {inSpaSite,spaSiteGroundHeight,spaPoolTreeClearance} from './spa-wing.js?v=98';
 import {T,Kit,rand,rng,TAU,addLamp} from './core.js?v=75';
 import {spruce} from './vegetation.js?v=75';
 import {mountainHeight,mountainWeight,mountainSurface} from './mountains.js?v=75';
@@ -104,7 +104,11 @@ export function buildLandscape(root,m){const group=new T.Group();group.name='Zus
  // Small, irregular grass tufts add depth without a smooth plastic surface.
  const grass=new T.BufferGeometry();grass.setAttribute('position',new T.Float32BufferAttribute([-.06,0,0,0,.25,.03,.04,0,0,0,0,-.06,.025,.19,0,0,0,.05],3));grass.setIndex([0,1,2,3,4,5]);grass.computeVertexNormals();
  const meadowRng=rng(947);for(let i=0;i<2100;i++){const x=-213+meadowRng()*260,z=-168+meadowRng()*186;if(lakeDistance(x,z)<1.08||(x>-35&&x<53&&z>-55))continue;const size=.45+meadowRng()*.7;k.put(grass,m.grassBlade,x,constructionInfluence(x,z)?renderedGroundHeight(x,z)+.016:landHeight(x,z)+.016,z,size,size,size,0,meadowRng()*TAU);}
- function tree(x,z,h,y=null,detailed=false){if(x===-18.57&&z===17.59)x+=POOL_SHIFT_X;if(inWing(x,z,7)||(x>8&&x<52&&z<-26&&z>-49)){x=60+hash(x,z)*8;y=null;}if(inSpaSite(x,z,h*.28)){x=61+hash(x,z)*5;y=null;}discardVillageTree(k,()=>discardTreeOnRoad(k,()=>spruce(k,m,x,(constructionInfluence(x,z)?renderedGroundHeight(x,z):y??landHeight(x,z)),z,h,rand,detailed)));}
+ function tree(x,z,h,y=null,detailed=false){
+  // Preserve the procedural random sequence of every other tree while
+  // omitting only crowns intruding on the real rotated pool and terrace.
+  if(spaPoolTreeClearance(x,z,Math.max(2.5,h*.32))){spruce(new Kit(new T.Group()),m,x,0,z,h,rand,detailed);return;}
+  if(x===-18.57&&z===17.59)x+=POOL_SHIFT_X;if(inWing(x,z,7)||(x>8&&x<52&&z<-26&&z>-49)){x=60+hash(x,z)*8;y=null;}if(inSpaSite(x,z,h*.28)){x=61+hash(x,z)*5;y=null;}discardVillageTree(k,()=>discardTreeOnRoad(k,()=>spruce(k,m,x,(constructionInfluence(x,z)?renderedGroundHeight(x,z):y??landHeight(x,z)),z,h,rand,detailed)));}
  for(const [x,z,h] of [[-18.57,17.59,8.2],[-24.94,14.37,7.6],[-30,-17,14],[-22,-20,12],[-16.8,-40.21,10.7],[-9,-28,12],[0,-31,16],[13,-31,15],[22,-28,13],[35,16,11],[35,4,14],[37,-10,15],[36,-24,15]])tree(x,z,h,x>25?landHeight(x,z):0,true);
  for(let i=0;i<560;i++){const x=-95+rand()*440,z=-405+rand()*445;if(x>-31&&x<33&&z>-30)continue;if(((x-lakeCenter[0])/(lakeRadius[0]+4))**2+((z-lakeCenter[1])/(lakeRadius[1]+4))**2<1.02)continue;tree(x,z,6+rand()*14,null,false);}
  // Smaller stands fill gaps on the ridges, with size variation rather than repeated silhouettes.

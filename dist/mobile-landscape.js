@@ -1,7 +1,8 @@
 import {T,Kit,rng} from './core.js?v=75';
-import {landHeight} from './landscape.js?v=91';
+import {landHeight} from './landscape.js?v=98';
 import {mountainHeight} from './mountains.js?v=75';
 import {spaLakeShore} from './spa-shore.js?v=75';
+import {spaPoolTreeClearance} from './spa-wing.js?v=98';
 import {spruce} from './vegetation.js?v=75';
 import {BUILDINGS,MAIN_ROAD,PROMENADE,lakeContains} from './village-layout.js?v=75';
 import {buildVillageBuilding} from './village-buildings.js?v=75';
@@ -101,6 +102,7 @@ export function buildMobileLandscape(scene,m){
  const forest=new T.Group();forest.name='Alpenwald – mobile Instanzgruppen';group.add(forest);
  const k=new Kit(forest),random=rng(741005);
  const place=(x,z,height)=>{
+  if(spaPoolTreeClearance(x,z,Math.max(2.5,height*.32)))return;
   if(lakeContains(x,z)||Math.hypot((x+155)/70,(z+150)/55)<.60)return;
   if(x>-74&&x<77&&z>-72&&z<91)return;
   if(x>-50&&x<73&&z>-80&&z<-10)return;
@@ -113,7 +115,7 @@ export function buildMobileLandscape(scene,m){
  }
  for(const [x,z,h] of [[-30,-17,14],[-22,-20,12],[-16.8,-40.21,11],[-9,-28,12],[0,-31,16],[13,-31,15],[22,-28,13],[35,16,11],[35,4,14],[37,-10,15],[36,-24,15]]){
   // Retain planted trees near the hotel without the remote forest burden.
-  spruce(k,m,x,landHeight(x,z),z,h,random,false);
+  if(!spaPoolTreeClearance(x,z,Math.max(2.5,h*.32)))spruce(k,m,x,landHeight(x,z),z,h,random,false);
  }
  k.finish();
  group.userData.treeCandidates=930;

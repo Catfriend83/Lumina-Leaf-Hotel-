@@ -1,12 +1,26 @@
 import {T,Kit,rng} from './core.js?v=75';
 import {broadLeaf} from './vegetation.js?v=75';
-import {buildLuxuryPool,POOL_LAYOUT} from './luxury-pool.js?v=75';
+import {buildLuxuryPool,POOL_LAYOUT} from './luxury-pool.js?v=98';
 import {buildStraightSpaLink,SPA_LINK} from './spa-link.js?v=75';
 import {buildFitnessStudio} from './fitness-studio.js?v=75';
 
 export const SPA_WING={x:-6.3,z:-27.8,rotation:-.448,floor:.24768,poolRise:4.70,bounds:{left:-7.55,right:10.25,back:-12.05,front:16.83},galleryZ:-14.0};
 function local(x,z){const dx=x-SPA_WING.x,dz=z-SPA_WING.z,c=Math.cos(SPA_WING.rotation),s=Math.sin(SPA_WING.rotation);return [c*dx-s*dz,s*dx+c*dz];}
 export function inSpaSite(x,z,margin=0){const [u,v]=local(x,z),b=SPA_WING.bounds;return u>b.left-margin&&u<b.right+margin&&v>b.back-margin&&v<b.front+margin;}
+/**
+ * Reject full-sized trees whose trunk or canopy would intrude into the
+ * existing rooftop pool, its deck or the immediately adjacent spa terrace.
+ * The protection follows the actual rotated SPA_WING transform and the
+ * unchanged POOL_LAYOUT.deck, rather than an inaccurate world-space square.
+ * Ground, pool water and the surrounding distant forest are untouched.
+ */
+export function spaPoolTreeClearance(x,z,crownRadius=0){
+ const [u,v]=local(x,z),d=POOL_LAYOUT.deck;
+ const dx=Math.max(d.left-u,0,u-d.right);
+ const dz=Math.max(d.back-v,0,v-d.front);
+ return Math.hypot(dx,dz)<6.5+Math.max(0,crownRadius);
+}
+
 export function inSpaGallery(x,z,margin=0){const [u,v]=local(x,z);return u>SPA_LINK.spaX-margin&&u<14.78+margin&&Math.abs(v-SPA_LINK.spaZ)<SPA_LINK.outerWidth/2+margin;}
 export function spaSiteGroundHeight(x,z,base){const [u,v]=local(x,z),b=SPA_WING.bounds,d=Math.max(b.left-u,u-b.right,b.back-v,v-b.front),t=Math.max(0,Math.min(1,(2.0-d)/2.0)),blend=t*t*(3-2*t);return base*(1-blend)+.04*blend;}
 export function gardenSpaJunctionHeight(z,base){return base;}

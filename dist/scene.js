@@ -1,7 +1,7 @@
 import {preserveHotelSurroundings} from './hotel-meadow-preservation.js?v=91';
 import {rebuildReferencePlaza} from './reference-plaza.js?v=83';
 import {applyVillageDetails} from './village-details.js?v=84';
-import {replaceAlpineForest} from './alpine-forest.js?v=94';
+import {replaceAlpineForest} from './alpine-forest.js?v=98';
 import {rebuildCompletePlaza} from './complete-plaza.js?v=75';
 import {repairChurchFloor} from './church-floor.js?v=75';
 import {repairTownhallFloor} from './townhall-floor.js?v=75';
@@ -15,15 +15,15 @@ import {makePlazaMaterials,applyVillagePlazaFinish} from './plaza-finish.js?v=91
 import {buildLakePathFurnishing,thinLakePathFurnishing} from './lake-path-furnishing.js?v=91';
 import {clearVillageConstruction} from './village.js?v=91';
 import {T,makeMaterials} from './core.js?v=75';
-import {buildHotel} from './hotel.js?v=97';
+import {buildHotel} from './hotel.js?v=98';
 import {makePoolMaterials} from './luxury-pool.js?v=75';
 import {makeSpaMaterials} from './spa-details.js?v=75';
 import {buildCar} from './car.js?v=91';
-import {buildLandscape} from './landscape.js?v=91';
+import {buildLandscape} from './landscape.js?v=98';
 import {buildLakeActivity} from './lake-activity.js?v=75';
 import {makeRoadMaterials,removeVegetationOnRoad,buildForecourt} from './forecourt.js?v=91';
-import {buildMobileLandscape} from './mobile-landscape.js?v=96';
-import {SPA_WING} from './spa-wing.js?v=75';
+import {buildMobileLandscape} from './mobile-landscape.js?v=98';
+import {SPA_WING} from './spa-wing.js?v=98';
 export async function createScene({createCanvas,loadTexture,onProgress=()=>{},mobile=false,fastHotel=false}){
  // Allow the browser to paint the loading state between long scene build steps.
  // Geometry and build order within each step remain unchanged.
