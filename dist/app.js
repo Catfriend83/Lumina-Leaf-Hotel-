@@ -99,7 +99,7 @@ async function start(){
   modeButton.onclick=()=>{location.search=fastHotel?'?full=1':'';};
  }
  if(fastHotel){
-  const available=new Set(['cinematic','original','pool','back','aerial','fitness','eingang','rezeption','tiefgarage','rampe','vorfahrt']);
+  const available=new Set(['cinematic','original','pool','back','aerial','fitness','eingang','rezeption','vorfahrt']);
   document.querySelectorAll('[data-view]').forEach(b=>{if(!available.has(b.dataset.view))b.hidden=true;});
  }
  addEvents();registerTools();
