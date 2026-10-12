@@ -106,7 +106,7 @@ async function start(){
   modeButton.onclick=()=>{location.search=fastHotel?'?full=1':'';};
  }
  if(fastHotel){
-  const available=new Set(['cinematic','original','pool','back','aerial','fitness','eingang','rezeption','vorfahrt','tiefgarage','rampe','village','lake','seehaeuser','kirchenchor','dorfeinfahrt','rathaus','gasthaus','kapelle','landhaeuser','dorfladen','rundweg','meadow']);
+  const available=new Set(['limousinenparkplatz','cinematic','original','pool','back','aerial','fitness','eingang','rezeption','vorfahrt','tiefgarage','rampe','village','lake','seehaeuser','kirchenchor','dorfeinfahrt','rathaus','gasthaus','kapelle','landhaeuser','dorfladen','rundweg','meadow']);
   document.querySelectorAll('[data-view]').forEach(b=>{if(!available.has(b.dataset.view))b.hidden=true;});
  }
  addEvents();registerTools();
