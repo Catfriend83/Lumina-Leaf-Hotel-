@@ -17,7 +17,7 @@ function stabilizeStaticRendering(scene,materials,renderer,{mobile=false}={}){
  let inspected=0;
  scene.updateMatrixWorld(true);
  scene.traverse(o=>{
-  if(!o.isMesh||o.isInstancedMesh||o.isBatchedMesh||!o.visible)return;
+  if(!o.isMesh||!o.visible)return;
   const mats=Array.isArray(o.material)?o.material:[o.material];
   for(const m of mats){
    if(!m)continue;
@@ -25,7 +25,7 @@ function stabilizeStaticRendering(scene,materials,renderer,{mobile=false}={}){
     const t=m[key];if(t?.isTexture&&!t.isRenderTargetTexture)textures.add(t);
    }
   }
-  if(o.isSkinnedMesh||o.children.length||Array.isArray(o.material)||!o.geometry?.isBufferGeometry)return;
+  if(o.isInstancedMesh||o.isBatchedMesh||o.isSkinnedMesh||o.children.length||Array.isArray(o.material)||!o.geometry?.isBufferGeometry)return;
   if(o.material.transparent||o.material.alphaTest||o.material.isShaderMaterial||o.onBeforeRender!==T.Object3D.prototype.onBeforeRender)return;
   // Strict: same *object* geometry/material plus exactly the same 16 world
   // matrix entries. Never approximate positions or deduplicate separate panes.
