@@ -20,7 +20,7 @@ export class Kit{
  line(m,a,b,r=.03){const av=new T.Vector3(...a),bv=new T.Vector3(...b),d=bv.clone().sub(av);const q=new T.Quaternion().setFromUnitVectors(new T.Vector3(0,1,0),d.clone().normalize());const mat=new T.Matrix4().compose(av.add(bv).multiplyScalar(.5),q,new T.Vector3(r,d.length(),r));const g=this.geos.cylinder;const key=g.uuid+m.uuid;let batch=this.batches.get(key);if(!batch){batch={geom:g,mat:m,matrices:[]};this.batches.set(key,batch);}batch.matrices.push(mat);}
  finish(){for(const b of this.batches.values()){const o=new T.InstancedMesh(b.geom,b.mat,b.matrices.length);o.name=b.mat.name||'Details';b.matrices.forEach((m,i)=>o.setMatrixAt(i,m));o.castShadow=!b.mat.transparent;o.receiveShadow=true;o.computeBoundingSphere();this.root.add(o);}this.batches.clear();}
 }
-export async function makeMaterials({createCanvas,loadTexture}){
+export async function makeMaterials({createCanvas,loadTexture,lite=false}){
  const materials={};
  const photo=await loadTexture('assets/photo-reference.jpg');photo.colorSpace=T.SRGBColorSpace;materials.referencePhoto=photo;materials.photoMaterial=new T.MeshBasicMaterial({name:'Originale Bilddetails auf 3D-Flächen',map:photo,side:T.DoubleSide,toneMapped:false});
  const mat=(name,color,other={})=>materials[name]=new T.MeshStandardMaterial({name,color,roughness:.7,...other});
@@ -58,15 +58,19 @@ export async function makeMaterials({createCanvas,loadTexture}){
  const tc=createCanvas(512,512),ctx=tc.getContext('2d');ctx.fillStyle='#a82633';ctx.fillRect(0,0,512,512);for(let i=0;i<70000;i++){const v=rand()*50;ctx.fillStyle=`rgba(${130+v},${24+v*.25},${37+v*.25},.35)`;ctx.fillRect(rand()*512,rand()*512,1,2);}const carpet=tex(tc);carpet.wrapS=carpet.wrapT=T.RepeatWrapping;carpet.repeat.set(2,7);mat('carpet','#efc8be',{map:carpet,roughness:1});
  const nc=createCanvas(1024,1024),nctx=nc.getContext('2d'),ndata=nctx.createImageData(1024,1024);for(let y=0;y<1024;y++)for(let x=0;x<1024;x++){const i=(y*1024+x)*4;ndata.data[i]=128+Math.sin((x+y*.15)/6)*18+Math.sin(y/9)*11;ndata.data[i+1]=128+Math.sin((y+x*.3)/7)*17;ndata.data[i+2]=246;ndata.data[i+3]=255;}nctx.putImageData(ndata,0,0);const normal=new T.CanvasTexture(nc);normal.wrapS=normal.wrapT=T.RepeatWrapping;normal.repeat.set(8,8);
  materials.water=new T.MeshPhysicalMaterial({name:'Poolwasser',color:'#2ac8d1',metalness:.35,roughness:.13,transparent:true,opacity:.86,normalMap:normal,normalScale:new T.Vector2(.19,.19),clearcoat:1,side:T.DoubleSide});
- const lakeNormals=createCanvas(512,512),lc=lakeNormals.getContext('2d'),ld=lc.createImageData(512,512);
- for(let y=0;y<512;y++)for(let x=0;x<512;x++){const i=(y*512+x)*4;let dx=0,dy=0;for(const [ax,ay,f,a] of [[.95,.3,.10,9],[-.5,.85,.17,6],[.3,.9,.30,3],[-.7,.65,.51,1.5]]){const v=Math.cos((x*ax+y*ay)*f)*a;dx+=v*ax;dy+=v*ay;}ld.data[i]=128+dx;ld.data[i+1]=128+dy;ld.data[i+2]=250;ld.data[i+3]=255;}
+ // The lake is not constructed in the immediate mobile hotel view.
+ // Avoid half a million trigonometric wave calculations on the UI thread.
+ const lakeNormals=createCanvas(lite?1:512,lite?1:512),lc=lakeNormals.getContext('2d'),ld=lc.createImageData(lite?1:512,lite?1:512);
+ if(lite){ld.data.set([128,128,255,255]);}
+ else for(let y=0;y<512;y++)for(let x=0;x<512;x++){const i=(y*512+x)*4;let dx=0,dy=0;for(const [ax,ay,f,a] of [[.95,.3,.10,9],[-.5,.85,.17,6],[.3,.9,.30,3],[-.7,.65,.51,1.5]]){const v=Math.cos((x*ax+y*ay)*f)*a;dx+=v*ax;dy+=v*ay;}ld.data[i]=128+dx;ld.data[i+1]=128+dy;ld.data[i+2]=250;ld.data[i+3]=255;}
  lc.putImageData(ld,0,0);const ln=new T.CanvasTexture(lakeNormals);ln.wrapS=ln.wrapT=T.RepeatWrapping;ln.repeat.set(12,10);
  materials.lake=new T.MeshPhysicalMaterial({name:'Bergsee',color:'#45656c',metalness:.24,roughness:.16,normalMap:ln,normalScale:new T.Vector2(.065,.085),side:T.DoubleSide});
  materials.makeSign=(title,{subtitle='★★★★★',foreground='#23d991',background='#172b28',width=4096,height=1024,italic=true,fontScale=.39,fontFamily='Arial,sans-serif'}={})=>{const ca=createCanvas(width,height),ct=ca.getContext('2d');if(background){ct.fillStyle=background;ct.fillRect(0,0,width,height);}ct.textAlign='center';ct.textBaseline='middle';ct.fillStyle=foreground;ct.font=`${italic?'italic ':''}bold ${height*fontScale}px ${italic?'Georgia,serif':fontFamily}`;ct.fillText(title,width/2,height*(subtitle?.40:.5),width*.91);if(subtitle){ct.font=`${height*.22}px Arial,sans-serif`;ct.fillStyle='#edcf7c';ct.fillText(subtitle,width/2,height*.78,width*.7);}const t=tex(ca);const ma=new T.MeshStandardMaterial({name:title,map:t,transparent:!background,emissiveMap:t,emissive:'#ffffff',emissiveIntensity:.45,roughness:.5,side:T.DoubleSide});return ma;};
  const wrap=await loadTexture('assets/botanical-wrap.png');wrap.colorSpace=T.SRGBColorSpace;wrap.wrapS=T.RepeatWrapping;wrap.repeat.set(4,1);materials.wrap=new T.MeshPhysicalMaterial({name:'Botanische Fahrzeugfolie',map:wrap,roughness:.32,metalness:.12,clearcoat:1});
  const spruce=await loadTexture('assets/snowy-spruce.png');spruce.colorSpace=T.SRGBColorSpace;
  materials.spruce=new T.MeshStandardMaterial({name:'Fototextur Tannennadeln und Schnee',map:spruce,alphaTest:.35,side:T.DoubleSide,roughness:.97,color:'#c9d8bb'});
- const forestPine=await loadTexture('assets/alpine-forest-pine.png');forestPine.colorSpace=T.SRGBColorSpace;
+ let forestPine=null;
+ if(!lite){forestPine=await loadTexture('assets/alpine-forest-pine.png');forestPine.colorSpace=T.SRGBColorSpace;}
  materials.forestPine=new T.MeshStandardMaterial({name:'Fotorealistische Tannensilhouette im entfernten Wald',map:forestPine,alphaTest:.38,side:T.DoubleSide,roughness:.98,color:'#d9ded2'});
  const shrub=await loadTexture('assets/festive-shrub.png');shrub.colorSpace=T.SRGBColorSpace;
  materials.shrub=new T.MeshStandardMaterial({name:'Fototextur Blätter und Blüten',map:shrub,alphaTest:.35,side:T.DoubleSide,roughness:.83,color:'#ffffff',emissiveMap:shrub,emissive:'#493827',emissiveIntensity:.35});
