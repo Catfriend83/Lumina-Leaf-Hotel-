@@ -72,16 +72,22 @@ export function buildForecourt(root,m){
  for(const [left,right,endZ] of [[-58.5,GARAGE_CROSSING.minX,28.1],[GARAGE_CROSSING.maxX,1.0,28.1],[1.0,6.3,27.9],[6.3,66.5,28.1]]){
   const walk=flat('Gehweg am Hotel mit freier Garagenquerung',m.cobbles,left,right,26.3,endZ,.105);walk.userData={hotelSidewalk:true};
  }
- const curb=(left,right,z,height=.125)=>k.box(m.ivory,(left+right)/2,height/2-.005,z,right-left,height,.30);
- // A lowered entrance crossing meets the existing carpet without a high curb step.
+ // Exactly the two existing sidewalk curbs END at the garage portals.
+ // Rounded edge profiles soften mobile aliasing, without adding a new curb
+ // between the exit ramp and asphalt. The V100 white longitudinal divider
+ // on the exit carriageway is deliberately removed in V101.
+ const curbFinish=m.ivory.clone();
+ curbFinish.name='Fein abgerundeter Bordstein am Garagenvorfeld';
+ curbFinish.roughness=.94;
+ curbFinish.color.multiplyScalar(.92);
+ const curb=(left,right,z,height=.125)=>{
+  const radius=.022;
+  k.bevel(curbFinish,(left+right)/2,height/2-.005,z,
+   right-left,height,.27,radius);
+ };
+ // No curb crosses either opening and none protrudes into the exit lane.
  for(const [left,right] of [[-58.5,GARAGE_CROSSING.minX],[GARAGE_CROSSING.maxX,1.0]])curb(left,right,28.25);
- // One crisp continuous curb return on the grassy LEFT edge of the repaired
- // exit. This eliminates broken tiny pavement segments at the portal corner;
- // the right entrance lane and all non-garage curbs remain unchanged.
- const curbThickness=.23,curbZ0=28.31,curbZ1=33.42;
- k.box(m.ivory,GARAGE_CROSSING.minX-curbThickness/2,.0575,
-  (curbZ0+curbZ1)/2,curbThickness,.125,curbZ1-curbZ0);
- group.userData.garageExitCurbRepair=true;
+ group.userData.garageExitCurbRemoved=true;
  buildGardenCurb(group,m);
  const ramp=new T.BufferGeometry();ramp.setAttribute('position',new T.Float32BufferAttribute([1,.105,27.9,1,-.005,28.4,6.3,-.005,28.4,6.3,.105,27.9],3));ramp.setAttribute('uv',new T.Float32BufferAttribute([0,0,0,.25,2.65,.25,2.65,0],2));ramp.setIndex([0,1,2,0,2,3]);ramp.computeVertexNormals();const rampMesh=k.mesh(ramp,m.cobbles,'Abgesenkter Bordstein am roten Teppich');rampMesh.userData={entranceCurbRamp:true};rampMesh.castShadow=false;
  // Thin, matte thermoplastic lines sit on the asphalt, rather than glowing.
