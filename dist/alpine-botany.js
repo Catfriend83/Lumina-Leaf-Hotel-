@@ -141,7 +141,16 @@ export function createBotanyController(group,records,{mobile=false}={}){
           const d=Math.hypot(dx,dy,dz);
           const density=mobile?(d<24?1:d<65?.52-.38*smooth(24,65,d):.14-.10*smooth(65,115,d)):(d<75?1-.82*smooth(25,75,d):.18-.12*smooth(75,180,d));
           if(!r.coverageAnchor&&r.rank>density)return;
-          level=d<(mobile?24:34)?0:d<(mobile?70:95)?1:2;
+          // A hysteresis band prevents plants flickering between full,
+          // medium and distant meshes when a camera crosses a LOD boundary.
+          // Geometry, colour and total instance capacities stay untouched.
+          const near=mobile?24:34,far=mobile?70:95;
+          level=d<near?0:d<far?1:2;
+          if(r._lastLod===0&&d<near+5)level=0;
+          else if(r._lastLod===1){
+            if(d>near-5&&d<far+8)level=1;
+          }else if(r._lastLod===2&&d>far-8)level=2;
+          r._lastLod=level;
         }
       }else if(r.rank>.43&&!r.foreground&&!r.coverageAnchor)return;
       if(!r.matrixElements){q.set(0,Math.sin(r.yaw/2),0,Math.cos(r.yaw/2));v.set(r.x,r.y,r.z);scale.set(r.radial,r.h,r.radial);matrix.compose(v,q,scale);r.matrixElements=new Float32Array(matrix.elements);}
