@@ -29,7 +29,7 @@ export async function createScene({createCanvas,loadTexture,onProgress=()=>{},mo
  const phase=async(percent,message)=>{onProgress(percent,message);await new Promise(resolve=>setTimeout(resolve,0));};
  await phase(8,'Materialien und Texturen laden …');
  const scene=new T.Scene();scene.name='Lumina Leaf Hotel – Rekonstruktion nach Bildvorlage';scene.userData={title:'Lumina Leaf Hotel',description:'Räumliche Annäherung an die vom Nutzer bereitgestellte Bildvorlage. Verdeckte Ansichten wurden gestalterisch ergänzt.',units:'meters',version:'91.0',guestRooms:40};
- const materials=await makeMaterials({createCanvas,loadTexture});
+ const materials=await makeMaterials({createCanvas,loadTexture,lite:fastHotel});
  for(const [key,file] of [['lobbyDamask','lobby-damask-v90.png'],['lobbyRug','lobby-rug-v90.png']]){materials[key]=await loadTexture('assets/'+file);materials[key].colorSpace=T.SRGBColorSpace;materials[key].anisotropy=8;}
  materials.exteriorScript=await loadTexture('assets/hotel-sign-script-v89.png');materials.exteriorScript.colorSpace=T.SRGBColorSpace;materials.exteriorScript.anisotropy=8;
  materials.entranceReference=await loadTexture('assets/entrance-reference-v82.png');materials.entranceReference.colorSpace=T.SRGBColorSpace;
