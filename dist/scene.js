@@ -19,7 +19,7 @@ import {buildHotel} from './hotel.js?v=104';
 import {makePoolMaterials} from './luxury-pool.js?v=75';
 import {makeSpaMaterials} from './spa-details.js?v=75';
 import {buildCar} from './car.js?v=91';
-import {buildLimousineParking,clearLimousineParkingVegetation} from './limousine-parking.js?v=106';
+import {buildLimousineParking,clearLimousineParkingVegetation,prepareLimousineParkingTerrain} from './limousine-parking.js?v=107';
 import {buildLandscape} from './landscape.js?v=102';
 import {buildLakeActivity} from './lake-activity.js?v=75';
 import {makeRoadMaterials,removeVegetationOnRoad,buildForecourt} from './forecourt.js?v=102';
@@ -57,6 +57,7 @@ export async function createScene({createCanvas,loadTexture,onProgress=()=>{},mo
   // Garage walls, ramp, roof and asphalt are protected by garageMember().
   clearGarageSite(scene,materials);
   const car=buildCar(scene,materials,carWrap);
+  prepareLimousineParkingTerrain(scene,materials);
   clearLimousineParkingVegetation(scene,materials);
   buildLimousineParking(scene,materials,car,createCanvas);
   sun.castShadow=false;
@@ -79,6 +80,7 @@ export async function createScene({createCanvas,loadTexture,onProgress=()=>{},mo
  await phase(83,'Landschaft, Dorfplatz und Hotellobby fertigstellen …');
  const referencePlaza=rebuildReferencePlaza(scene,materials);
  applyVillageDetails(scene,materials,referencePlaza,meadow.controller);finishLobbyGarage(scene,materials,meadow.controller);scene.userData.hotelMeadowPreservation=preserveHotelSurroundings(meadow.controller,scene);
+ prepareLimousineParkingTerrain(scene,materials);
  clearLimousineParkingVegetation(scene,materials);
  buildLimousineParking(scene,materials,car,createCanvas);
  await phase(92,'3D-Geometrie für die Darstellung optimieren …');
@@ -92,7 +94,7 @@ export async function createScene({createCanvas,loadTexture,onProgress=()=>{},mo
  return {scene,materials,car,dome,sky,sun,activity,meadowController:meadow.controller,referencePlaza};
 }
 const spaCamera=(x,y,z)=>{const c=Math.cos(SPA_WING.rotation),s=Math.sin(SPA_WING.rotation);return [SPA_WING.x+c*x+s*z,SPA_WING.floor+y,SPA_WING.z-s*x+c*z];};
-export const cameraViews={limousinenparkplatz:{position:[83,20,105],target:[50,0,61],fov:57},meadow:{position:[-35,1.3,25],target:[-33,.27,17],fov:58},vorfahrt:{position:[5,55,96],target:[4,0,28],fov:55},tiefgarage:{position:[-27,8,42],target:[-15.615,-.5,13],fov:49},rampe:{position:[-12.7,2.6,27.2],target:[-12.7,-2.3,3.4],fov:62},kirchenchor:{position:[-199,16,-135],target:[-178,10,-150],fov:49},dorfeinfahrt:{position:[-166,18,-95],target:[-190,8,-124],fov:53},rathaus:{position:[-156.9,13.18,-142.2],target:[-160.4,8.98,-163.2],fov:48},gasthaus:{position:[-137,13,-145],target:[-145,9,-167.5],fov:48},kapelle:{position:[-154,15,-137],target:[-176,10,-150],fov:48},seehaeuser:{position:[86,23,-132],target:[51,10,-146],fov:60},landhaeuser:{position:[-151,25,-158],target:[-161,8,-188],fov:62},dorfladen:{position:[-154,6.6,-156],target:[-131,8.4,-154],fov:48},rundweg:{position:[-87,208,108],target:[-94,0,-55],fov:52},village:{position:[-132,37,-96],target:[-157,5,-153],fov:52},cinematic:{position:[7,26,112],target:[6,3.5,-10]},original:{position:[8.609,13.839,74.081],target:[.503,1.350,-3]},pool:{position:[-35,22,9],target:[-7,4.2,-27]},car:{position:[-8,5,42.37],target:[5.09,1.3,30.2]},back:{position:[72,32,-73],target:[22,6,-15]},aerial:{position:[-50,80,65],target:[5,0,-12]},lake:{position:[-12,24,39],target:[-96,8,-71]},fitness:{position:spaCamera(.1,2.15,15.7),target:spaCamera(0,1.1,0),fov:58,interior:true}};
+export const cameraViews={limousinenparkplatz:{position:[84,24,44],target:[43,0,1],fov:57},meadow:{position:[-35,1.3,25],target:[-33,.27,17],fov:58},vorfahrt:{position:[5,55,96],target:[4,0,28],fov:55},tiefgarage:{position:[-27,8,42],target:[-15.615,-.5,13],fov:49},rampe:{position:[-12.7,2.6,27.2],target:[-12.7,-2.3,3.4],fov:62},kirchenchor:{position:[-199,16,-135],target:[-178,10,-150],fov:49},dorfeinfahrt:{position:[-166,18,-95],target:[-190,8,-124],fov:53},rathaus:{position:[-156.9,13.18,-142.2],target:[-160.4,8.98,-163.2],fov:48},gasthaus:{position:[-137,13,-145],target:[-145,9,-167.5],fov:48},kapelle:{position:[-154,15,-137],target:[-176,10,-150],fov:48},seehaeuser:{position:[86,23,-132],target:[51,10,-146],fov:60},landhaeuser:{position:[-151,25,-158],target:[-161,8,-188],fov:62},dorfladen:{position:[-154,6.6,-156],target:[-131,8.4,-154],fov:48},rundweg:{position:[-87,208,108],target:[-94,0,-55],fov:52},village:{position:[-132,37,-96],target:[-157,5,-153],fov:52},cinematic:{position:[7,26,112],target:[6,3.5,-10]},original:{position:[8.609,13.839,74.081],target:[.503,1.350,-3]},pool:{position:[-35,22,9],target:[-7,4.2,-27]},car:{position:[-8,5,42.37],target:[5.09,1.3,30.2]},back:{position:[72,32,-73],target:[22,6,-15]},aerial:{position:[-50,80,65],target:[5,0,-12]},lake:{position:[-12,24,39],target:[-96,8,-71]},fitness:{position:spaCamera(.1,2.15,15.7),target:spaCamera(0,1.1,0),fov:58,interior:true}};
 
 // Cameras use the entrance's actual transformed building coordinates.
 const entrancePoint=(x,y,z)=>{const c=Math.cos(-.448),a=Math.sin(-.448),dx=(x-8)*.944,dz=(z-1.91)*.75;return [7.223+c*dx+a*dz,y*1.032,1.91-a*dx+c*dz];};
