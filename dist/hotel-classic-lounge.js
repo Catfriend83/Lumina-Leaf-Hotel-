@@ -164,9 +164,9 @@ export function buildClassicLounge(parent,source){
  // All three are built by the same geometry function, radius and hanging height.
  const chandelierAxis={x:8,y:5.85,centerZ:3.25,spacing:5.45,radius:1.65};
  for(let i=0;i<3;i++){
-  const z=chandelierAxis.centerZ+(i-1)*chandelierAxis.spacing;
+  const z=chandelierAxis.centerZ+(1-i)*chandelierAxis.spacing;
   chandelier(g,m,chandelierAxis.x,z,chandelierAxis.radius,i+1);
  }
- g.userData.chandelierAlignment={count:3,...chandelierAxis,direction:'from reception toward entrance',identicalGeometry:true};
+ g.userData.chandelierAlignment={count:3,...chandelierAxis,direction:'from entrance toward reception',identicalGeometry:true};
  return g;
 }
