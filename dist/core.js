@@ -69,8 +69,7 @@ export async function makeMaterials({createCanvas,loadTexture,lite=false}){
  const wrap=await loadTexture('assets/botanical-wrap.png');wrap.colorSpace=T.SRGBColorSpace;wrap.wrapS=T.RepeatWrapping;wrap.repeat.set(4,1);materials.wrap=new T.MeshPhysicalMaterial({name:'Botanische Fahrzeugfolie',map:wrap,roughness:.32,metalness:.12,clearcoat:1});
  const spruce=await loadTexture('assets/snowy-spruce.png');spruce.colorSpace=T.SRGBColorSpace;
  materials.spruce=new T.MeshStandardMaterial({name:'Fototextur Tannennadeln und Schnee',map:spruce,alphaTest:.35,side:T.DoubleSide,roughness:.97,color:'#c9d8bb'});
- let forestPine=null;
- if(!lite){forestPine=await loadTexture('assets/alpine-forest-pine.png');forestPine.colorSpace=T.SRGBColorSpace;}
+ const forestPine=await loadTexture('assets/alpine-forest-pine.png');forestPine.colorSpace=T.SRGBColorSpace;
  materials.forestPine=new T.MeshStandardMaterial({name:'Fotorealistische Tannensilhouette im entfernten Wald',map:forestPine,alphaTest:.38,side:T.DoubleSide,roughness:.98,color:'#d9ded2'});
  const shrub=await loadTexture('assets/festive-shrub.png');shrub.colorSpace=T.SRGBColorSpace;
  materials.shrub=new T.MeshStandardMaterial({name:'Fototextur Blätter und Blüten',map:shrub,alphaTest:.35,side:T.DoubleSide,roughness:.83,color:'#ffffff',emissiveMap:shrub,emissive:'#493827',emissiveIntensity:.35});
