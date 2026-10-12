@@ -1,0 +1,9 @@
+{
+  "name": "lumina-leaf-hotel",
+  "private": true,
+  "type": "module",
+  "version": "92.0.0",
+  "scripts": {
+    "build": "node scripts/validate.mjs"
+  }
+}

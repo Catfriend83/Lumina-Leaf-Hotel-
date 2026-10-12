@@ -1,0 +1,27 @@
+{
+  "format": "gzip-parts-v1",
+  "bytes": 34492576,
+  "sha256": "d30d0a5399bf69ac0ce8d8aae1494d87e44907adcd25f3a8a67ed14909998238",
+  "parts": [
+    {
+      "file": "Lumina_Leaf_Hotel_Viewer.glb.gz.part01",
+      "bytes": 8388608
+    },
+    {
+      "file": "Lumina_Leaf_Hotel_Viewer.glb.gz.part02",
+      "bytes": 8388608
+    },
+    {
+      "file": "Lumina_Leaf_Hotel_Viewer.glb.gz.part03",
+      "bytes": 8388608
+    },
+    {
+      "file": "Lumina_Leaf_Hotel_Viewer.glb.gz.part04",
+      "bytes": 8388608
+    },
+    {
+      "file": "Lumina_Leaf_Hotel_Viewer.glb.gz.part05",
+      "bytes": 938144
+    }
+  ]
+}
