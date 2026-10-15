@@ -1,24 +1,133 @@
 import {T,Kit} from './core.js?v=75';
+import {gardenPathShift} from './meadow-grade.js?v=75';
+import {subtractGarageFootprint} from './garage-site.js?v=104';
 
-// V107: Shift the already complete V106 parking lot to the HOTEL SIDE where
-// the three documented pines stand: (35,16), (35,4), (37,-10).
-// Keep all of its parts/materials/vehicle meshes unchanged. The old V106
-// position (x32..68,z42..79) becomes ordinary original meadow again.
-// The original builder below uses local V106 parking coordinates; a single
-// group transform reuses the same architecture, with its frontage now facing
-// the hotel's existing road at z≈28.4. The world footprint is authoritative
-// for all vegetation removal and terrain grading.
+// V108: translate the entire compound 16 m east, preserving the garden path.
+// Both approaches reconnect to the existing road without extending that road.
+export const PARKING_SHIFT_X=14; // local x32 becomes world x46 (V107: x30).
 export const LIMO_PARK={minX:32,maxX:68,minZ:42,maxZ:79,asphaltY:-.07,
  entrances:[{x:41.0,label:'Einfahrt'},{x:60.5,label:'Ausfahrt'}],
- bays:[38.8,50,61.2],carZ:65.9,guardX:50.7};
+ bays:[38.8,50,61.2],bayWidth:7.5,carZ:65.9,guardX:50.7};
 export const LIMO_PARK_WORLD={
- minX:30,maxX:66,minZ:-18,maxZ:19,
- roadZ:28.4,trees:[[35,16],[35,4],[37,-10]]
+ minX:46,maxX:82,minZ:-18,maxZ:19,
+ roadZ:28.4
 };
 export function inLimousineParking(x,z,padding=0){
  const p=LIMO_PARK_WORLD;
- return x>=p.minX-padding&&x<=p.maxX+padding&&
-        z>=p.minZ-padding&&z<=p.maxZ+padding;
+ if(x>=p.minX-padding&&x<=p.maxX+padding&&
+        z>=p.minZ-padding&&z<=p.maxZ+padding)return true;
+ if(z<19-padding||z>28.4+padding)return false;
+ return PARKING_ACCESS.some((_,i)=>{const s=parkingAccessSection(i,z);
+  return x>=s.left-padding&&x<=s.right+padding;});
+}
+
+export const PARKING_ACCESS=[{roadX:53,gateX:55},{roadX:62.8,gateX:74.5}];
+// A horizontal section of each 6.64–7.2 m wide, smoothly curving driveway.
+// Widen the x span with the tangent so the actual lane never becomes narrow.
+export function parkingAccessSection(index,z){
+ const a=PARKING_ACCESS[index],t=Math.max(0,Math.min(1,(28.4-z)/9.4));
+ const smooth=t*t*(3-2*t),slope=(a.gateX-a.roadX)*6*t*(1-t)/9.4;
+ const center=a.roadX+(a.gateX-a.roadX)*smooth;
+ const half=(7.2+(6.64-7.2)*smooth)*Math.sqrt(1+slope*slope)/2;
+ return {left:center-half,right:center+half,center};
+}
+
+// Watertight indexed paving solid: one top, one underside, closed skirts.
+export function closedParkingSurface(contour,height,material,name){
+ const points=contour.map(([x,z])=>new T.Vector2(x,z));
+ if(T.ShapeUtils.isClockWise(points))points.reverse();
+ const triangles=T.ShapeUtils.triangulateShape(points,[]),positions=[],uv=[],indices=[];
+ for(const p of points){const y=height(p.x,p.y);positions.push(p.x,y,p.y,p.x,y-.20,p.y);
+  uv.push(p.x/2,p.y/2,p.x/2,p.y/2);}
+ for(const [a,b,c]of triangles)indices.push(2*a,2*c,2*b,2*a+1,2*b+1,2*c+1);
+ for(let a=0;a<points.length;a++){const b=(a+1)%points.length;
+  indices.push(2*a,2*b,2*b+1,2*a,2*b+1,2*a+1);}
+ const geometry=new T.BufferGeometry();
+ geometry.setAttribute('position',new T.Float32BufferAttribute(positions,3));
+ geometry.setAttribute('uv',new T.Float32BufferAttribute(uv,2));
+ geometry.setIndex(indices);geometry.computeVertexNormals();geometry.computeBoundingSphere();
+ const mesh=new T.Mesh(geometry,material);mesh.name=name;
+ mesh.castShadow=false;mesh.receiveShadow=true;mesh.userData={closedParkingPaving:true};return mesh;
+}
+
+// Subtract the same approach footprints from the existing roadside curb.
+// Interpolate every original vertex attribute; all distant curb geometry stays.
+export function cutParkingAccesses(source,{minZ=27.98,maxZ=28.4,steps=16}={}){
+ const names=Object.keys(source.attributes),output=Object.fromEntries(names.map(n=>[n,[]]));
+ const position=source.attributes.position,index=source.index;
+ const vertex=i=>Object.fromEntries(names.map(n=>{const a=source.attributes[n];
+  return [n,Array.from({length:a.itemSize},(_,j)=>a.array[i*a.itemSize+j])];}));
+ const clip=(poly,f,sign)=>{const out=[];for(let j=0;j<poly.length;j++){
+  const a=poly[j],b=poly[(j+1)%poly.length],da=f(a.position)*sign,db=f(b.position)*sign;
+  if(da>=-1e-10)out.push(a);
+  if((da>0&&db<0)||(da<0&&db>0)){const t=da/(da-db);
+   out.push(Object.fromEntries(names.map(n=>[n,a[n].map((v,k)=>v+(b[n][k]-v)*t)])));}
+ }return out;};
+ const cutters=[];
+ for(let gate=0;gate<2;gate++)for(let j=0;j<steps;j++){
+  const z0=minZ+(maxZ-minZ)*j/steps,z1=minZ+(maxZ-minZ)*(j+1)/steps;
+  const a=parkingAccessSection(gate,z0),b=parkingAccessSection(gate,z1);
+  const left=z=>a.left+(b.left-a.left)*(z-z0)/(z1-z0);
+  const right=z=>a.right+(b.right-a.right)*(z-z0)/(z1-z0);
+  cutters.push([v=>v[2]-z0,v=>z1-v[2],v=>v[0]-left(v[2]),v=>right(v[2])-v[0]]);
+ }
+ const count=index?.count??position.count;
+ for(let i=0;i<count;i+=3){let polygons=[[0,1,2].map(j=>vertex(index?index.getX(i+j):i+j))];
+  const initial=polygons[0];
+  if(initial.some(v=>v.position[0]>49)&&initial.some(v=>v.position[2]>minZ-.001)&&initial.some(v=>v.position[2]<maxZ+.001)){
+   for(const cutter of cutters){const kept=[];
+    for(const polygon of polygons){let inside=polygon;
+     for(const plane of cutter){if(inside.length<3)break;
+      const outside=clip(inside,plane,-1);if(outside.length>=3)kept.push(outside);
+      inside=clip(inside,plane,1);
+     }
+    }polygons=kept;
+   }
+  }
+  for(const poly of polygons)for(let j=1;j<poly.length-1;j++){
+   const tri=[poly[0],poly[j],poly[j+1]],a=new T.Vector3(...tri[0].position),
+    b=new T.Vector3(...tri[1].position),c=new T.Vector3(...tri[2].position);
+   if(b.sub(a).cross(c.sub(a)).lengthSq()<1e-18)continue;
+   for(const v of tri)for(const n of names)output[n].push(...v[n]);
+  }
+ }
+ const result=new T.BufferGeometry();
+ for(const n of names)result.setAttribute(n,new T.Float32BufferAttribute(output[n],source.attributes[n].itemSize));
+ result.computeVertexNormals();return result;
+}
+
+// Move precisely the two complete original left-side lanterns, including all
+// batched frame, glass, base and glow parts. Other garden furnishings stay put.
+export function relocateLimousineParkingLamps(scene,m){
+ const garden=scene.getObjectByName('Blumengarten und ansteigender Weg');
+ if(!garden)return;
+ const moves=[{from:[32,-2],to:[47.3,-6]},{from:[30.4,6],to:[47.3,7]}];
+ const materials=new Set([m.frame,m.gold,m.warm,m.glow]);
+ garden.updateWorldMatrix(true,true);
+ for(const move of moves){
+  let baseY=null;
+  garden.traverse(o=>{if(!o.isInstancedMesh||o.material!==m.gold)return;
+   const matrix=new T.Matrix4(),v=new T.Vector3();
+   for(let i=0;i<o.count;i++){o.getMatrixAt(i,matrix);v.setFromMatrixPosition(matrix.premultiply(o.matrixWorld));
+    if(Math.abs(v.x-move.from[0])<.01&&Math.abs(v.z-move.from[1])<.01)baseY=v.y-.09;}
+  });
+  if(baseY===null)throw new Error('Original parking lantern not found');
+  let parts=0;
+  garden.traverse(o=>{if(!o.isInstancedMesh||!materials.has(o.material))return;
+   const inverse=o.matrixWorld.clone().invert(),matrix=new T.Matrix4(),v=new T.Vector3();
+   for(let i=0;i<o.count;i++){
+    o.getMatrixAt(i,matrix);const world=matrix.clone().premultiply(o.matrixWorld);v.setFromMatrixPosition(world);
+    if(Math.abs(v.x-move.from[0])>.16||Math.abs(v.z-move.from[1])>.16)continue;
+    world.elements[12]+=move.to[0]-move.from[0];world.elements[14]+=move.to[1]-move.from[1];
+    world.elements[13]+=LIMO_PARK.asphaltY-baseY;
+    o.setMatrixAt(i,world.premultiply(inverse));parts++;
+   }
+   o.instanceMatrix.needsUpdate=true;o.computeBoundingSphere();
+  });
+  move.parts=parts;
+ }
+ scene.userData.parkingLamps={moves,wallClearance:1.3,spacing:13,baseY:LIMO_PARK.asphaltY};
+ return scene.userData.parkingLamps;
 }
 
 // Grade only actual meadow terrain under the moved compound. Preserve the
@@ -46,15 +155,33 @@ export function prepareLimousineParkingTerrain(scene,m){
    const dx=Math.max(p.minX-q.x,0,q.x-p.maxX);
    const dz=Math.max(p.minZ-q.z,0,q.z-p.maxZ);
    const distance=Math.hypot(dx,dz);
-   if(distance>=buffer||q.y<=target)continue;
-   const influence=1-smooth(Math.min(1,distance/buffer));
-   const newY=q.y+(target-q.y)*influence;
+   let influence=distance<buffer?1-smooth(distance/buffer):0,gradeTarget=target;
+   if(q.z>=19&&q.z<=28.4){
+    for(let gate=0;gate<2;gate++){
+     const s=parkingAccessSection(gate,q.z),d=Math.max(s.left-q.x,0,q.x-s.right);
+     const accessInfluence=1-smooth(Math.min(1,d/2));
+     if(accessInfluence>influence){influence=accessInfluence;
+      gradeTarget=LIMO_PARK.asphaltY+(-.005-LIMO_PARK.asphaltY)*(q.z-19)/9.4-.23;}
+    }
+   }
+   if(!influence||q.y<=gradeTarget)continue;
+   // Protect the unchanged path AND its original supporting bank.
+   const pathOuter=27+gardenPathShift(q.z-8)+2.75+.18-3.4;
+   if(q.x<=pathOuter+.50)continue;
+   const newY=q.y+(gradeTarget-q.y)*influence;
    local.set(q.x,newY,q.z).applyMatrix4(inverse);
    attr.setY(i,local.y);changed++;
   }
-  if(changed){g.computeVertexNormals();g.computeBoundingSphere();
-   o.geometry=g;meshes++;adjusted+=changed;}
-  else g.dispose();
+  // Exact excavation prevents coarse mobile terrain triangles from poking
+  // through the asphalt between graded vertices. Closed paving covers the cut.
+  const world=g.applyMatrix4(o.matrixWorld);
+  const compoundCut=subtractGarageFootprint(world,{minX:p.minX-.19,maxX:p.maxX+.19,
+   minZ:p.minZ-.19,maxZ:p.maxZ+.19});
+  const accessCut=cutParkingAccesses(compoundCut,{minZ:19,maxZ:28.4,steps:64});
+  world.dispose();compoundCut.dispose();
+  o.geometry=accessCut.applyMatrix4(inverse);
+  o.geometry.computeVertexNormals();o.geometry.computeBoundingSphere();
+  meshes++;adjusted+=changed;
  });
  scene.userData.limousineParkingGrade={gradedMeshes:meshes,vertices:adjusted,
   newFootprint:{...p},oldMeadowPreserved:true,smoothBuffer:buffer};
@@ -164,11 +291,11 @@ export function buildLimousineParking(scene,m,originalCar,createCanvas){
  const group=new T.Group();group.name='Privater Limousinenparkplatz – Lumina Leaf Hotel';
  // World translation + road-facing reflection relocate ALL original parts
  // together: three limousines, paving, labels, walls, guardhouse, gates and CCTV.
- // Old x=[32,68],z=[42,79] -> new x=[30,66],z=[19,-18].
- group.position.set(-2,0,61);
+ // Local x=[32,68],z=[42,79] -> world x=[46,82],z=[19,-18].
+ group.position.set(PARKING_SHIFT_X,0,61);
  group.scale.z=-1;
- group.userData={privateParking:true,luxuryParking:true,version:107,
-  relocatedFromWrongSide:true,threeOriginalTreesCleared:true,
+ group.userData={privateParking:true,luxuryParking:true,version:108,
+  relocatedFromWrongSide:true,eastwardShiftMeters:16,gardenPathPreserved:true,
   spaceCount:3,gateCount:2,asphaltY:p.asphaltY,
   placedOnExistingLevelHotelMeadow:true,noAdditionalSceneLights:true};
  scene.add(group);
@@ -178,19 +305,21 @@ export function buildLimousineParking(scene,m,originalCar,createCanvas){
  // One asphalt footprint only: no overlapping top-plane or duplicated road.
  k.box(m.asphalt,(p.minX+p.maxX)/2,y-.075,(p.minZ+p.maxZ)/2,
   p.maxX-p.minX,.15,p.maxZ-p.minZ);
- // Two sloped, non-overlapping road joins (main road ends at z=39.7).
- for(const entry of p.entrances){
-  // Mirrored into road world z=28.3, directly joining the existing
-  // road at z≈28.4 without traversing an unrelated hotel surface.
-  const x0=entry.x-3.32,x1=entry.x+3.32,z0=32.7,z1=p.minZ;
-  const geo=new T.BufferGeometry();
-  geo.setAttribute('position',new T.Float32BufferAttribute([
-   x0,-.005,z0,x1,-.005,z0,x0,y,z1,x1,y,z1],3));
-  geo.setAttribute('uv',new T.Float32BufferAttribute([
-   x0/2,z0/2,x1/2,z0/2,x0/2,z1/2,x1/2,z1/2],2));
-  geo.setIndex([0,2,1,1,2,3]);geo.computeVertexNormals();
-  const ramp=k.mesh(geo,m.asphalt,entry.label+' – sauberer Asphaltanschluss zur Hauptstraße');
-  ramp.castShadow=false;ramp.userData={parkingAccess:true,grade:.065/9.3};
+ // Closed, independently graded approaches, tangent to both gate and road.
+ // Their road mouths stay at x53/x63, within the existing road's east end.
+ for(const [index,entry] of p.entrances.entries()){
+  const left=[],right=[];
+  for(let j=0;j<=64;j++){
+   const z=19+(28.4-19)*j/64,section=parkingAccessSection(index,z);
+   left.push([section.left-PARKING_SHIFT_X,61-z]);
+   right.push([section.right-PARKING_SHIFT_X,61-z]);
+  }
+  const contour=[...left,...right.reverse()];
+  const ramp=closedParkingSurface(contour,(x,z)=>y+(-.005-y)*(42-z)/(42-32.6),m.asphalt,
+   entry.label+' – geschlossener Asphaltanschluss zur bestehenden Straße');
+  ramp.userData={parkingAccess:true,index,roadMouthX:PARKING_ACCESS[index].roadX,
+   gateWorldX:entry.x+PARKING_SHIFT_X,closed:true};
+  group.add(ramp);
  }
 
  // Neat three-bay white road markings. Top is 16mm above the asphalt,
@@ -199,17 +328,17 @@ export function buildLimousineParking(scene,m,originalCar,createCanvas){
  ink.polygonOffset=true;ink.polygonOffsetFactor=-1;ink.polygonOffsetUnits=-2;
  const stripe=(x,z,w,d)=>k.box(ink,x,y+.018,z,w,.008,d);
  for(const bx of p.bays){
-  const width=9.0,z0=55.5,z1=75.7;
+  const width=p.bayWidth,z0=55.5,z1=75.7;
   stripe(bx-width/2,z0+(z1-z0)/2,.11,z1-z0);
   stripe(bx+width/2,z0+(z1-z0)/2,.11,z1-z0);
   stripe(bx,z1,width,.11);
  }
- // One shared 512px sign material for all three asphalt inscriptions.
- const canvas=createCanvas(512,128),ctx=canvas.getContext('2d');
- ctx.clearRect(0,0,512,128);ctx.fillStyle='#f7f6ef';
+ // One shared 1024px sign material for all three asphalt inscriptions.
+ const canvas=createCanvas(1024,256),ctx=canvas.getContext('2d');
+ ctx.clearRect(0,0,1024,256);ctx.fillStyle='#f7f6ef';
  ctx.textAlign='center';ctx.textBaseline='middle';
- ctx.font='bold 61px Arial, Helvetica, sans-serif';
- ctx.fillText('Limousine',256,65,495);
+ ctx.font='bold 122px Arial, Helvetica, sans-serif';
+ ctx.fillText('Limousine',512,130,990);
  const tex=new T.CanvasTexture(canvas);tex.colorSpace=T.SRGBColorSpace;
  tex.minFilter=T.LinearMipmapLinearFilter;tex.anisotropy=4;
  const words=new T.MeshBasicMaterial({name:'Weiße Bodenaufschrift Limousine',
@@ -218,10 +347,12 @@ export function buildLimousineParking(scene,m,originalCar,createCanvas){
  const wordGeo=new T.PlaneGeometry(6.6,1.65);wordGeo.rotateX(-Math.PI/2);
  const labels=new T.InstancedMesh(wordGeo,words,p.bays.length);
  const dummy=new T.Object3D();
+ // Cancel the compound's reflection for undistorted glyphs, then turn 180°.
+ dummy.scale.z=-1;dummy.rotation.y=Math.PI;
  p.bays.forEach((x,i)=>{dummy.position.set(x,y+.023,52.8);
   dummy.updateMatrix();labels.setMatrixAt(i,dummy.matrix);});
  labels.instanceMatrix.needsUpdate=true;labels.computeBoundingSphere();
- labels.castShadow=false;labels.name='Drei gut lesbare Limousine-Bodenaufschriften';
+ labels.castShadow=false;labels.userData={oppositeSideReadable:true,unmirrored:true,rotationDegrees:180};labels.name='Drei gut lesbare Limousine-Bodenaufschriften';
  group.add(labels);
 
  // Wall and safety fence follow the same exact segments, but stop at both gates.
