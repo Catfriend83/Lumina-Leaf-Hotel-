@@ -74,7 +74,10 @@ export async function createScene({createCanvas,loadTexture,onProgress=()=>{},mo
  await phase(39,'Hotel, Pool und Limousine aufbauen …');
  buildHotel(scene,materials);const car=buildCar(scene,materials,carWrap);const activity=buildLakeActivity(scene,materials);
  await phase(52,'Straßen, Dorf und Außenanlagen vorbereiten …');
- removeVegetationOnRoad(scene,materials);clearVillageConstruction(scene,materials);applyVillagePlazaFinish(scene,materials);closeEntryPavingSeam(scene,materials);reconstructHotelVerge(scene,materials);closeHotelPavingSeams(scene,materials);clearGarageSite(scene,materials);buildLakePathFurnishing(scene,materials);
+ // The prepared village paving data uses the legacy garage excavation.
+ // Keep that topology until finishLobbyGarage applies the current excavation
+ // after all index-based village repairs have completed.
+ removeVegetationOnRoad(scene,materials);clearVillageConstruction(scene,materials);applyVillagePlazaFinish(scene,materials);closeEntryPavingSeam(scene,materials);reconstructHotelVerge(scene,materials);closeHotelPavingSeams(scene,materials);clearGarageSite(scene,materials,true);buildLakePathFurnishing(scene,materials);
  scene.updateMatrixWorld(true);
  await phase(66,'Alpenwiesen und Pflanzen berechnen …');
  const meadow=applyAlpineMeadows(scene,materials,{mobile});scene.userData.alpineMeadows=meadow.report;placeTownhallOnPlaza(scene,materials,meadow.controller);refineTownhallPlaza(scene,materials,meadow.controller);thinLakePathFurnishing(scene);repairTownhallFloor(scene,materials,meadow.controller);repairChurchFloor(scene,materials,meadow.controller);rebuildCompletePlaza(scene,materials,meadow.controller);replaceAlpineForest(scene,materials,meadow.controller,{mobile});
