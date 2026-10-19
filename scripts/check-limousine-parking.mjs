@@ -58,5 +58,32 @@ for(const o of park.children.filter(o=>o.userData.parkingAccess)){
  }
  assert([...counts.values()].every(n=>n===2),'Closed manifold approach');
 }
+// Inspect actual new geometry: plants remain outside paving and the unchanged path.
+const landscape=park.getObjectByName('Alpiner Limousinenhof – Pflanzung und Ausstattung');
+assert(landscape);assert.equal(landscape.userData.trees,2);
+const plantNames=new Set(['Salbeigrüne Sträucher – Limousinenhof','Ziergras – Limousinenhof']);
+let plants=0;
+landscape.traverse(o=>{if(!o.isInstancedMesh||!plantNames.has(o.material.name))return;
+ for(let i=0;i<o.count;i++){const matrix=new T.Matrix4();o.getMatrixAt(i,matrix);
+  matrix.premultiply(o.matrixWorld);const v=new T.Vector3().setFromMatrixPosition(matrix);
+  assert(Number.isFinite(v.y));
+  assert(!(v.x>=46&&v.x<=82&&v.z>=-18&&v.z<=19),'Plants outside parking surface');
+  if(v.z>19&&v.z<28.4)for(let lane=0;lane<2;lane++){
+   const a=parkingAccessSection(lane,v.z);
+   assert(v.x<a.left||v.x>a.right,'Plants outside access lanes');
+  }
+  plants++;
+ }
+});
+assert(plants>100);assert.equal(landscape.children.filter(o=>o.isPointLight).length,3);
+for(const o of landscape.children.filter(o=>o.userData.landscapeBed||o.userData.parkingDrivewayEdging)){
+ const counts=new Map(),ix=o.geometry.index;
+ for(let i=0;i<ix.count;i+=3)for(let j=0;j<3;j++){
+  const a=ix.getX(i+j),b=ix.getX(i+(j+1)%3),key=[Math.min(a,b),Math.max(a,b)].join(',');
+  counts.set(key,(counts.get(key)||0)+1);
+ }
+ assert([...counts.values()].every(n=>n===2),'Closed planting and curb geometry');
+}
+console.log(JSON.stringify({luxuryLandscapingChecked:true,plantParts:plants,...landscape.userData}));
 console.log(JSON.stringify({pathUnchanged:true,parkedCars:3,bayWidth:7.5,
  lamps:2,uniformLampSpacing:13,unmirroredLabels:3,terrainSamples:checked,closedApproaches:2}));

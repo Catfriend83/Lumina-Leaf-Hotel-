@@ -294,13 +294,16 @@ export function buildLimousineParking(scene,m,originalCar,createCanvas){
  // Local x=[32,68],z=[42,79] -> world x=[46,82],z=[19,-18].
  group.position.set(PARKING_SHIFT_X,0,61);
  group.scale.z=-1;
- group.userData={privateParking:true,luxuryParking:true,version:108,
+ group.userData={privateParking:true,luxuryParking:true,version:110,
   relocatedFromWrongSide:true,eastwardShiftMeters:16,gardenPathPreserved:true,
   spaceCount:3,gateCount:2,asphaltY:p.asphaltY,
-  placedOnExistingLevelHotelMeadow:true,noAdditionalSceneLights:true};
+  placedOnExistingLevelHotelMeadow:true,noAdditionalSceneLights:false};
  scene.add(group);
  const k=new Kit(group),y=p.asphaltY,wallHeight=1.42;
- const stone=m.stone,metal=m.frame,mark=m.roadPaint;
+ const stone=m.stone.clone(),metal=m.frame.clone(),mark=m.roadPaint;
+ stone.name='Warmer Kalkstein – Limousinenhof';stone.color.set('#e7dfcc');
+ metal.name='Dunkle Bronze – Limousinenhof';metal.color.set('#40392f');
+ metal.metalness=.65;metal.roughness=.4;
 
  // One asphalt footprint only: no overlapping top-plane or duplicated road.
  k.box(m.asphalt,(p.minX+p.maxX)/2,y-.075,(p.minZ+p.maxZ)/2,
@@ -365,6 +368,7 @@ export function buildLimousineParking(scene,m,originalCar,createCanvas){
  ];
  for(const w of walls){
   k.box(stone,w.x,y+wallHeight/2,w.z,w.w,wallHeight,w.d);
+  k.box(stone,w.x,y+wallHeight+.045,w.z,w.w+.10,.09,w.d+.10);
   const fenceH=1.20,top=y+wallHeight;
   for(const t of [0.31,1.05]){
    if(w.axis==='x')k.box(metal,w.x,top+t,w.z,w.w,.055,.075);
@@ -395,7 +399,12 @@ export function buildLimousineParking(scene,m,originalCar,createCanvas){
  const glass=m.glass.clone();glass.name='Wärterhäuschen – echtes Sicherheitsglas';
  glass.opacity=.30;glass.depthWrite=false;
  k.box(stone,hx,y+.16,hz,5.1,.32,5.1);
- k.box(stone,hx,y+3.3,hz,5.6,.24,5.5);
+ k.box(m.wood,hx,y+3.3,hz,6.3,.24,6.2);
+ k.box(metal,hx,y+3.45,hz,6.4,.06,6.3);
+ for(const zz of [hz-2.39,hz+2.39])k.box(m.wood,hx,y+.48,zz,4.5,.32,.09);
+ for(const xx of [hx-2.39,hx+2.39])k.box(m.wood,xx,y+.48,hz,.09,.32,4.5);
+ for(const xx of [hx-2.4,hx+2.4])for(const zz of [hz-2.4,hz+2.4])
+  k.box(m.wood,xx,y+1.85,zz,.44,2.85,.44);
  for(const xx of [hx-2.4,hx+2.4]){
   for(const zz of [hz-2.4,hz+2.4])k.box(stone,xx,y+1.83,zz,.42,3.25,.42);
  }
@@ -406,9 +415,9 @@ export function buildLimousineParking(scene,m,originalCar,createCanvas){
   for(const zz of [hz-1.1,hz+1.1])k.box(glass,xx,y+1.81,zz,.065,2.65,1.85);
  }
  // Stone-framed central entrance door, opening toward the gate lanes.
- k.box(metal,hx,y+1.36,hz+2.405,.95,2.55,.06);
- k.box(glass,hx,y+1.40,hz+2.448,.80,2.33,.025);
- k.ball(m.gold,hx+.33,y+1.35,hz+2.48,.043);
+ k.box(metal,hx,y+1.36,hz-2.405,.95,2.55,.06);
+ k.box(glass,hx,y+1.40,hz-2.448,.80,2.33,.025);
+ k.ball(m.gold,hx+.33,y+1.35,hz-2.48,.043);
  // Security camera housings are solid, with no live feeds or render targets.
  const cameras=[
   {x:p.maxX-1.2,z:p.maxZ-1.0,tx:p.bays[0],tz:63},
@@ -448,9 +457,101 @@ export function buildLimousineParking(scene,m,originalCar,createCanvas){
  k.finish();
 
  // Do this after building the static car once; geometry and artwork are shared.
+ buildLuxuryParkingLandscape(scene,group,m,createCanvas,stone,metal);
  const cars=copyParkedLimousines(group,originalCar,p.bays);
  group.userData.parkedCarDrawGroups=cars.drawGroups;
  group.userData.security={fence:true,guardhouse:true,cameras:4,floodlightOn:false,
   barrierCount:2,privateSigns:2};
  return group;
+}
+
+// V110: all additions use compound-local coordinates. Existing vehicles,
+// path, terrain repairs and the two gate/road mouths remain unchanged.
+function buildLuxuryParkingLandscape(scene,root,m,createCanvas,stone,bronze){
+ const g=new T.Group();g.name='Alpiner Limousinenhof – Pflanzung und Ausstattung';root.add(g);
+ const k=new Kit(g),y=LIMO_PARK.asphaltY,hx=LIMO_PARK.guardX,hz=46.2;
+ const terrain=[];scene.updateMatrixWorld(true);
+ scene.traverse(o=>{if(o.isMesh&&!o.isInstancedMesh&&
+  (o.material===m.meadow||o.name==='Wiesen und natürlicher Talboden'))terrain.push(o);});
+ const ray=new T.Raycaster();
+ const ground=(x,z)=>{ray.set(new T.Vector3(x+PARKING_SHIFT_X,50,61-z),new T.Vector3(0,-1,0));
+  return ray.intersectObjects(terrain,false)[0]?.point.y??y-.1;};
+ const leaf=m.leaf2.clone();leaf.name='Salbeigrüne Sträucher – Limousinenhof';leaf.color.set('#5b7042');
+ const grass=m.grassBlade.clone();grass.name='Ziergras – Limousinenhof';grass.color.set('#a09962');
+ const mulch=m.soil.clone();mulch.name='Pflanzbeete – Limousinenhof';mulch.color.set('#42382a');
+ const lightMat=new T.MeshStandardMaterial({name:'Warmweiße Hofleuchten',color:'#ffdfac',
+  emissive:'#ffc477',emissiveIntensity:1.1,roughness:.45});
+ const features={beds:0,shrubs:0,grasses:0,trees:0,bollards:0};
+ const shrub=(x,z)=>{const h=ground(x,z);k.ball(leaf,x,h+.40,z,.48,.42,.43);features.shrubs++;};
+ const tuft=(x,z)=>{const h=ground(x,z);
+  for(let i=0;i<5;i++){const a=i*Math.PI*2/5;
+   k.line(grass,[x,h,z],[x+Math.cos(a)*.22,h+.45+(i%2)*.12,z+Math.sin(a)*.22],.022);}
+  features.grasses++;};
+ const rock=(x,z)=>{const h=ground(x,z);k.ball(stone,x,h+.13,z,.35,.23,.29);};
+ const bed=(contour,name)=>{const o=closedParkingSurface(contour,(x,z)=>ground(x,z)+.025,mulch,name);
+  o.userData.landscapeBed=true;g.add(o);features.beds++;};
+ const strip=(x0,x1,z0,z1)=>{
+  bed([[x0,z0],[x1,z0],[x1,z1],[x0,z1]],'Natursteinbegleitetes Pflanzbeet');
+  for(let z=z0+.6;z<z1-.3;z+=1.6){shrub((x0+x1)/2,z);tuft(x0+.22,z+.65);}
+  for(let z=z0+.4;z<z1;z+=4.8)rock(x1-.16,z);
+ };
+ // West strip stays clear of the garden path, including its supporting bank.
+ strip(30.65,31.55,46,78.5);strip(68.5,70.1,45,79.4);
+ bed([[31.6,79.6],[70.1,79.6],[70.1,81.1],[31.6,81.1]],'Rückwärtiger grüner Abschluss');
+ for(let x=32.3;x<70;x+=1.8){shrub(x,80.3);tuft(x+.6,80.7);}
+ // Continuous raised stone edges follow the unchanged driveway contours.
+ for(let lane=0;lane<2;lane++)for(const side of ['left','right']){
+  const inner=[],outer=[];
+  for(let j=0;j<=64;j++){const wz=19.1+8.7*j/64,section=parkingAccessSection(lane,wz);
+   const x=section[side]-PARKING_SHIFT_X,sign=side==='left'?-1:1;
+   inner.push([x+sign*.025,61-wz]);outer.push([x+sign*.18,61-wz]);}
+  const edge=closedParkingSurface([...inner,...outer.reverse()],
+   (x,z)=>y+(-.005-y)*(42-z)/9.4+.06,stone,'Natursteinrand an der Hofzufahrt');
+  edge.userData.parkingDrivewayEdging=true;g.add(edge);
+ }
+ // Low planting in the actual free space BETWEEN the existing curved lanes.
+ const left=[],right=[];
+ for(let j=0;j<=24;j++){const wz=20.1+7.0*j/24,a=parkingAccessSection(0,wz),b=parkingAccessSection(1,wz);
+  left.push([a.right+.35-PARKING_SHIFT_X,61-wz]);
+  right.push([b.left-.35-PARKING_SHIFT_X,61-wz]);}
+ bed([...left,...right.reverse()],'Niedrige Pflanzinsel zwischen Einfahrt und Ausfahrt');
+ for(let wz=20.7;wz<27;wz+=1.2){const a=parkingAccessSection(0,wz),b=parkingAccessSection(1,wz);
+  const x=(a.right+b.left)/2-PARKING_SHIFT_X;tuft(x,61-wz);rock(x+.18,61-wz+.38);}
+ // Two compact conifers on the outer eastern flank; no trees at road mouths.
+ for(const z of [56,73]){const x=69.35,h=ground(x,z);
+  k.cyl(m.trunk,x,h+1.4,z,.12,2.8);
+  for(let i=0;i<3;i++)k.put('cone',m.pine2,x,h+2.1+i*.72,z,1.1-i*.22,2.1,1.1-i*.22);
+  features.trees++;}
+ // Flush inlays remain beyond the bay edges and clear of all tyres.
+ for(const x of [43.75,54.95])k.box(stone,x,y+.003,65.6,.22,.006,22);
+ k.box(stone,50,y+.003,77.5,34,.006,.24);
+ const bollard=(x,z,h=y)=>{k.box(bronze,x,h+.38,z,.18,.76,.18);
+  k.box(lightMat,x,h+.68,z,.185,.10,.185);features.bollards++;};
+ for(const x of [37.35,44.65,56.85,64.15])bollard(x,43.5);
+ for(const z of [49,61,76])bollard(69.5,z,ground(69.5,z));
+ for(const x of [hx-2.0,hx+2.0])k.box(lightMat,x,y+3.15,hz-1.8,.65,.035,.12);
+ // Use proper, unmirrored text despite the parent z reflection.
+ const sign=(title,subtitle,w,h,x,yy,z)=>{
+  const mat=m.makeSign(title,{subtitle,foreground:'#d7b77d',background:'#202c28',
+   width:2048,height:512,italic:false,fontScale:.33});
+  const mesh=new T.Mesh(new T.PlaneGeometry(w,h),mat);
+  mesh.position.set(x,yy,z);mesh.rotation.y=Math.PI;mesh.scale.x=-1;
+  mesh.name=title+' – Hofbeschilderung';mesh.castShadow=false;g.add(mesh);};
+ sign('Lumina Leaf','LIMOUSINENSERVICE',4.8,.85,hx,y+2.75,hz-2.46);
+ for(const [i,entry]of LIMO_PARK.entrances.entries()){
+  sign(entry.label,'PRIVAT',2.2,.65,entry.x+(i===0?-4.15:4.15),y+1.15,41.78);
+  const wz=24.2,s=parkingAccessSection(i,wz),a=PARKING_ACCESS[i];
+  const t=(28.4-wz)/9.4,slope=(a.gateX-a.roadX)*6*t*(1-t)/9.4;
+  const ar=new T.Group();ar.position.set(s.center-PARKING_SHIFT_X,y+.08,61-wz);
+  ar.rotation.y=Math.atan(slope)+(i===0?0:Math.PI);
+  const ak=new Kit(ar);ak.box(m.roadPaint,0,0,-.25,.13,.008,1.3);
+  ak.line(m.roadPaint,[0,0,.65],[-.42,0,.1],.065);
+  ak.line(m.roadPaint,[0,0,.65],[.42,0,.1],.065);ak.finish();g.add(ar);
+ }
+ k.finish();
+ // Small unshadowed pools of warm light, bounded to the new compound only.
+ for(const [x,z]of [[hx,43.1],[38,44],[64,44]]){const l=new T.PointLight('#ffd098',2.0,5.5,2);
+  l.position.set(x,y+2.5,z);l.name='Warmes Licht am Limousinenhof';l.castShadow=false;g.add(l);}
+ g.userData={luxuryParkingLandscape:true,...features,existingPathPreserved:true,
+  existingGateMouthsPreserved:true,additionalShadowMaps:0};
 }
