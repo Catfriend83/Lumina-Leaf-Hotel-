@@ -13,8 +13,10 @@ def main_z(x):
 main=[[float(x),main_z(x)] for x in np.linspace(-58.5,66.5,251)]
 def bezier(p,steps=90):
     return [[float(v) for v in sum(np.array(p[j])*math.comb(3,j)*t**j*(1-t)**(3-j) for j in range(4))] for t in np.linspace(0,1,steps+1)]
-entry=bezier([[44,main_z(44)],[35,main_z(44)-1],[34,35.7],[20,35.7]])
-exit=bezier([[-20,35.7],[-34,35.7],[-35,main_z(-44)-1],[-44,main_z(-44)]])
+# Tangents match the main road at both mouths, with much gentler turns.
+def main_slope(x):return (main_z(x+.01)-main_z(x-.01))/.02
+entry=bezier([[56,main_z(56)],[42,main_z(56)-14*main_slope(56)],[34,35.7],[20,35.7]])
+exit=bezier([[-20,35.7],[-34,35.7],[-38,main_z(-52)+14*main_slope(-52)],[-52,main_z(-52)]])
 drive=entry+[[float(x),35.7] for x in np.linspace(20,-20,81)[1:]]+exit[1:]
 domain=box(-58.5,28.4,66.5,65)
 main_line=LineString(main);drive_line=LineString(drive)
@@ -22,7 +24,17 @@ garage=box(-18.715,28.4,-6.515,37.8)
 vip=box(-3.20,28.4,16.10,37.8)
 # Rear apron stops at the first outer path-border face, world x=20.67.
 # Preserve the garden path and its original sidewalk; replace only the intervening lawn.
-road=unary_union([main_line.buffer(5.8,cap_style=2,quad_segs=16),drive_line.buffer(2.1,cap_style=2,quad_segs=16),garage,vip,box(-6.515,28.4,-3.20,33.6),box(16.10,28.4,20.67,33.6)]).intersection(domain)
+# A continuous swept envelope of the actual 16.9 m body plus 45 cm clearance.
+# Interpolate neighbouring poses with convex hulls so no gap remains between samples.
+def swept_envelope(points):
+    poses=[]
+    for i,(x,z) in enumerate(points):
+        a=points[max(0,i-1)];b=points[min(len(points)-1,i+1)]
+        dx,dz=b[0]-a[0],b[1]-a[1];l=math.hypot(dx,dz);dx/=l;dz/=l
+        poses.append(Polygon([(x+u*dx-v*dz,z+u*dz+v*dx) for u,v in [(-8.9,-2.25),(8.9,-2.25),(8.9,2.25),(-8.9,2.25)]]))
+    return unary_union([a.union(b).convex_hull for a,b in zip(poses,poses[1:])]).simplify(.005,preserve_topology=True)
+swept=unary_union([swept_envelope(entry),swept_envelope(exit)])
+road=unary_union([swept,main_line.buffer(5.8,cap_style=2,quad_segs=16),drive_line.buffer(3.2,cap_style=2,quad_segs=16),garage,vip,box(-6.515,28.4,-3.20,33.6),box(16.10,28.4,20.67,33.6)]).intersection(domain)
 # Rounded curb returns at driveway junctions; the hotel and garage thresholds stay open.
 curb=road.buffer(.3,quad_segs=12).difference(road).intersection(domain)
 # Flush apron termination: no raised curb across the new straight asphalt/grass edge.
@@ -58,9 +70,11 @@ def radius(points):
         a,b,c=map(np.array,[a,b,c]);cross=abs(float((b[0]-a[0])*(c[1]-a[1])-(b[1]-a[1])*(c[0]-a[0])))
         if cross>1e-8:values.append(float(np.linalg.norm(b-a)*np.linalg.norm(c-b)*np.linalg.norm(c-a)/(2*cross)))
     return min(values)
-data={'bounds':{'minX':-58.5,'maxX':66.5,'minZ':28.4,'maxZ':65},'main':main,'entry':entry,'exit':exit,'drive':drive,'road':mesh(road),'curb':mesh(curb),'walk':mesh(walk),'grass':mesh(grass,True),'mainWidth':11.6,'driveWidth':4.2,'shiftMeters':20,'minimumRadii':{'main':radius(main),'entry':radius(entry),'exit':radius(exit)}}
+data={'bounds':{'minX':-58.5,'maxX':66.5,'minZ':28.4,'maxZ':65},'main':main,'entry':entry,'exit':exit,'drive':drive,'road':mesh(road),'curb':mesh(curb),'walk':mesh(walk),'grass':mesh(grass,True),'mainWidth':11.6,'driveWidth':6.4,'shiftMeters':20,'minimumRadii':{'main':radius(main),'entry':radius(entry),'exit':radius(exit)}}
 assert road.is_valid and curb.is_valid and walk.is_valid and grass.is_valid
-assert all(x>6 for x in data['minimumRadii'].values()),data['minimumRadii']
+assert data['minimumRadii']['entry']>28 and data['minimumRadii']['exit']>36,data['minimumRadii']
+assert road.buffer(.000001).covers(swept.intersection(domain))
+data['limousineEnvelope']={'length':16.9,'width':3.6,'safetyClearance':.45,'continuousSweptEnvelope':True}
 assert abs(road.area+curb.area+walk.area+grass.area-domain.area)<1e-5
 Path('dist/hotel-drive-data.js').write_text('export const HOTEL_DRIVE='+json.dumps(data,separators=(',',':'))+';\n')
 print(json.dumps({'radii':data['minimumRadii'],'surfaceAreas':{'road':road.area,'grass':grass.area},'vertices':{s:len(data[s]['vertices']) for s in ['road','curb','walk','grass']}}))

@@ -16,19 +16,19 @@ import {POOL_SHIFT_X} from './pool-connection.js?v=91';
 function plant(k,m,x,y,z,s=1,random=rand){k.cyl(m.frame,x,y+.32*s,z,.35*s,.64*s);k.cyl(m.gold,x,y+.6*s,z,.36*s,.045*s);for(let i=0;i<9;i++){const a=i*2.4,tip=[x+Math.cos(a)*s*.65,y+(1.2+random()*.6)*s,z+Math.sin(a)*s*.65];k.line(m.trunk,[x,y+.54*s,z],tip,.015*s);k.put(broadLeaf,i%2?m.leaf:m.leaf2,...tip,.7*s,.85*s,.85*s,Math.sin(a)*.55,a,-Math.cos(a)*.55);}}
 function railing(k,m,x1,x2,y,z){k.box(m.glass,(x1+x2)/2,y+.52,z,x2-x1,1.04,.055);k.box(m.chrome,(x1+x2)/2,y+1.04,z,x2-x1,.047,.05);for(let x=x1;x<=x2+.1;x+=1.7)k.box(m.chrome,x,y+.52,z,.035,1.06,.045);}
 const gardenBulb=new T.IcosahedronGeometry(1,0);
-function flowerbed(k,m,x,z,w,d,y=.12,{surface=null,warpX=null,sizeScale=null}={}){
+function flowerbed(k,m,x,z,w,d,y=.12,{surface=null,warpX=null,sizeScale=null,random=rand}={}){
  if(!surface){k.box(m.stone,x,y,z,w+.3,.25,d+.3);k.box(m.soil,x,y+.15,z,w,.16,d);}
  const nx=Math.max(1,Math.ceil(w/.85)),nz=Math.max(1,Math.ceil(d/.80)),narrow=d<1.5;
  for(let iz=0;iz<nz;iz++)for(let ix=0;ix<nx;ix++){
-  let px=x-w/2+(ix+.5)*w/nx+(rand()-.5)*.22;const pz=z-d/2+(iz+.5)*d/nz+(rand()-.5)*.20;
+  let px=x-w/2+(ix+.5)*w/nx+(random()-.5)*.22;const pz=z-d/2+(iz+.5)*d/nz+(random()-.5)*.20;
   if(warpX)px=warpX(px,pz);
-  const size=((narrow?.75:1.18)+rand()*(narrow?.22:.42))*(sizeScale?sizeScale(px,pz):1);
+  const size=((narrow?.75:1.18)+random()*(narrow?.22:.42))*(sizeScale?sizeScale(px,pz):1);
   const ground=surface?surface(px,pz):y;
-  shrubCluster(k,m,px,ground+.13,pz,size,rand);
+  shrubCluster(k,m,px,ground+.13,pz,size,random);
   if((ix+iz)%3===0){
-   const flower=(ix+iz)%2===0?m.flowerWhite:m.flowerRed,fx=px+(rand()-.5)*.25,fz=pz+(rand()-.5)*.25,fy=ground+.13+size*.91;
+   const flower=(ix+iz)%2===0?m.flowerWhite:m.flowerRed,fx=px+(random()-.5)*.25,fz=pz+(random()-.5)*.25,fy=ground+.13+size*.91;
    const petalGeometry=flower===m.flowerWhite?whitePetal:redPetal;
-   for(let petal=0;petal<7;petal++)k.put(petalGeometry,flower,fx,fy,fz,narrow?.46:.72,narrow?.27:.43,.35,-.48+(rand()-.5)*.18,0,petal*TAU/7);
+   for(let petal=0;petal<7;petal++)k.put(petalGeometry,flower,fx,fy,fz,narrow?.46:.72,narrow?.27:.43,.35,-.48+(random()-.5)*.18,0,petal*TAU/7);
    k.put(gardenBulb,m.flowerGold,fx,fy+.025,fz,.067,.026,.067);
   }
   if((ix+iz)%3===0){const fy=ground+size*.46;k.put(gardenBulb,m.warm,px,fy,pz,.075,.075,.075);}
@@ -120,7 +120,8 @@ export function buildHotel(root,m){const f=makeHotelExteriorMaterials(m),sideLig
  flowerbed(k,m,-25,6,3.3,21,.02);
  // Consume the former bed's random draws so every retained garden stays in place.
  flowerbed(new Kit(new T.Group()),m,-3.1,17.5,4,3.1,.05);
- flowerbed(k,m,16,18.2,3.7,3.1,.04);
+ flowerbed(new Kit(new T.Group()),m,16,18.2,3.7,3.1,.04);
+ flowerbed(k,m,18.9,18.2,6.5,3.1,.04,{random:rng(1120182)});
  // Remove the six seaward lawn lanterns; the opposite garden row is retained.
  for(const x of [32])for(let z=-26;z<23;z+=8)if(z!==22)addLamp(k,m,x+(x>0?pathShift(z):0),bankHeight(x+(x>0?pathShift(z):0),z),z,2.05);
  // Rear landscaping follows the enlarged hotel's rotated footprint.

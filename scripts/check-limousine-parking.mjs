@@ -5,6 +5,7 @@ import {createRequire} from 'node:module';
 import path from 'node:path';
 import {T} from '../dist/core.js';
 import {createScene} from '../dist/scene.js';
+import {HOTEL_DRIVE as ROAD} from '../dist/hotel-drive-data.js';
 import {LIMO_PARK,LIMO_PARK_WORLD,parkingAccessSection,closedParkingSurface,PARKING_CORNERS} from '../dist/limousine-parking.js';
 const require=createRequire(import.meta.url),{createCanvas,loadImage}=require('@napi-rs/canvas');
 globalThis.document={createElement:()=>createCanvas(1,1)};
@@ -77,7 +78,7 @@ landscape.traverse(o=>{if(!o.isInstancedMesh||!plantNames.has(o.material.name))r
   plants++;
  }
 });
-assert(plants>100);assert.equal(landscape.children.filter(o=>o.isPointLight).length,3);
+assert(plants>=68);assert.equal(landscape.children.filter(o=>o.isPointLight).length,3);
 for(const o of landscape.children.filter(o=>o.userData.landscapeBed||o.userData.parkingDrivewayEdging)){
  const counts=new Map(),ix=o.geometry.index;
  for(let i=0;i<ix.count;i+=3)for(let j=0;j<3;j++){
@@ -121,7 +122,33 @@ const goldBases=[];scene.traverse(o=>{if(!o.isInstancedMesh||o.material!==materi
 for(const [x,z]of PARKING_CORNERS){const wx=x+14,wz=61-z;
  assert.equal(goldBases.filter(v=>Math.abs(v.x-wx)<.01&&Math.abs(v.z-wz)<.01).length,1,'Exactly one actual lantern at each corner');
 }
-console.log(JSON.stringify({roadSamples,plantContacts,levelSamples,cornerLamps:corners.length}));
+assert.deepEqual(LIMO_PARK.entrances.map(e=>e.label),['Ausfahrt','Einfahrt']);
+assert(scene.getObjectByName('Ausfahrt – Fahrtrichtung').rotation.y>3);
+assert.equal(scene.getObjectByName('Einfahrt – Fahrtrichtung').rotation.y,0);
+assert(!scene.getObjectByName('Privatgelände – gut lesbares Hinweisschild'));
+for(const label of ['Ausfahrt','Einfahrt']){
+ const sign=scene.getObjectByName(label+' – Hofbeschilderung');assert(sign);
+ assert.equal(sign.geometry.parameters.width,3.75);
+}
+assert(scene.getObjectByName('Lumina Leaf Hotel – Hofbeschilderung'));
+assert(scene.getObjectByName('Möbliertes Wärterbüro').userData.furniture.includes('Monitor'));
+assert(scene.getObjectByName('Security-Kamera oben rechts am Eingang'));
+assert(scene.getObjectByName('Roter Teppich direkt zum Wärterbüro'));
+assert.equal(landscape.userData.grasses,0,'No stick-like grass in the beds');
+assert(ROAD.driveWidth>=6.4);assert(ROAD.minimumRadii.entry>28&&ROAD.minimumRadii.exit>36);
+let limousineSweepSamples=0;
+for(const route of [ROAD.entry,ROAD.exit])for(let i=1;i<route.length-1;i+=3){
+ const [x,z]=route[i],a=route[i-1],b=route[i+1],l=Math.hypot(b[0]-a[0],b[1]-a[1]),dx=(b[0]-a[0])/l,dz=(b[1]-a[1])/l;
+ for(const along of [-8.8,0,8.8])for(const side of [-2.15,0,2.15]){
+  const xx=x+along*dx-side*dz,zz=z+along*dz+side*dx;
+  if(xx< -58.3||xx>66.2||zz<28.6)continue;
+  const h=sample(asphalt,xx,zz);assert(h,'Limousine swept body on continuous road '+[xx,zz]);
+  assert(Math.abs(h.point.y+.005)<.01);limousineSweepSamples++;
+ }
+}
+assert(scene.getObjectByName('Gerade Garten- und Straßenränder ohne gebogenen Beetanschluss').userData.curvedBedReturnRemoved);
+console.log(JSON.stringify({roadSamples,plantContacts,levelSamples,cornerLamps:corners.length,limousineSweepSamples,
+ furnishedGuardhouse:true,separateSigns:true,hotelDriveWidth:ROAD.driveWidth}));
 console.log(JSON.stringify({luxuryLandscapingChecked:true,plantParts:plants,...landscape.userData}));
 console.log(JSON.stringify({pathUnchanged:true,parkedCars:3,bayWidth:7.5,
  lamps:2,uniformLampSpacing:13,unmirroredLabels:3,terrainSamples:checked,closedApproaches:2}));

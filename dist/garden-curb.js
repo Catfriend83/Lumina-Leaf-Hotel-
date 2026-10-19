@@ -8,25 +8,30 @@ export function bedCurbX(z){const q=7-z,rounded=q<=-1?0:q>=1?q:(q+1)*(q+1)/4;ret
 export function gardenCurbCenter(z){const localZ=z-8,old=27+gardenPathShift(localZ)-2.75-.15-3.4,t=smooth((localZ+20)/6);return old*(1-t)+bedCurbX(localZ)*t;}
 const curbTop=z=>gardenWalkHeight(z-8)+.15-.03*smooth((z-5)/10);
 
+// V112: retain the side boundary, but remove its ornamental curved return
+// toward the flowerbed. The roadside curb is a separate, capped straight solid.
 export function buildGardenCurb(root,m){
- const half=GARDEN_CURB.width/2,left=[],right=[];
- for(let z=-41;z<=26.75+.0001;z+=.125){const x=gardenCurbCenter(z),dx=(gardenCurbCenter(z+.001)-gardenCurbCenter(z-.001))/.002,n=Math.hypot(dx,1);left.push([x-half/n,z+half*dx/n]);right.push([x+half/n,z-half*dx/n]);}
- // A tangential quarter-circle joins the existing VIP curb, rather than ending
- // in a separate butt joint. The right arm of that curb is part of this mesh.
- const straightCount=left.length,c=[17.4,26.75],r=GARDEN_CURB.turnRadius;
- for(let i=1;i<=64;i++){const a=i*Math.PI/128;left.push([c[0]+(r-half)*Math.cos(a),c[1]+(r-half)*Math.sin(a)]);}
- const limit=Math.asin((28.1-c[1])/(r+half));for(let i=1;i<=48;i++){const a=i*limit/48;right.push([c[0]+(r+half)*Math.cos(a),c[1]+(r+half)*Math.sin(a)]);}
- const contour=[[6.3,28.1],...left.toReversed(),...right,[66.5,28.1],[66.5,28.4],[6.3,28.4]],faces=[],positions=[],indices=[],rightOffset=1+left.length;
- // Paired cross-sections retain the hillside grade without degenerate cap fans
- // along long straight sections. Only the flat joined head is triangulated.
- for(let i=0;i<straightCount-1;i++){const a=left.length-i,b=a-1,c=rightOffset+i,d=c+1;faces.push([a,b,d],[a,d,c]);}
- const patch=[0,...Array.from({length:left.length-straightCount+1},(_,i)=>i+1),...Array.from({length:right.length-straightCount+1},(_,i)=>rightOffset+straightCount-1+i),contour.length-3,contour.length-2,contour.length-1];
- for(const face of T.ShapeUtils.triangulateShape(patch.map(i=>new T.Vector2(...contour[i])),[]))faces.push(face.map(i=>patch[i]));
- // Closed sides extend below the unchanged soil; there is no open underside.
- for(const [x,z] of contour){const top=curbTop(z),bottom=z>=28.1?-.005:Math.min(top-.125,gardenWalkHeight(z-8)*.7-.13);positions.push(x,top,z,x,bottom,z);}
- for(const [a,b,c] of faces){const p=contour[a],q=contour[b],s=contour[c],positive=(q[1]-p[1])*(s[0]-p[0])-(q[0]-p[0])*(s[1]-p[1])>0;const ids=positive?[a,b,c]:[a,c,b];indices.push(...ids.map(i=>i*2),...ids.toReversed().map(i=>i*2+1));}
- // Outward walls account for x/z's orientation relative to the vertical axis.
- let area=0;for(let i=0;i<contour.length;i++){const a=contour[i],b=contour[(i+1)%contour.length];area+=a[0]*b[1]-b[0]*a[1];}
- for(let i=0;i<contour.length;i++){const j=(i+1)%contour.length,a=2*i,b=2*j;const face=[a,a+1,b+1,a,b+1,b];indices.push(...(area>0?face.toReversed():face));}
- const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(positions,3));g.setIndex(indices);g.computeVertexNormals();const mesh=new T.Mesh(g,m.ivory);mesh.name='Einziger geschlossener weißer Bordstein vom Blumenbeet zum VIP-Stellplatz';mesh.castShadow=true;mesh.receiveShadow=true;mesh.userData={gardenCurb:true,continuousVipJoin:true,width:.30,frontTopY:.12,join:GARDEN_CURB.join,bedUnchanged:true,closedSolid:true};root.add(mesh);return mesh;
+ const left=[],right=[],half=GARDEN_CURB.width/2;
+ const section=z=>{const x=gardenCurbCenter(z),dx=(gardenCurbCenter(z+.001)-gardenCurbCenter(z-.001))/.002,n=Math.hypot(dx,1);
+  left.push([x-half/n,z+half*dx/n]);right.push([x+half/n,z-half*dx/n]);};
+ for(let z=-41;z<24.35;z+=.125)section(z);section(24.35);
+ const positions=[],indices=[];
+ const append=(contour,faces,top,bottom)=>{
+  const offset=positions.length/3;
+  for(const [x,z]of contour)positions.push(x,top(z),z,x,bottom(z),z);
+  for(const [a,b,c]of faces){const p=contour[a],q=contour[b],r=contour[c];
+   const up=(q[1]-p[1])*(r[0]-p[0])-(q[0]-p[0])*(r[1]-p[1])>0;
+   const ids=up?[a,b,c]:[a,c,b];indices.push(...ids.map(i=>offset+2*i),...ids.toReversed().map(i=>offset+2*i+1));
+  }
+  let area=0;for(let i=0;i<contour.length;i++){const a=contour[i],b=contour[(i+1)%contour.length];area+=a[0]*b[1]-b[0]*a[1];}
+  for(let i=0;i<contour.length;i++){const j=(i+1)%contour.length,a=offset+2*i,b=offset+2*j;
+   const f=[a,a+1,b+1,a,b+1,b];indices.push(...(area>0?f.toReversed():f));}
+ };
+ const n=left.length,contour=[...left,...right.toReversed()],faces=[];
+ for(let i=0;i<n-1;i++)faces.push([i,i+1,2*n-2-i],[i,2*n-2-i,2*n-1-i]);
+ append(contour,faces,curbTop,z=>Math.min(curbTop(z)-.125,gardenWalkHeight(z-8)*.7-.13));
+ append([[6.3,28.1],[66.5,28.1],[66.5,28.4],[6.3,28.4]],[[0,1,2],[0,2,3]],()=>.12,()=>-.28);
+ const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(positions,3));g.setIndex(indices);g.computeVertexNormals();
+ const mesh=new T.Mesh(g,m.ivory);mesh.name='Gerade Garten- und Straßenränder ohne gebogenen Beetanschluss';mesh.castShadow=true;mesh.receiveShadow=true;
+ mesh.userData={gardenCurb:true,curvedBedReturnRemoved:true,closedSolid:true,width:.30};root.add(mesh);return mesh;
 }
