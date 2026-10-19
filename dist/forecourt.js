@@ -1,4 +1,4 @@
-import {parkingAccessSection,closedParkingSurface,cutParkingAccesses} from './limousine-parking.js?v=108';
+import {parkingAccessSection,closedParkingSurface,cutParkingAccesses} from './limousine-parking.js?v=111';
 import {buildGardenCurb} from './garden-curb.js?v=101';
 import {T,Kit,rng} from './core.js?v=75';
 import {GARAGE_CROSSING} from './pool-connection.js?v=91';
@@ -80,7 +80,7 @@ export function buildForecourt(root,m){
   for(let i=0;i<=24;i++){
    const z=26.3+1.8*i/24,a=parkingAccessSection(0,z),b=parkingAccessSection(1,z);
    const x0=strip===0?6.3:strip===1?a.right:b.right;
-   const x1=strip===0?a.left:strip===1?b.left:66.5;
+   const x1=strip===0?a.left:strip===1?b.left:102;
    if(x0>=x1)continue;
    left.push([x0,z]);right.push([x1,z]);
   }

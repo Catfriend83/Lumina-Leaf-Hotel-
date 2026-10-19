@@ -13,6 +13,6 @@ const {scene}=built;
 for(const key of ['townhallPlacement','plazaRefinement','townhallFloorRepair','churchFloorRepair','completePlazaRepair'])assert(scene.userData[key],key+' completed');
 assert.deepEqual(scene.getObjectByName('Rathaus Seealm').position.toArray(),[-160.4,4.49,-163.2]);
 assert(scene.getObjectByName('Privater Limousinenparkplatz – Lumina Leaf Hotel'));
-assert.equal(scene.userData.parkingLamps.moves.length,2);
+assert.equal(scene.userData.parkingLamps.moves.length,3);
 console.log(JSON.stringify({fullSceneLoaded:true,rathausPlaced:true,allPavingRepairsCompleted:true,
  limousineParkingPresent:true,elapsedSeconds:Math.round((performance.now()-start)/1000)}));

@@ -125,10 +125,12 @@ export function createBotanyController(group,records,{mobile=false}={}){
   let lastTime=-Infinity,localRecords=names.map(()=>[]),localRegion=null,indexSize=-1,persistent=[],cells=new Map();
   function indexRecords(){const size=records.reduce((n,rows)=>n+rows.length,0);if(indexSize===size)return;indexSize=size;persistent=names.map(()=>[]);cells=new Map();records.forEach((rows,k)=>rows.forEach(r=>{if(r.coverageAnchor||r.rank<=.18-.12)persistent[k].push(r);else{const key=Math.floor(r.x/32)+','+Math.floor(r.z/32);if(!cells.has(key))cells.set(key,[]);cells.get(key).push([k,r]);}}));}
   const smooth=(a,b,x)=>{const t=Math.max(0,Math.min(1,(x-a)/(b-a)));return t*t*(3-2*t);};
+  let excludedArea=null;
   function fill(camera,exporting=false){
     const counts=records.map(()=>[0,0,0]);
     meshes.flat().forEach(mesh=>mesh.boundingBox.makeEmpty());
     const apply=(r,k,isLocal=false)=>{
+      if(excludedArea?.(r.x,r.z))return;
       if(!exporting&&!isLocal&&localRegion&&Math.hypot(r.x-localRegion.x,r.z-localRegion.z)<localRegion.radius)return;
       let level=exporting&&r.foreground?0:1;
       if(!exporting){
@@ -170,6 +172,7 @@ export function createBotanyController(group,records,{mobile=false}={}){
   }
   return {
     meshes,records,
+    excludeArea(predicate){excludedArea=predicate;last.set(Infinity,Infinity,Infinity);lastTime=-Infinity;},
     setLocalRecords(rows,region){if(rows.some((r,k)=>r.length>(k===6?6000:1500)))throw new Error('Local meadow capacity exceeded');localRecords=rows;localRegion=region;last.set(Infinity,Infinity,Infinity);lastTime=-Infinity;},
     prepareExport(){return fill(null,true);},
     update(camera,force=false){const now=globalThis.performance?.now()||Date.now();if(!force&&(last.distanceToSquared(camera.position)<1||now-lastTime<120))return null;last.copy(camera.position);lastTime=now;return fill(camera);}

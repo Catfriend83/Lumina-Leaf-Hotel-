@@ -1,5 +1,5 @@
 import {insideRegion} from './village-traffic.js?v=75';
-import {createBotanyController,flowerKinds,names} from './alpine-botany.js?v=105';
+import {createBotanyController,flowerKinds,names} from './alpine-botany.js?v=111';
 import {inLimousineParking} from './limousine-parking.js?v=108';
 import { T, rng } from './core.js?v=75';
 import { spaLakeShore } from './spa-shore.js?v=75';

@@ -7,7 +7,7 @@ import {repairChurchFloor} from './church-floor.js?v=75';
 import {repairTownhallFloor} from './townhall-floor.js?v=75';
 import {refineTownhallPlaza} from './plaza-refinement.js?v=91';
 import {placeTownhallOnPlaza} from './townhall-placement.js?v=75';
-import {applyAlpineMeadows} from './alpine-meadows.js?v=108';
+import {applyAlpineMeadows} from './alpine-meadows.js?v=111';
 import {clearGarageSite,finishLobbyGarage} from './garage-site.js?v=104';
 import {reconstructHotelVerge,closeHotelPavingSeams} from './hotel-drive.js?v=102';
 import {closeEntryPavingSeam} from './entry-seam.js?v=75';
@@ -18,12 +18,12 @@ import {T,makeMaterials} from './core.js?v=75';
 import {buildHotel} from './hotel.js?v=104';
 import {makePoolMaterials} from './luxury-pool.js?v=75';
 import {makeSpaMaterials} from './spa-details.js?v=75';
-import {buildCar} from './car.js?v=91';
-import {buildLimousineParking,clearLimousineParkingVegetation,prepareLimousineParkingTerrain,relocateLimousineParkingLamps} from './limousine-parking.js?v=110';
-import {buildLandscape} from './landscape.js?v=108';
+import {buildCar} from './car.js?v=111';
+import {buildLimousineParking,clearLimousineParkingVegetation,prepareLimousineParkingTerrain,relocateLimousineParkingLamps} from './limousine-parking.js?v=111';
+import {buildLandscape} from './landscape.js?v=111';
 import {buildLakeActivity} from './lake-activity.js?v=75';
-import {makeRoadMaterials,removeVegetationOnRoad,buildForecourt} from './forecourt.js?v=108';
-import {buildMobileLandscape} from './mobile-landscape.js?v=108';
+import {makeRoadMaterials,removeVegetationOnRoad,buildForecourt} from './forecourt.js?v=111';
+import {buildMobileLandscape} from './mobile-landscape.js?v=111';
 import {SPA_WING} from './spa-wing.js?v=98';
 export async function createScene({createCanvas,loadTexture,onProgress=()=>{},mobile=false,fastHotel=false}){
  // Allow the browser to paint the loading state between long scene build steps.
@@ -85,7 +85,7 @@ export async function createScene({createCanvas,loadTexture,onProgress=()=>{},mo
  const referencePlaza=rebuildReferencePlaza(scene,materials);
  applyVillageDetails(scene,materials,referencePlaza,meadow.controller);finishLobbyGarage(scene,materials,meadow.controller);scene.userData.hotelMeadowPreservation=preserveHotelSurroundings(meadow.controller,scene);
  relocateLimousineParkingLamps(scene,materials);
- prepareLimousineParkingTerrain(scene,materials);
+ prepareLimousineParkingTerrain(scene,materials,meadow.controller);
  clearLimousineParkingVegetation(scene,materials);
  buildLimousineParking(scene,materials,car,createCanvas);
  await phase(92,'3D-Geometrie für die Darstellung optimieren …');

@@ -5,10 +5,10 @@ import {createRequire} from 'node:module';
 import path from 'node:path';
 import {T} from '../dist/core.js';
 import {createScene} from '../dist/scene.js';
-import {LIMO_PARK,LIMO_PARK_WORLD,parkingAccessSection,closedParkingSurface} from '../dist/limousine-parking.js';
+import {LIMO_PARK,LIMO_PARK_WORLD,parkingAccessSection,closedParkingSurface,PARKING_CORNERS} from '../dist/limousine-parking.js';
 const require=createRequire(import.meta.url),{createCanvas,loadImage}=require('@napi-rs/canvas');
 globalThis.document={createElement:()=>createCanvas(1,1)};
-const {scene}=await createScene({createCanvas,fastHotel:true,
+const {scene,materials}=await createScene({createCanvas,fastHotel:true,
  loadTexture:async p=>new T.Texture(await loadImage(path.resolve('dist',p)))});
 scene.updateMatrixWorld(true);
 const expected=new Map([
@@ -22,8 +22,8 @@ for(const [name,hash] of expected){
  assert.equal(h.digest('hex'),hash,'Original path position, UVs and normals');
  assert.deepEqual(o.matrixWorld.toArray(),[1,0,0,0,0,1,0,0,0,0,1,0,-3.4,0,8,1]);
 }
-assert.deepEqual(scene.userData.parkingLamps.moves.map(x=>x.parts),[10,10]);
-assert.deepEqual(scene.userData.parkingLamps.moves.map(x=>x.to),[[47.3,-6],[47.3,7]]);
+assert.deepEqual(scene.userData.parkingLamps.moves.map(x=>x.parts),[10,10,10]);
+assert.deepEqual(scene.userData.parkingLamps.moves.map(x=>x.to),[[47.3,-6],[47.3,7],[45.15,-18.85]]);
 assert.equal(LIMO_PARK.bayWidth,7.5);
 const park=scene.getObjectByName('Privater Limousinenparkplatz – Lumina Leaf Hotel');
 assert.deepEqual(park.position.toArray(),[14,0,61]);
@@ -40,9 +40,9 @@ boxes.forEach((box,i)=>{
 });
 const labels=park.getObjectByName('Drei gut lesbare Limousine-Bodenaufschriften');
 for(let i=0;i<labels.count;i++){const a=new T.Matrix4();labels.getMatrixAt(i,a);a.premultiply(labels.matrixWorld);
- assert(a.determinant()>0,'No mirrored text');assert(a.elements[0]<0,'Opposite reading direction');}
+ assert(a.determinant()>0,'No mirrored text');assert(a.elements[0]>0,'L begins on the left when viewed from the road');}
 for(let z=19;z<=28.4;z+=.01)assert(parkingAccessSection(0,z).right<parkingAccessSection(1,z).left);
-for(let i=0;i<2;i++){const s=parkingAccessSection(i,28.4);assert(s.left>=-58.5&&s.right<=66.4969);}
+for(let i=0;i<2;i++){const s=parkingAccessSection(i,28.4);assert(s.left>=46&&s.right<=102);}
 const terrain=[];scene.traverse(o=>{if(o.isMesh&&!o.isInstancedMesh&&o.name==='Wiesen und natürlicher Talboden')terrain.push(o);});
 const ray=new T.Raycaster();let checked=0;
 for(let x=LIMO_PARK_WORLD.minX+.5;x<LIMO_PARK_WORLD.maxX;x++)for(let z=-17.5;z<19;z++){
@@ -61,6 +61,8 @@ for(const o of park.children.filter(o=>o.userData.parkingAccess)){
 // Inspect actual new geometry: plants remain outside paving and the unchanged path.
 const landscape=park.getObjectByName('Alpiner Limousinenhof – Pflanzung und Ausstattung');
 assert(landscape);assert.equal(landscape.userData.trees,2);
+assert.equal(landscape.userData.cornerLamps,4);
+assert.deepEqual(landscape.children.filter(o=>o.userData.parkingCornerLamp).map(o=>[o.position.x,o.position.z]),PARKING_CORNERS);
 const plantNames=new Set(['Salbeigrüne Sträucher – Limousinenhof','Ziergras – Limousinenhof']);
 let plants=0;
 landscape.traverse(o=>{if(!o.isInstancedMesh||!plantNames.has(o.material.name))return;
@@ -84,6 +86,42 @@ for(const o of landscape.children.filter(o=>o.userData.landscapeBed||o.userData.
  }
  assert([...counts.values()].every(n=>n===2),'Closed planting and curb geometry');
 }
+// Ray tests cover the extended road and both complete vehicle paths.
+const asphalt=[];scene.traverse(o=>{if(o.isMesh&&!o.isInstancedMesh&&o.material===materials.asphalt)asphalt.push(o);});
+const down=new T.Raycaster(),sample=(objects,x,z)=>{down.set(new T.Vector3(x,20,z),new T.Vector3(0,-1,0));return down.intersectObjects(objects,false)[0];};
+let roadSamples=0;
+for(let x=65.8;x<=101.8;x+=.4)for(const z of [28.6,30,33.9,38,39.5]){
+ const h=sample(asphalt,x,z);assert(h,'Connected main road');assert(Math.abs(h.point.y+.005)<.0001);
+ assert(!sample(terrain,x,z)||sample(terrain,x,z).point.y<-.07,'No terrain through road');roadSamples++;
+}
+for(let lane=0;lane<2;lane++)for(let z=19.1;z<34;z+=.2){
+ const s=parkingAccessSection(lane,z),hit=sample(asphalt,s.center,z);assert(hit,'Gate joined to main road: '+lane+','+s.center+','+z);
+ assert(Math.abs(s.center-[55,74.5][lane])<1e-6,'Straight approach');
+}
+// All planting bases must meet the actual bed tops, including the rear row.
+const beds=landscape.children.filter(o=>o.userData.landscapeBed);let plantContacts=0;
+landscape.traverse(o=>{if(!o.isInstancedMesh||o.material.name!=='Salbeigrüne Sträucher – Limousinenhof')return;
+ for(let i=0;i<o.count;i++){const a=new T.Matrix4();o.getMatrixAt(i,a);a.premultiply(o.matrixWorld);
+  const v=new T.Vector3().setFromMatrixPosition(a),hit=sample(beds,v.x,v.z);assert(hit,'Shrub fully inside a bed');
+  assert(Math.abs(v.y-.4-hit.point.y)<.025,'Shrub base follows the bed surface '+[v.x,v.y,v.z,hit.point.y].join(','));plantContacts++;
+ }
+});
+const corners=landscape.children.filter(o=>o.userData.parkingCornerLamp);
+assert(corners.every(o=>Math.abs(o.position.y+.18)<.025),'Corner lanterns on level ground');
+let levelSamples=0;
+for(let x=84;x<=102;x+=2)for(let z=-24;z<=24;z+=3){
+ const h=sample(terrain,x,z);assert(h,'Continuous lawn beside parking');
+ assert(Math.abs(h.point.y+.18)<.025,'East hill flattened '+[x,z,h.point.y].join(','));levelSamples++;
+}
+const goldBases=[];scene.traverse(o=>{if(!o.isInstancedMesh||o.material!==materials.gold)return;
+ for(let i=0;i<o.count;i++){const a=new T.Matrix4();o.getMatrixAt(i,a);a.premultiply(o.matrixWorld);
+  goldBases.push(new T.Vector3().setFromMatrixPosition(a));
+ }
+});
+for(const [x,z]of PARKING_CORNERS){const wx=x+14,wz=61-z;
+ assert.equal(goldBases.filter(v=>Math.abs(v.x-wx)<.01&&Math.abs(v.z-wz)<.01).length,1,'Exactly one actual lantern at each corner');
+}
+console.log(JSON.stringify({roadSamples,plantContacts,levelSamples,cornerLamps:corners.length}));
 console.log(JSON.stringify({luxuryLandscapingChecked:true,plantParts:plants,...landscape.userData}));
 console.log(JSON.stringify({pathUnchanged:true,parkedCars:3,bayWidth:7.5,
  lamps:2,uniformLampSpacing:13,unmirroredLabels:3,terrainSamples:checked,closedApproaches:2}));

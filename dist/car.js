@@ -1,5 +1,5 @@
 import {T,Kit,TAU} from './core.js?v=75';
-import {FORECOURT} from './forecourt.js?v=108';
+import {FORECOURT} from './forecourt.js?v=111';
 const wheelCenters=[-5.6,5.6],wheelY=.84,archRadius=.88,roadWheelY=.775,roadTireRadius=.82,roadTireWidth=.52;
 const bodySections=[[-8.44,.80,1.05,.27],[-8.28,1.22,1.15,.41],[-7.70,1.49,1.22,.55],[-6.80,1.58,1.26,.62],[-5.2,1.60,1.28,.65],[-4.3,1.60,1.28,.65],[0,1.60,1.28,.65],[4.3,1.60,1.28,.65],[6.2,1.58,1.25,.63],[7.7,1.45,1.17,.51],[8.42,1.03,1.08,.30]];
 // Monotone cubic interpolation keeps section derivatives continuous without bulges.
