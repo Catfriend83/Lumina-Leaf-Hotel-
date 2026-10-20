@@ -89,7 +89,7 @@ export function buildUndergroundGarage(root,m){const c=GARAGE,g=new T.Group();g.
   const ma=m.makeSign(label,{
    subtitle:'',width:1536,height:256,italic:false,
    fontFamily:'Arial, Helvetica, sans-serif',fontScale:.81,
-   foreground:'#fffaf0',background:'#151d23'
+   foreground:'#dfc28a',background:'#111615'
   });
   ma.name='Tiefgarage · scharfe Beschriftung '+label;
   ma.emissiveIntensity=.20;ma.roughness=.95;

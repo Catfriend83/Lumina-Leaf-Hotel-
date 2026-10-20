@@ -3,7 +3,7 @@ import {T} from './core.js?v=75';
 // Runtime-only reorganization. Every original vertex, material and placement survives.
 // No LOD, density reduction, texture conversion or resolution changes.
 export function optimizeStaticScene(built,{multiDraw=false,cellSize=160}={}){
- const {scene,car,activity}=built,originals=[],optimized=[],matrix=new T.Matrix4(),color=new T.Color();
+ const {scene,car,activity}=built,originals=[],optimized=[],matrix=new T.Matrix4(),color=new T.Color(),reflection=new T.Matrix4().makeScale(1,1,-1);
  const report={fullGeometry:true,multiDraw,batchedDrawGroups:0,batchedInstances:0,spatialChunks:0,spatialInstances:0,sharedMaterials:0,staticTransforms:0};
  scene.updateMatrixWorld(true);
  const dynamic=o=>{for(let a=o;a;a=a.parent)if(a===car||a===activity?.group||a.userData.alpineBotany)return true;return false;};
@@ -19,7 +19,7 @@ export function optimizeStaticScene(built,{multiDraw=false,cellSize=160}={}){
  scene.traverse(o=>{if(o.material&&!dynamic(o)&&!Array.isArray(o.material))o.material=share(o.material);});
  const sources=[];
  scene.traverse(o=>{if(!o.isInstancedMesh||!o.visible||dynamic(o)||Array.isArray(o.material)||o.material.transparent||o.material.isShaderMaterial||o.geometry.morphAttributes.position||o.customDepthMaterial||o.customDistanceMaterial)return;const g=o.geometry,n=g.index?.count||g.attributes.position.count;if(g.drawRange.start!==0||g.drawRange.count<n)return;if(Object.values(g.attributes).some(a=>a.isInterleavedBufferAttribute||a.isInstancedBufferAttribute))return;sources.push(o);});
- function flags(o){return [o.material.uuid,o.castShadow,o.receiveShadow,o.renderOrder,o.layers.mask,!!o.geometry.index,Object.entries(o.geometry.attributes).map(([k,a])=>[k,a.itemSize,a.normalized,a.array.constructor.name]).sort().join(';')].join('|');}
+ function flags(o){return [o.material.uuid,o.castShadow,o.receiveShadow,o.renderOrder,o.layers.mask,o.matrixWorld.determinant()<0,!!o.geometry.index,Object.entries(o.geometry.attributes).map(([k,a])=>[k,a.itemSize,a.normalized,a.array.constructor.name]).sort().join(';')].join('|');}
  function remember(source){originals.push({source,visible:source.visible});source.visible=false;}
  function setup(mesh,source){mesh.castShadow=source.castShadow;mesh.receiveShadow=source.receiveShadow;mesh.renderOrder=source.renderOrder;mesh.layers.mask=source.layers.mask;mesh.frustumCulled=true;mesh.userData.losslessRuntimeBatch=true;scene.add(mesh);optimized.push(mesh);}
  if(multiDraw){
@@ -27,9 +27,9 @@ export function optimizeStaticScene(built,{multiDraw=false,cellSize=160}={}){
   for(const list of groups.values()){
    const geometries=[...new Set(list.map(o=>o.geometry))],count=list.reduce((n,o)=>n+o.count,0);if(geometries.length<2||count<16)continue;
    const vertices=geometries.reduce((n,g)=>n+g.attributes.position.count,0),indices=geometries.reduce((n,g)=>n+(g.index?.count||0),0);
-   const batch=new T.BatchedMesh(count,vertices,Math.max(indices,vertices),list[0].material);batch.name='Vollständige statische Geometrie – '+list[0].material.name;batch.sortObjects=false;batch.perObjectFrustumCulled=true;
+   const batch=new T.BatchedMesh(count,vertices,Math.max(indices,vertices),list[0].material);batch.name='Vollständige statische Geometrie – '+list[0].material.name;batch.sortObjects=false;batch.perObjectFrustumCulled=true;const reflected=list[0].matrixWorld.determinant()<0;if(reflected)batch.scale.z=-1;
    const ids=new Map(geometries.map(g=>[g,batch.addGeometry(g)]));batch.losslessGeometrySources=geometries;
-   for(const o of list){for(let i=0;i<o.count;i++){o.getMatrixAt(i,matrix);matrix.premultiply(o.matrixWorld);const id=batch.addInstance(ids.get(o.geometry));batch.setMatrixAt(id,matrix);if(o.instanceColor){o.getColorAt(i,color);batch.setColorAt(id,color);}}remember(o);}
+   for(const o of list){for(let i=0;i<o.count;i++){o.getMatrixAt(i,matrix);matrix.premultiply(o.matrixWorld);if(reflected)matrix.premultiply(reflection);const id=batch.addInstance(ids.get(o.geometry));batch.setMatrixAt(id,matrix);if(o.instanceColor){o.getColorAt(i,color);batch.setColorAt(id,color);}}remember(o);}
    batch.computeBoundingBox();batch.computeBoundingSphere();setup(batch,list[0]);report.batchedDrawGroups++;report.batchedInstances+=count;
   }
  }
@@ -38,7 +38,7 @@ export function optimizeStaticScene(built,{multiDraw=false,cellSize=160}={}){
   if(!source.visible||source.count<24||(source.geometry.index?.count||source.geometry.attributes.position.count)<4500)continue;
   source.computeBoundingBox();const bounds=source.boundingBox.clone().applyMatrix4(source.matrixWorld);if(Math.max(bounds.max.x-bounds.min.x,bounds.max.z-bounds.min.z)<cellSize*1.5)continue;
   const cells=new Map();for(let i=0;i<source.count;i++){source.getMatrixAt(i,matrix);matrix.premultiply(source.matrixWorld);const key=Math.floor(matrix.elements[12]/cellSize)+','+Math.floor(matrix.elements[14]/cellSize);if(!cells.has(key))cells.set(key,[]);cells.get(key).push({matrix:matrix.clone(),color:source.instanceColor?(source.getColorAt(i,color),color.clone()):null});}
-  for(const rows of cells.values()){const mesh=new T.InstancedMesh(source.geometry,source.material,rows.length);mesh.name=source.name+' – räumlicher Abschnitt';rows.forEach((r,i)=>{mesh.setMatrixAt(i,r.matrix);if(r.color)mesh.setColorAt(i,r.color);});mesh.computeBoundingBox();mesh.computeBoundingSphere();setup(mesh,source);report.spatialChunks++;report.spatialInstances+=rows.length;}
+  for(const rows of cells.values()){const mesh=new T.InstancedMesh(source.geometry,source.material,rows.length);mesh.name=source.name+' – räumlicher Abschnitt';const reflected=source.matrixWorld.determinant()<0;if(reflected)mesh.scale.z=-1;rows.forEach((r,i)=>{mesh.setMatrixAt(i,reflected?r.matrix.clone().premultiply(reflection):r.matrix);if(r.color)mesh.setColorAt(i,r.color);});mesh.computeBoundingBox();mesh.computeBoundingSphere();setup(mesh,source);report.spatialChunks++;report.spatialInstances+=rows.length;}
   remember(source);
  }
  // Static transforms need no repeated matrix composition. Moving watercraft remain live.

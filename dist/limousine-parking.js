@@ -6,11 +6,12 @@ import {subtractGarageFootprint} from './garage-site.js?v=104';
 // V108: translate the entire compound 16 m east, preserving the garden path.
 // Both approaches reconnect to the existing road without extending that road.
 export const PARKING_SHIFT_X=14; // local x32 becomes world x46 (V107: x30).
-export const LIMO_PARK={minX:32,maxX:68,minZ:42,maxZ:79,asphaltY:-.07,
+export const LIMO_PARK={minX:32,maxX:74,minZ:42,maxZ:92,asphaltY:-.07,
  entrances:[{x:41.0,label:'Ausfahrt'},{x:60.5,label:'Einfahrt'}],
- bays:[38.8,50,61.2],bayWidth:7.5,carZ:65.9,guardX:50.7};
+ bays:[56.4837168574,52.5,48.5162831426],bayWidth:4.6,carZ:69,guardX:50.7,
+ poses:[-4.6,0,4.6].map(v=>({x:52.5-v*Math.sin(Math.PI*2/3),z:69-v*Math.cos(Math.PI*2/3),heading:Math.PI*2/3}))};
 export const LIMO_PARK_WORLD={
- minX:46,maxX:82,minZ:-18,maxZ:19,
+ minX:46,maxX:88,minZ:-31,maxZ:19,
  roadZ:28.4
 };
 export function inLimousineParking(x,z,padding=0){
@@ -24,7 +25,7 @@ export function inLimousineParking(x,z,padding=0){
 
 export const PARKING_ACCESS=[{roadX:55,gateX:55},{roadX:74.5,gateX:74.5}];
 export const PARKING_ROAD_EXTENSION={minX:66.3,maxX:102,minZ:28.4,maxZ:39.7};
-export const PARKING_CORNERS=[[31.15,41.15],[68.85,41.15],[31.15,79.85],[68.85,79.85]];
+export const PARKING_CORNERS=[[31.15,41.15],[74.85,41.15],[31.15,92.85],[74.85,92.85]];
 // A horizontal section of each 6.64–7.2 m wide, straight driveway.
 // Widen the x span with the tangent so the actual lane never becomes narrow.
 export function parkingAccessSection(index,z){
@@ -104,8 +105,8 @@ export function cutParkingAccesses(source,{minZ=27.98,maxZ=28.4,steps=16}={}){
 export function relocateLimousineParkingLamps(scene,m){
  const garden=scene.getObjectByName('Blumengarten und ansteigender Weg');
  if(!garden)return;
- const moves=[{from:[32,-2],to:[47.3,-6]},{from:[30.4,6],to:[47.3,7]},
-  {from:[44.7,-18],to:[45.15,-18.85],baseY:-.18}];
+ const moves=[{from:[32,-2],to:[45.15,-10]},{from:[30.4,6],to:[45.15,6]},
+  {from:[44.7,-18],to:[45.15,-31.85],baseY:-.18}];
  const materials=new Set([m.frame,m.gold,m.warm,m.glow]);
  garden.updateWorldMatrix(true,true);
  for(const move of moves){
@@ -138,8 +139,8 @@ export function relocateLimousineParkingLamps(scene,m){
 // complete continuous terrain mesh; pull its existing vertices below the
 // asphalt and ease the surrounding grass back to its original height.
 export function parkingGradedArea(x,z){
- if(x<31||x>118||z< -41||z>57)return false;
- const dx=Math.max(43-x,0,x-106),dz=Math.max(-29-z,0,z-45);
+ if(x<31||x>118||z< -44||z>57)return false;
+ const dx=Math.max(43-x,0,x-106),dz=Math.max(-32-z,0,z-45);
  const pathOuter=27+gardenPathShift(z-8)+2.75+.18-3.4;
  return Math.hypot(dx,dz)<12&&x>pathOuter+.50;
 }
@@ -147,7 +148,7 @@ export function prepareLimousineParkingTerrain(scene,m,meadowController=null){
  // Camera-dependent botany must not regenerate at the old hillside height.
  meadowController?.excludeArea?.(parkingGradedArea);
  const p=LIMO_PARK_WORLD,buffer=12;
- const grade={minX:43,maxX:106,minZ:-29,maxZ:45};
+ const grade={minX:43,maxX:106,minZ:-32,maxZ:45};
  const smooth=t=>t*t*(3-2*t),q=new T.Vector3(),local=new T.Vector3();
  let adjusted=0,meshes=0;
  scene.updateMatrixWorld(true);
@@ -232,11 +233,10 @@ export function clearLimousineParkingVegetation(scene,m){
 // across all three cars. The original arrival limousine is not modified.
 function copyParkedLimousines(root,source,positions){
  source.updateWorldMatrix(true,true);
- const inverse=source.matrixWorld.clone().invert(),yaw=new T.Quaternion()
-  .setFromAxisAngle(new T.Vector3(0,1,0),Math.PI/2);
- const place=positions.map(x=>new T.Matrix4().compose(
-  new T.Vector3(x,LIMO_PARK.asphaltY+.045,LIMO_PARK.carZ),
-  yaw,new T.Vector3(1,1,1)));
+ const inverse=source.matrixWorld.clone().invert();
+ const place=positions.map(pose=>new T.Matrix4().compose(
+  new T.Vector3(pose.x,LIMO_PARK.asphaltY+.045,pose.z),
+  new T.Quaternion().setFromAxisAngle(new T.Vector3(0,1,0),pose.heading-Math.PI),new T.Vector3(1,1,1)));
  const groups=new Map(),unlit=new Map();
  source.traverse(o=>{
   if(!o.isMesh||!o.visible||!o.geometry||Array.isArray(o.material))return;
@@ -303,16 +303,22 @@ export function buildLimousineParking(scene,m,originalCar,createCanvas){
  // Local x=[32,68],z=[42,79] -> world x=[46,82],z=[19,-18].
  group.position.set(PARKING_SHIFT_X,0,61);
  group.scale.z=-1;
- group.userData={privateParking:true,luxuryParking:true,version:112,
+ group.userData={privateParking:true,luxuryParking:true,version:113,
   relocatedFromWrongSide:true,eastwardShiftMeters:16,gardenPathPreserved:true,
   spaceCount:3,gateCount:2,asphaltY:p.asphaltY,
   placedOnExistingLevelHotelMeadow:true,noAdditionalSceneLights:false};
  scene.add(group);
  const k=new Kit(group),y=p.asphaltY,wallHeight=1.42;
  const stone=m.stone.clone(),metal=m.frame.clone(),mark=m.roadPaint;
- stone.name='Warmer Kalkstein – Limousinenhof';stone.color.set('#e7dfcc');
- metal.name='Dunkle Bronze – Limousinenhof';metal.color.set('#40392f');
+ stone.name='Warmer Kalkstein – Limousinenhof';stone.color.set('#b9b3a5');
+ metal.name='Dunkle Bronze – Limousinenhof';metal.color.set('#202625');
  metal.metalness=.65;metal.roughness=.4;
+ const stoneBoxes=new Map(),stoneBox=(x,yy,z,w,h,d)=>{
+  const key=[w,h,d].join(','),geo=stoneBoxes.get(key)||new T.BoxGeometry(w,h,d);
+  if(!stoneBoxes.has(key)){const p=geo.attributes.position,n=geo.attributes.normal,uv=geo.attributes.uv;
+   for(let i=0;i<p.count;i++){const a=Math.abs(n.getY(i))>.5?[p.getX(i),p.getZ(i)]:Math.abs(n.getX(i))>.5?[p.getZ(i),p.getY(i)]:[p.getX(i),p.getY(i)];uv.setXY(i,a[0]/1.5,a[1]/1.5);}stoneBoxes.set(key,geo);}
+  k.put(geo,stone,x,yy,z);
+ };
 
  // One asphalt footprint only: no overlapping top-plane or duplicated road.
  k.box(m.asphalt,(p.minX+p.maxX)/2,y-.075,(p.minZ+p.maxZ)/2,
@@ -339,11 +345,15 @@ export function buildLimousineParking(scene,m,originalCar,createCanvas){
  const ink=mark.clone();ink.name='Parkplatzmarkierung – Limousinen';
  ink.polygonOffset=true;ink.polygonOffsetFactor=-1;ink.polygonOffsetUnits=-2;
  const stripe=(x,z,w,d)=>k.box(ink,x,y+.018,z,w,.008,d);
- for(const bx of p.bays){
-  const width=p.bayWidth,z0=55.5,z1=75.7;
-  stripe(bx-width/2,z0+(z1-z0)/2,.11,z1-z0);
-  stripe(bx+width/2,z0+(z1-z0)/2,.11,z1-z0);
-  stripe(bx,z1,width,.11);
+ // Four short corner marks per service berth leave the circulation lane clear.
+ for(const pose of p.poses){
+  const {x,z,heading:h}=pose,ax=-Math.cos(h),az=Math.sin(h),rx=Math.sin(h),rz=Math.cos(h);
+  for(const u of [-9.15,9.15])for(const v of [-2.1,2.1]){
+   const px=x+u*ax+v*rx,pz=z+u*az+v*rz;
+   const towardU=-Math.sign(u),towardV=-Math.sign(v);
+   k.line(ink,[px,y+.018,pz],[px+towardU*ax*.9,y+.018,pz+towardU*az*.9],.04);
+   k.line(ink,[px,y+.018,pz],[px+towardV*rx*.65,y+.018,pz+towardV*rz*.65],.04);
+  }
  }
  // One shared 1024px sign material for all three asphalt inscriptions.
  const canvas=createCanvas(1024,256),ctx=canvas.getContext('2d');
@@ -356,18 +366,26 @@ export function buildLimousineParking(scene,m,originalCar,createCanvas){
  const words=new T.MeshBasicMaterial({name:'Weiße Bodenaufschrift Limousine',
   map:tex,transparent:true,depthWrite:false,polygonOffset:true,
   polygonOffsetFactor:-2,polygonOffsetUnits:-3,side:T.DoubleSide});
- const wordGeo=new T.PlaneGeometry(6.6,1.65);wordGeo.rotateX(-Math.PI/2);
+ const wordGeo=new T.PlaneGeometry(3.5,.875);wordGeo.rotateX(-Math.PI/2);
  const labels=new T.InstancedMesh(wordGeo,words,p.bays.length);
  const dummy=new T.Object3D();
  // Cancel the parent reflection: world text-right is +X; text-top is -Z.
  // Thus L is on the left for a reader at the road/guardhouse facing the bays.
- dummy.scale.z=-1;dummy.rotation.y=0;
- p.bays.forEach((x,i)=>{dummy.position.set(x,y+.023,52.8);
+ dummy.scale.z=-1;
+ p.poses.forEach((pose,i)=>{dummy.rotation.y=pose.heading-Math.PI/2;
+  dummy.position.set(pose.x-Math.cos(pose.heading)*9.9,y+.023,pose.z+Math.sin(pose.heading)*9.9);
   dummy.updateMatrix();labels.setMatrixAt(i,dummy.matrix);});
  labels.instanceMatrix.needsUpdate=true;labels.computeBoundingSphere();
  labels.castShadow=false;labels.userData={oppositeSideReadable:true,unmirrored:true,rotationDegrees:0,readFrom:'road and guardhouse'};labels.name='Drei gut lesbare Limousine-Bodenaufschriften';
  group.add(labels);
 
+ // Two restrained arrows describe the one-way service circulation.
+ for(const [x,z,angle]of [[66,57,0],[40,58,Math.PI]]){
+  const arrows=new T.Group();arrows.position.set(x,y+.02,z);arrows.rotation.y=angle;
+  arrows.name='Einbahnführung innerhalb des Limousinenhofs';
+  const ak=new Kit(arrows);ak.box(ink,0,0,-.25,.10,.008,1.2);
+  ak.line(ink,[0,0,.6],[-.35,0,.1],.05);ak.line(ink,[0,0,.6],[.35,0,.1],.05);ak.finish();group.add(arrows);
+ }
  // Wall and safety fence follow the same exact segments, but stop at both gates.
  const walls=[
   {x:(p.minX+p.maxX)/2,z:p.maxZ,w:p.maxX-p.minX,d:.38,axis:'x',a:p.minX,b:p.maxX},
@@ -377,8 +395,8 @@ export function buildLimousineParking(scene,m,originalCar,createCanvas){
    .map(([a,b])=>({x:(a+b)/2,z:p.minZ,w:b-a,d:.38,axis:'x',a,b}))
  ];
  for(const w of walls){
-  k.box(stone,w.x,y+wallHeight/2,w.z,w.w,wallHeight,w.d);
-  k.box(stone,w.x,y+wallHeight+.045,w.z,w.w+.10,.09,w.d+.10);
+  stoneBox(w.x,y+wallHeight/2,w.z,w.w,wallHeight,w.d);
+  stoneBox(w.x,y+wallHeight+.045,w.z,w.w+.10,.09,w.d+.10);
   const fenceH=1.20,top=y+wallHeight;
   for(const t of [0.31,1.05]){
    if(w.axis==='x')k.box(metal,w.x,top+t,w.z,w.w,.055,.075);
@@ -387,6 +405,8 @@ export function buildLimousineParking(scene,m,originalCar,createCanvas){
   const count=Math.max(1,Math.ceil((w.b-w.a)/2.4));
   for(let j=0;j<=count;j++){
    const v=w.a+(w.b-w.a)*j/count;
+   if(j%3===0||j===count){const xx=w.axis==='x'?v:w.x,zz=w.axis==='x'?w.z:v;
+    stoneBox(xx,y+.86,zz,.48,1.72,.48);k.box(metal,xx,y+1.75,zz,.54,.07,.54);}
    if(w.axis==='x')k.box(metal,v,top+fenceH/2,w.z,.075,fenceH,.075);
    else k.box(metal,w.x,top+fenceH/2,v,.075,fenceH,.075);
   }
@@ -397,7 +417,7 @@ export function buildLimousineParking(scene,m,originalCar,createCanvas){
  for(const [index,entry]of p.entrances.entries()){
   const gx=entry.x,front=p.minZ+.75,side=index===0?-1:1;
   const hinge=gx+side*2.98;
-  k.box(stone,hinge,y+.58,front,.42,1.16,.45);
+  stoneBox(hinge,y+.58,front,.42,1.16,.45);
   const armMat=m.ivory.clone();armMat.name='Geschlossene Schrankenarme';
   armMat.roughness=.58;
   k.box(armMat,gx,y+1.05,front,5.9,.09,.12);
@@ -407,41 +427,68 @@ export function buildLimousineParking(scene,m,originalCar,createCanvas){
  // Substantial stone-and-glass guardhouse between the two separate gates.
  const hx=p.guardX,hz=42.0;
  const glass=m.glass.clone();glass.name='Wärterhäuschen – echtes Sicherheitsglas';
- glass.opacity=.30;glass.depthWrite=false;
- k.box(stone,hx,y+.16,hz,5.2,.32,5.1);
- k.box(m.wood,hx,y+3.3,hz,6.3,.24,6.2);
+ glass.opacity=.18;glass.depthWrite=false;glass.color.set('#e5ddd0');glass.roughness=.12;glass.envMapIntensity=.4;
+ stoneBox(hx,y+.16,hz,5.2,.32,5.1);
+ k.box(metal,hx,y+3.3,hz,6.3,.24,6.2);
  k.box(metal,hx,y+3.45,hz,6.4,.06,6.3);
- k.box(m.wood,hx,y+.48,hz+2.39,4.5,.32,.09);
- for(const dx of [-1.5,1.5])k.box(m.wood,hx+dx,y+.48,hz-2.39,1.55,.32,.09);
- for(const xx of [hx-2.39,hx+2.39])k.box(m.wood,xx,y+.48,hz,.09,.32,4.5);
+ stoneBox(hx,y+.48,hz+2.39,4.5,.32,.09);
+ for(const dx of [-1.5,1.5])stoneBox(hx+dx,y+.48,hz-2.39,1.55,.32,.09);
+ for(const xx of [hx-2.39,hx+2.39])stoneBox(xx,y+.48,hz,.09,.32,4.5);
  for(const xx of [hx-2.4,hx+2.4])for(const zz of [hz-2.4,hz+2.4])
-  k.box(m.wood,xx,y+1.85,zz,.44,2.85,.44);
+  k.box(metal,xx,y+1.85,zz,.44,2.85,.44);
  for(const xx of [hx-2.4,hx+2.4]){
-  for(const zz of [hz-2.4,hz+2.4])k.box(stone,xx,y+1.83,zz,.42,3.25,.42);
+  for(const zz of [hz-2.4,hz+2.4])stoneBox(xx,y+1.83,zz,.42,3.25,.42);
  }
  // Front glazing leaves a genuine door opening; no glass or timber crosses it.
  for(const dx of [-1.5,1.5])k.box(glass,hx+dx,y+1.66,hz-2.36,1.55,2.05,.065);
- for(const dx of [-1.1,1.1])k.box(glass,hx+dx,y+1.81,hz+2.36,1.85,2.65,.065);
+ for(const dx of [-1.1,1.1])k.box(glass,hx+dx,y+1.81,hz+2.36,2.20,2.65,.065);
  for(const xx of [hx-2.36,hx+2.36])for(const zz of [hz-1.1,hz+1.1])
-  k.box(glass,xx,y+1.81,zz,.065,2.65,1.85);
+  k.box(glass,xx,y+1.81,zz,.065,2.65,2.20);
+ // Continuous mullions and sill/head rails seal each pane to its neighbours.
+ for(const side of [-1,1]){
+  k.box(metal,hx+side*2.36,y+1.81,hz,.14,2.7,.16);
+  for(const yy of [y+.46,y+3.145])k.box(metal,hx+side*2.36,yy,hz,.14,.10,4.8);
+  k.box(metal,hx+side*.66,y+1.66,hz-2.36,.16,2.15,.14);
+  stoneBox(hx+side*2.60,y+1.40,hz,.42,2.80,.50);
+  k.box(metal,hx+side*2.36,y+1.95,hz,.14,1.7,.18);
+ }
+ k.box(metal,hx,y+1.81,hz+2.36,.14,2.7,.14);
+ for(const yy of [y+.46,y+3.145])k.box(metal,hx,yy,hz+2.36,4.8,.10,.14);
+ group.userData.glazing={sealedSides:2,paneGap:0,fenceFrameConnection:'stone pier with overlapping metal flange',functionalDoor:true};
+ k.box(metal,hx,y+2.90,hz-2.36,4.80,.70,.14);
  const floor=y+.32,doorZ=hz-2.405;
  for(const dx of [-.55,.55])k.box(metal,hx+dx,floor+1.1,doorZ,.085,2.2,.08);
  k.box(metal,hx,floor+2.23,doorZ,1.18,.08,.08);
  k.box(glass,hx,floor+1.08,doorZ-.043,.98,2.12,.025);
  k.ball(m.gold,hx+.37,floor+1.08,doorZ-.065,.035);
- // A visible compact workstation, placed behind a clear 1.3 m entry aisle.
- const office=new T.Group();office.name='Möbliertes Wärterbüro';office.userData={guardhouseOffice:true,
-  furniture:['Schreibtisch','Bürostuhl','Monitor','Tastatur','PC'],entranceAisle:1.3};group.add(office);
+ // A smaller counterpart of the hotel's actual marble reception counter.
+ const office=new T.Group();office.name='Limousinenservice – Empfangstresen';office.userData={guardhouseOffice:true,
+  receptionCounter:true,furniture:['Empfangstresen','Servicestuhl','Monitor','Tastatur','Arbeitsleuchte'],entranceAisle:1.3};group.add(office);
  const ok=new Kit(office),deskZ=hz+.65;
- ok.box(m.wood,hx,floor+.78,deskZ,2.3,.10,.85);
- for(const dx of [-.98,.98])for(const dz of [-.30,.30])ok.box(metal,hx+dx,floor+.365,deskZ+dz,.075,.73,.075);
- ok.box(m.black,hx+.82,floor+.30,deskZ,.30,.60,.46);
- ok.box(m.black,hx,floor+.85,deskZ-.18,.60,.035,.22);
- ok.box(metal,hx,floor+.85,deskZ+.13,.38,.05,.22);
- ok.box(metal,hx,floor+1.02,deskZ+.13,.07,.32,.06);
- ok.box(m.black,hx,floor+1.30,deskZ+.13,.90,.52,.075);
- const screen=new T.MeshStandardMaterial({name:'Büromonitor – ruhige Anzeige',color:'#416374',emissive:'#29434e',emissiveIntensity:.35});
- ok.box(screen,hx,floor+1.30,deskZ+.086,.82,.44,.008);
+ const marble=(scene.getObjectByName('Empfang')?.material||m.stone).clone();
+ marble.name='Dunkler Rezeptionsmarmor – Limousinenservice';marble.color.set('#142d24');
+ ok.box(marble,hx,floor+.59,deskZ,2.5,1.02,.90);
+ ok.box(m.gold,hx,floor+.105,deskZ,2.52,.08,.92);
+ ok.box(m.ivory,hx,floor+1.14,deskZ,2.65,.08,1.05);
+ for(const dx of [-1.21,1.21])ok.box(m.gold,hx+dx,floor+.62,deskZ-.46,.025,.88,.025);
+ ok.box(m.black,hx,floor+1.205,deskZ-.18,.60,.035,.22);
+ ok.box(metal,hx,floor+1.20,deskZ+.13,.38,.05,.22);
+ ok.box(metal,hx,floor+1.37,deskZ+.13,.07,.32,.06);
+ ok.box(m.black,hx,floor+1.65,deskZ+.13,.90,.52,.075);
+ const screen=new T.MeshStandardMaterial({name:'Servicemonitor – ruhige Anzeige',color:'#416374',emissive:'#29434e',emissiveIntensity:.35});
+ ok.box(screen,hx,floor+1.65,deskZ+.174,.82,.44,.008);
+ ok.box(m.black,hx+.89,floor+1.24,deskZ+.14,.23,.12,.28);
+ ok.cyl(m.gold,hx-.88,floor+1.35,deskZ+.10,.024,.34);
+ ok.box(m.gold,hx-.88,floor+1.54,deskZ+.04,.34,.06,.20);
+ const plate=createCanvas(1536,768),pc=plate.getContext('2d');
+ pc.fillStyle='#10251f';pc.fillRect(0,0,1536,768);pc.fillStyle='#d8b873';pc.textAlign='center';pc.textBaseline='middle';
+ for(const [text,size,yy]of [['Lumina Leaf Hotel',116,200],['★★★★★',130,390],['Limousinenservice',96,575]]){
+  pc.font=`${size}px Georgia, serif`;pc.fillText(text,768,yy,1410);
+ }
+ const brandingTex=new T.CanvasTexture(plate);brandingTex.colorSpace=T.SRGBColorSpace;brandingTex.anisotropy=4;
+ const branding=new T.Mesh(new T.PlaneGeometry(2.10,.77),new T.MeshBasicMaterial({map:brandingTex}));
+ branding.name='Empfangstresen – goldene dreizeilige Hotelbeschriftung';branding.position.set(hx,floor+.62,deskZ-.461);
+ branding.rotation.y=Math.PI;branding.scale.x=-1;branding.userData={lines:['Lumina Leaf Hotel','★★★★★','Limousinenservice'],centered:true,stars:5};office.add(branding);
  const chairZ=hz+1.65;
  ok.box(m.black,hx,floor+.48,chairZ,.65,.12,.63);
  ok.box(m.black,hx,floor+.88,chairZ+.28,.65,.70,.10);
@@ -466,13 +513,10 @@ export function buildLimousineParking(scene,m,originalCar,createCanvas){
   {x:p.maxX-1.2,z:p.maxZ-1.0,tx:60.5,tz:42}
  ];
  const mastX=p.maxX-1.2,mastZ=p.maxZ-1.0;
- k.cyl(metal,mastX,y+4.1,mastZ,.16,8.2);
- k.box(metal,mastX,y+8.2,mastZ,2.3,.13,.16);
- const darkFlood=new T.MeshStandardMaterial({name:'Ausgeschaltetes Flutlicht',
-  color:'#30383a',emissive:'#000000',roughness:.46});
- for(const dx of [-.70,.70])k.box(darkFlood,mastX+dx,y+8.17,mastZ+.17,.76,.38,.12);
+ k.cyl(metal,mastX,y+1.8,mastZ,.07,3.6);
+ k.box(metal,mastX,y+3.6,mastZ,1.2,.08,.10);
  for(const cam of cameras){
-  const rig=new T.Group();rig.position.set(cam.x,y+7.30,cam.z);
+  const rig=new T.Group();rig.position.set(cam.x,y+3.25,cam.z);
   rig.lookAt(new T.Vector3(cam.tx,y+.65,cam.tz));
   const ck=new Kit(rig);
   ck.box(metal,0,0,.35,.20,.14,.70);
@@ -485,8 +529,9 @@ export function buildLimousineParking(scene,m,originalCar,createCanvas){
  // Do this after building the static car once; geometry and artwork are shared.
  buildParkingRoadExtension(scene,m);
  buildLuxuryParkingLandscape(scene,group,m,createCanvas,stone,metal);
- const cars=copyParkedLimousines(group,originalCar,p.bays);
+ const cars=copyParkedLimousines(group,originalCar,p.poses);
  group.userData.parkedCarDrawGroups=cars.drawGroups;
+ group.userData.maneuvering={rearAxleRadius:13,wheelbase:11.2,vehicleLength:16.9,oneWay:true,circulationCenter:[67,-8],diagonalHeadingDegrees:120};
  group.userData.security={fence:true,guardhouse:true,cameras:5,floodlightOn:false,
   barrierCount:2,privateSigns:2};
  return group;
@@ -518,12 +563,17 @@ function buildLuxuryParkingLandscape(scene,root,m,createCanvas,stone,bronze){
    const t=(i+.5)/count,x=horizontal?x0+t*length:(x0+x1)/2,
     z=horizontal?(z0+z1)/2:z0+t*length;
    shrub(x,z);
+   for(const offset of [-.40,.40]){const xx=x+(horizontal?0:offset),zz=z+(horizontal?offset:0);
+    k.ball(leaf,xx,-.155+.16,zz,.22,.17,.22);
+    for(let f=0;f<3;f++){const a=f*Math.PI*2/3;
+     k.ball(f%2?m.flowerWhite:m.flowerPurple,xx+Math.cos(a)*.12,.12,zz+Math.sin(a)*.12,.105,.075,.105);}
+   }
   }
  };
  // Identical 1.2 m beds terminate 0.95 m short of each lamp centre.
- rectangle(30.55,31.75,42.1,78.9);rectangle(68.25,69.45,42.1,78.9);
- rectangle(32.1,67.9,79.25,80.45,true);
- for(const [a,b]of [[32.1,37.0],[45.0,47.7],[53.7,56.5],[65.0,67.9]])
+ rectangle(30.55,31.75,42.1,91.9);rectangle(74.25,75.45,42.1,91.9);
+ rectangle(32.1,73.9,92.25,93.45,true);
+ for(const [a,b]of [[32.1,37.0],[45.0,47.7],[53.7,56.5],[65.0,73.9]])
   rectangle(a,b,40.55,41.75,true);
  // Reuse the original west/rear lantern; add the same fixture in the other
  // three corners. All four centres have exactly 0.85 m offsets from the wall.
@@ -576,22 +626,24 @@ function buildLuxuryParkingLandscape(scene,root,m,createCanvas,stone,bronze){
   carpetGroup.add(closedParkingSurface(contour,approachTop,m.carpet,'Roter Teppich – bündiger Abschnitt',.012));
  }
  // Two compact conifers on the outer eastern flank; no trees at road mouths.
- for(const z of [54,67]){const x=69.35,h=ground(x,z);
+ for(const z of [57,75]){const x=75.35,h=ground(x,z);
   k.cyl(m.trunk,x,h+1.4,z,.12,2.8);
   for(let i=0;i<3;i++)k.put('cone',m.pine2,x,h+2.1+i*.72,z,1.1-i*.22,2.1,1.1-i*.22);
   features.trees++;}
- // Flush inlays remain beyond the bay edges and clear of all tyres.
- for(const x of [43.75,54.95])k.box(stone,x,y+.003,65.6,.22,.006,22);
- k.box(stone,50,y+.003,77.5,34,.006,.24);
  const bollard=(x,z,h=y)=>{k.box(bronze,x,h+.38,z,.18,.76,.18);
   k.box(lightMat,x,h+.68,z,.185,.10,.185);features.bollards++;};
  for(const x of [37.35,44.65,56.85,64.15])bollard(x,43.5);
 
  for(const x of [hx-2.0,hx+2.0])k.box(lightMat,x,y+3.15,hz-1.8,.65,.035,.12);
+ for(const x of [hx-1,hx+1])k.box(lightMat,x,y+3.14,hz,.60,.03,1.0);
  // Use proper, unmirrored text despite the parent z reflection.
  const sign=(title,subtitle,w,h,x,yy,z)=>{
-  const mat=m.makeSign(title,{subtitle,foreground:'#d7b77d',background:'#202c28',
-   width:2048,height:512,italic:false,fontScale:.33});
+  const c=createCanvas(2048,512),ctx=c.getContext('2d');ctx.fillStyle='#111615';ctx.fillRect(0,0,2048,512);
+  ctx.strokeStyle='#ba9b61';ctx.lineWidth=7;ctx.strokeRect(24,24,2000,464);ctx.fillStyle='#dfc28a';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.font='bold 150px Georgia, serif';ctx.fillText(title,1024,195,1880);
+  ctx.font='94px Arial, sans-serif';ctx.fillText(subtitle,1024,375,1880);
+  const t=new T.CanvasTexture(c);t.colorSpace=T.SRGBColorSpace;t.anisotropy=4;
+  const mat=new T.MeshBasicMaterial({map:t});
   const mesh=new T.Mesh(new T.PlaneGeometry(w,h),mat);
   mesh.position.set(x,yy,z);mesh.rotation.y=Math.PI;mesh.scale.x=-1;
   mesh.name=title+' – Hofbeschilderung';mesh.castShadow=false;g.add(mesh);};
@@ -609,7 +661,7 @@ function buildLuxuryParkingLandscape(scene,root,m,createCanvas,stone,bronze){
  }
  k.finish();
  // Small unshadowed pools of warm light, bounded to the new compound only.
- for(const [x,z]of [[hx,43.1],[38,44],[64,44]]){const l=new T.PointLight('#ffd098',2.0,5.5,2);
+ for(const [x,z]of [[hx,43.1],[38,44],[64,44]]){const l=new T.PointLight('#ffd098',x===hx?6:2.0,5.5,2);
   l.position.set(x,y+2.5,z);l.name='Warmes Licht am Limousinenhof';l.castShadow=false;g.add(l);}
  g.userData={luxuryParkingLandscape:true,...features,existingPathPreserved:true,
   straightRoadConnections:true,additionalShadowMaps:0};

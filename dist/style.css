@@ -8,3 +8,6 @@
 .views button[hidden]{display:none!important}
 .views #scene-mode-btn:not([hidden]){color:var(--gold);border-color:#ebd2a270;background:#21332de8;font-weight:600;flex-shrink:0}
 @media(max-width:600px){.views #scene-mode-btn{font-size:12px;padding:9px 11px}}
+
+.tool[aria-pressed="true"]{background:#ebd2a221;color:var(--gold)}
+@media(max-width:600px){.toolbar-section:first-child{flex:3}.toolbar-section.exports{flex:2}.tool{min-width:0;padding:8px 3px}.tool span{white-space:nowrap;font-size:9px}}

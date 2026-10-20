@@ -14,5 +14,11 @@ for(const key of ['townhallPlacement','plazaRefinement','townhallFloorRepair','c
 assert.deepEqual(scene.getObjectByName('Rathaus Seealm').position.toArray(),[-160.4,4.49,-163.2]);
 assert(scene.getObjectByName('Privater Limousinenparkplatz – Lumina Leaf Hotel'));
 assert.equal(scene.userData.parkingLamps.moves.length,3);
+let checkedBatches=0;
+for(const mesh of scene.children.filter(o=>o.userData.losslessSceneBatch)){
+ for(let i=0;i<mesh.count;i++){const matrix=new T.Matrix4();mesh.getMatrixAt(i,matrix);assert(matrix.determinant()>=-1e-8,'Reflections remain on mesh transforms for correct face winding');}
+ checkedBatches++;
+}
+assert(checkedBatches>20);
 console.log(JSON.stringify({fullSceneLoaded:true,rathausPlaced:true,allPavingRepairsCompleted:true,
- limousineParkingPresent:true,elapsedSeconds:Math.round((performance.now()-start)/1000)}));
+ limousineParkingPresent:true,correctlyOrientedStaticBatches:checkedBatches,elapsedSeconds:Math.round((performance.now()-start)/1000)}));

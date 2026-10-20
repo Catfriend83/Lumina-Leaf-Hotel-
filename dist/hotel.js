@@ -3,7 +3,7 @@ import {makeLobbyMaterials,buildReferenceLobby} from './hotel-lobby.js?v=99';
 import {buildMainEntrance,entranceBayFloor} from './hotel-entrance.js?v=91';
 import {hotelLettering,fiveStars,buildReferenceStaff} from './hotel-reference-details.js?v=89';
 import {makeHotelExteriorMaterials,makeHotelSideLighting,softenHotelFacadeLights} from './hotel-lighting.js?v=99';
-import {buildUndergroundGarage} from './underground-garage.js?v=104';
+import {buildUndergroundGarage} from './underground-garage.js?v=113';
 import {gardenWalkHeight,gardenPathShift,gardenMeadowHeight} from './meadow-grade.js?v=75';
 import {T,Kit,rand,rng,TAU,addLamp,person,facadeLamp,facadeWash} from './core.js?v=75';
 import {photoPlane} from './photo-surfaces.js?v=75';
@@ -25,6 +25,12 @@ function flowerbed(k,m,x,z,w,d,y=.12,{surface=null,warpX=null,sizeScale=null,ran
   const size=((narrow?.75:1.18)+random()*(narrow?.22:.42))*(sizeScale?sizeScale(px,pz):1);
   const ground=surface?surface(px,pz):y;
   shrubCluster(k,m,px,ground+.13,pz,size,random);
+  // Low continuous layers fill the soil between the existing larger plants.
+  for(const side of [-1,1]){
+   const gx=px+side*.25,gz=pz+.20,gy=surface?surface(gx,gz):y+.24;
+   k.ball(m.leaf2,gx,gy+.12,gz,.24,.14,.22);
+   if((ix+iz)%2===0)k.ball(m.flowerWhite,gx,gy+.27,gz,.105,.065,.105);
+  }
   if((ix+iz)%3===0){
    const flower=(ix+iz)%2===0?m.flowerWhite:m.flowerRed,fx=px+(random()-.5)*.25,fz=pz+(random()-.5)*.25,fy=ground+.13+size*.91;
    const petalGeometry=flower===m.flowerWhite?whitePetal:redPetal;
