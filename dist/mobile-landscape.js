@@ -18,7 +18,7 @@ export function buildMobileLandscape(scene,m){
  const smooth=(a,b,v)=>{const t=Math.min(1,Math.max(0,(v-a)/(b-a)));return t*t*(3-2*t);};
  const lawn=m.meadow.clone();lawn.name='Natürlich schattierte Wiesen im mobilen Modus';
  lawn.map=null;lawn.bumpMap=null;lawn.color.set('#91a874');lawn.vertexColors=true;lawn.roughness=1;
- const mountainGrass=lawn.clone();mountainGrass.color.set('#697e5b');
+ const mountainGrass=lawn.clone();mountainGrass.color.set('#697e5b');mountainGrass.name='Alpenberge – bestehende Fels- und Schneefarben';
  // Lower-resolution distant terrain retains the same mountain-height algorithm,
  // but avoids the original 130,000-vertex landscape and expensive cut processing.
  const far=new T.PlaneGeometry(3100,3100,90,90);

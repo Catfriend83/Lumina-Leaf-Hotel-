@@ -63,6 +63,25 @@ export function createRendering(renderer,built,camera,{mobile=false,monitor=null
  const {scene,materials,car,sun}=built;
  stabilizeStaticRendering(scene,materials,renderer,{mobile});
  installMountainClarity(scene);updateLakePathLights(scene,camera);
+ // Evaluate only nearby practical lights on handhelds; emissive fixtures remain
+ // visible everywhere. A constant light count avoids repeated shader compilation.
+ const practical=[];scene.updateMatrixWorld(true);
+ if(mobile)scene.traverse(o=>{if((o.isPointLight||o.isSpotLight)&&o.intensity>0)practical.push({light:o,position:o.getWorldPosition(new T.Vector3()),score:0});});
+ const lightingCamera=new T.Vector3(Infinity,Infinity,Infinity),activePractical=new Set();
+ function budgetPracticalLights(){
+  if(!mobile)return;
+  if(lightingCamera.distanceToSquared(camera.position)>9){
+   lightingCamera.copy(camera.position);activePractical.clear();
+   for(const type of ['isPointLight','isSpotLight']){
+    const ranked=practical.filter(r=>r.light[type]);
+    for(const r of ranked){const d=r.position.distanceTo(camera.position);r.score=r.light.intensity/(4+d*d);if(r.light.distance&&d>r.light.distance+12)r.score*=.05;}
+    ranked.sort((a,b)=>b.score-a.score);for(const r of ranked.slice(0,type==='isPointLight'?12:2))activePractical.add(r.light);
+   }
+  }
+  for(const r of practical)r.light.visible=activePractical.has(r.light);
+  scene.userData.mobilePracticalLighting={available:practical.length,active:activePractical.size,maxPointLights:12,maxSpotLights:2};
+ }
+ budgetPracticalLights();
  // Keep the full cinematic environment probe on desktop. Capturing six complete
  // scenes on a mobile GPU delays startup and consumes extra render-target memory.
  let probeTarget=null;
@@ -78,7 +97,7 @@ export function createRendering(renderer,built,camera,{mobile=false,monitor=null
   }
  }else{
   // Static shadows need one modest shadow map, not a 2048² buffer.
-  sun.shadow.mapSize.set(768,768);
+  sun.shadow.mapSize.set(1024,1024);
   renderer.shadowMap.needsUpdate=true;
  }
  const originals=[];scene.traverse(o=>{if(o.name==='Pool Wasseroberfläche'||o.name==='Spiegelnder Bergsee')originals.push(o);});
@@ -102,8 +121,19 @@ export function createRendering(renderer,built,camera,{mobile=false,monitor=null
   composer.addPass(bloom);composer.addPass(createCinematicOutput());
   if(monitor){const pass=bloom.render;bloom.render=function(...args){return monitor.measure('postprocessing',()=>pass.apply(this,args));};}
  }
+ const shadowFocus=new T.Vector3(Infinity,Infinity,Infinity),viewDirection=new T.Vector3(),focus=new T.Vector3(),sunOffset=new T.Vector3(-90,75,-55);
+ const focusShadows=()=>{
+  if(!scene.userData.realisticSurfaces)return;
+  camera.getWorldDirection(viewDirection);
+  const distance=viewDirection.y<-.08?Math.min(100,Math.max(0,(camera.position.y-1)/-viewDirection.y)):25;
+  focus.copy(camera.position).addScaledVector(viewDirection,distance);focus.y=Math.max(0,Math.min(8,focus.y));
+  if(focus.distanceToSquared(shadowFocus)<196)return;
+  shadowFocus.copy(focus);sun.target.position.copy(focus);sun.position.copy(focus).add(sunOffset);
+  Object.assign(sun.shadow.camera,{left:-48,right:48,top:48,bottom:-48,near:1,far:240});sun.shadow.camera.updateProjectionMatrix();
+  renderer.shadowMap.needsUpdate=true;
+ };
  let shadowsReady=false;const lastLightCamera=new T.Vector3(Infinity,Infinity,Infinity);
- return {resize(w,h){composer?.setSize(w,h);},update(t){if(!lastLightCamera.equals(camera.position)){updateLakePathLights(scene,camera);lastLightCamera.copy(camera.position);}built.activity?.update(t);animateReferenceFountain(built,t);if(lake)lake.material.uniforms.time.value=t;for(const water of waters)water.material.uniforms.time.value=t*.24;},render(dt){if(composer)composer.render(dt);else renderer.render(scene,camera);if(!shadowsReady){renderer.shadowMap.autoUpdate=false;shadowsReady=true;}},
+ return {resize(w,h){composer?.setSize(w,h);},update(t){if(!lastLightCamera.equals(camera.position)){updateLakePathLights(scene,camera);lastLightCamera.copy(camera.position);}built.activity?.update(t);animateReferenceFountain(built,t);if(lake)lake.material.uniforms.time.value=t;for(const water of waters)water.material.uniforms.time.value=t*.24;},render(dt){budgetPracticalLights();focusShadows();if(composer)composer.render(dt);else renderer.render(scene,camera);if(!shadowsReady){renderer.shadowMap.autoUpdate=false;shadowsReady=true;}},
   createExport(w,h){
    // One full-frame glow and reflection capture keeps tiles continuous.
    const maxSize=renderer.capabilities.maxTextureSize,gl=renderer.getContext();

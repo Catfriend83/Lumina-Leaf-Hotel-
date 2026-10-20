@@ -1,3 +1,4 @@
+import {finishRealisticSurfaces} from './realistic-surfaces.js?v=115';
 import {finishParkingGardenConnection} from './parking-garden-link.js?v=114';
 import {finishResortArrival} from './resort-upgrade.js?v=113';
 import {preserveHotelSurroundings} from './hotel-meadow-preservation.js?v=91';
@@ -9,7 +10,7 @@ import {repairChurchFloor} from './church-floor.js?v=75';
 import {repairTownhallFloor} from './townhall-floor.js?v=75';
 import {refineTownhallPlaza} from './plaza-refinement.js?v=91';
 import {placeTownhallOnPlaza} from './townhall-placement.js?v=75';
-import {applyAlpineMeadows} from './alpine-meadows.js?v=111';
+import {applyAlpineMeadows} from './alpine-meadows.js?v=115';
 import {clearGarageSite,finishLobbyGarage} from './garage-site.js?v=104';
 import {reconstructHotelVerge,closeHotelPavingSeams} from './hotel-drive.js?v=112';
 import {closeEntryPavingSeam} from './entry-seam.js?v=75';
@@ -25,7 +26,7 @@ import {buildLimousineParking,clearLimousineParkingVegetation,prepareLimousinePa
 import {buildLandscape} from './landscape.js?v=114';
 import {buildLakeActivity} from './lake-activity.js?v=75';
 import {makeRoadMaterials,removeVegetationOnRoad,buildForecourt} from './forecourt.js?v=114';
-import {buildMobileLandscape} from './mobile-landscape.js?v=114';
+import {buildMobileLandscape} from './mobile-landscape.js?v=115';
 import {SPA_WING} from './spa-wing.js?v=98';
 export async function createScene({createCanvas,loadTexture,onProgress=()=>{},mobile=false,fastHotel=false}){
  // Allow the browser to paint the loading state between long scene build steps.
@@ -65,12 +66,14 @@ export async function createScene({createCanvas,loadTexture,onProgress=()=>{},mo
   clearLimousineParkingVegetation(scene,materials);
   buildLimousineParking(scene,materials,car,createCanvas);
  finishResortArrival(scene,materials,createCanvas);
-  sun.castShadow=false;
+  const mobileMeadow=applyAlpineMeadows(scene,materials,{mobile:true,quick:true});
+  finishRealisticSurfaces(scene,materials,createCanvas,{mobile:true});
+  sun.castShadow=true;
   scene.userData.fastMobileHotel=true;
   scene.userData.alpineSurroundingsOmitted=false;
   scene.updateMatrixWorld(true);
   onProgress(96,'Schnellansicht darstellen …');
-  const meadowController={update(){return null;},prepareExport(){}};
+  const meadowController=mobileMeadow.controller;
   return {scene,materials,car,dome,sky,sun,activity:null,meadowController,referencePlaza:null};
  }
  await phase(22,'Alpenlandschaft und Umgebung aufbauen …');
@@ -94,6 +97,7 @@ export async function createScene({createCanvas,loadTexture,onProgress=()=>{},mo
  clearLimousineParkingVegetation(scene,materials);
  buildLimousineParking(scene,materials,car,createCanvas);
  finishResortArrival(scene,materials,createCanvas);
+ finishRealisticSurfaces(scene,materials,createCanvas,{mobile});
  await phase(92,'3D-Geometrie für die Darstellung optimieren …');
  // Batch repeated static geometry across the entire scene for mobile GPUs.
  const batches=new Map(),old=[],reflection=new T.Matrix4().makeScale(1,1,-1);

@@ -1,0 +1,28 @@
+import assert from 'node:assert/strict';
+import {createRequire} from 'node:module';
+import path from 'node:path';
+import {T} from '../dist/core.js';
+import {inLimousineParking} from '../dist/limousine-parking.js';
+import {createScene} from '../dist/scene.js';
+const require=createRequire(import.meta.url),{createCanvas,loadImage}=require('@napi-rs/canvas');
+globalThis.document={createElement:()=>createCanvas(1,1)};
+const start=performance.now();
+const built=await createScene({createCanvas,mobile:true,fastHotel:true,loadTexture:async p=>new T.Texture(await loadImage(path.resolve('dist',p)))});
+const {scene,materials,meadowController}=built;
+assert(scene.userData.realisticSurfaces?.geometryPreserved);
+assert(scene.userData.realisticSurfaces.refinedMaterials>30);
+assert(materials.meadow.userData.worldMappedGrass);
+assert(materials.meadow.map.image.width===512);
+assert(materials.meadow.bumpMap!==materials.meadow.map,'Relief uses a linear height texture');
+assert.equal(materials.meadow.map.colorSpace,T.SRGBColorSpace);
+const grass=meadowController.records[6];assert(grass.length>1000);
+assert(meadowController.records.filter((_,i)=>i!==6).reduce((n,r)=>n+r.length,0)>500);
+for(const rows of meadowController.records)for(const r of rows){assert(!inLimousineParking(r.x,r.z,2.49),'Plants stay outside secured parking and gates');assert(Number.isFinite(r.y));}
+const camera=new T.PerspectiveCamera();camera.position.set(-35,1.4,20);meadowController.update(camera,true);
+const meshes=meadowController.meshes.flat();assert(meshes.some(m=>m.visible&&m.count>0));
+for(const m of meshes)assert(m.count<=m.instanceMatrix.count,'LOD population fits its GPU buffer');
+assert(built.sun.castShadow);
+assert(scene.getObjectByName('Eigenständige Hotel-Tiefgarage'));
+assert(scene.getObjectByName('Drei identische geparkte Lumina Leaf Limousinen'));
+const lights=[];scene.traverse(o=>{if(o.isLight&&o.visible)lights.push(o);});
+console.log(JSON.stringify({activeLights:lights.length,realisticMobileScene:true,grassSites:grass.length,flowerSites:meadowController.records.filter((_,i)=>i!==6).reduce((n,r)=>n+r.length,0),texturedMaterials:scene.userData.realisticSurfaces.refinedMaterials,elapsedSeconds:Math.round((performance.now()-start)/100)/10}));

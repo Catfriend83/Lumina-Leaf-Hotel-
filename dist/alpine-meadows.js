@@ -1,6 +1,6 @@
 import {insideRegion} from './village-traffic.js?v=75';
 import {createBotanyController,flowerKinds,names} from './alpine-botany.js?v=111';
-import {inLimousineParking} from './limousine-parking.js?v=108';
+import {inLimousineParking} from './limousine-parking.js?v=114';
 import { T, rng } from './core.js?v=75';
 import { spaLakeShore } from './spa-shore.js?v=75';
 
@@ -8,7 +8,7 @@ import { spaLakeShore } from './spa-shore.js?v=75';
 // No new terrain plane is created and no terrain vertex is moved.
 const REGION = { x0: -1550, x1: 1550, z0: -1770, z1: 1330 };
 const CELL = 20;
-const isMeadow = (m, materials) => !!m && (m === materials.meadow || m.name === 'meadow' || (m.map && m.map === materials.meadow.map) || /Uferwiese/.test(m.name));
+const isMeadow = (m, materials) => !!m && (m === materials.meadow || m.name === 'meadow' || (m.map && m.map === materials.meadow.map) || /Uferwiese|Natürlich schattierte Wiesen/.test(m.name));
 const oldGrass = m => /grassBlade/i.test(m?.name || '');
 const vegetation = /leaf|leaves|foliage|flower|bloom|petal|grass|blossom|needle|trunk|bark|Blüte|Blatt|Wiesenbotanik/i;
 
@@ -52,7 +52,7 @@ function addGeometry(index,geometry,matrix) {
   }
 }
 
-export function applyAlpineMeadows(scene,materials,{mobile=false}={}) {
+export function applyAlpineMeadows(scene,materials,{mobile=false,quick=false}={}) {
   scene.updateMatrixWorld(true);
   const ground=projectionIndex(),obstacles=projectionIndex(),grounds=[],removed=[],boxes=[];
   const im=new T.Matrix4(),wm=new T.Matrix4();
@@ -151,6 +151,11 @@ export function applyAlpineMeadows(scene,materials,{mobile=false}={}) {
   }
   // Irregular sites cover the whole meadow foreground, with finer local detail.
   // A stratified field spans the actual grass-bearing valley, not only four local zones.
+  if(quick){
+    // Existing mobile terrain, with real flowers and grass at conservative density.
+    for(let x=-250;x<124;x+=2.7)for(let z=-236;z<94;z+=2.7)plant(x+(random()-.5)*2,z+(random()-.5)*2);
+    for(let i=0;i<2200;i++)plant(-48+random()*27,4+random()*25);
+  }else{
   for(let x=-760;x<770;x+=6)for(let z=-850;z<690;z+=6)plant(x+(random()-.5)*4,z+(random()-.5)*4);
   for(let i=0;i<65000;i++)plant(-92+random()*184,-99+random()*198);
   for(let i=0;i<65000;i++)plant(-238+random()*164,-226+random()*138);
@@ -160,10 +165,11 @@ export function applyAlpineMeadows(scene,materials,{mobile=false}={}) {
   // Fine local plants plus real, sparse 3D vegetation throughout the far valley.
 
   for(let i=0;i<8000;i++)plant(-48+random()*26,4+random()*25);
+  }
   // Fill otherwise empty terrain-index cells. Each candidate is still checked
   // against the real meadow, roads, paving, buildings, water and tuft clearance.
   let completedCells=0;
-  for(const key of ground.cells.keys()){
+  for(const key of quick?[]:ground.cells.keys()){
     if(occupiedCells.has(key))continue;
     const [ix,iz]=key.split(',').map(Number);
     for(let j=0;j<24;j++)if(plant((ix+random())*CELL,(iz+random())*CELL,true)){completedCells++;break;}
@@ -174,6 +180,7 @@ export function applyAlpineMeadows(scene,materials,{mobile=false}={}) {
   // The viewer immediately selects a camera-dependent LOD. Preparing all
   // export instances here blocks startup and is overwritten by the first update.
   const controller=createBotanyController(group,records,{mobile});
+  if(quick)controller.meshes.flat().forEach(mesh=>mesh.castShadow=false);
   const baseMaterial=materials.meadow;baseMaterial.map=null;baseMaterial.bumpMap=null;baseMaterial.color.set('#ffffff');baseMaterial.vertexColors=true;baseMaterial.roughness=.97;baseMaterial.name='Alpine Blumenwiese – vollständig ersetzte Bodenvegetation';
   const v=new T.Vector3(),c=new T.Color();
   grounds.forEach(o=>{

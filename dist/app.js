@@ -4,8 +4,8 @@ import {optimizeStaticScene} from './static-performance.js?v=113';
 import {createPerformanceMonitor} from './performance-monitor.js?v=78';
 import {loadModelBlob} from './model-download.js?v=75';
 import {T} from './core.js?v=75';
-import {createScene,cameraViews} from './scene.js?v=114';
-import {createRendering} from './rendering.js?v=105';
+import {createScene,cameraViews} from './scene.js?v=115';
+import {createRendering} from './rendering.js?v=115';
 import {CINEMATIC} from './cinematic.js?v=75';
 import {assemble8K,EXPORT_8K} from './export-8k.js?v=75';
 import {OrbitControls} from './vendor/addons/controls/OrbitControls.js';
@@ -33,7 +33,7 @@ async function start(){
  // A missing decorative font must not prevent the 3D model from starting.
  try{const scriptFont=new FontFace('Lumina Script','url(./assets/lumina-script.otf)');document.fonts.add(await scriptFont.load());}
  catch(e){console.warn('Optionale Schrift konnte nicht geladen werden.',e);}
- renderer=new T.WebGLRenderer({antialias:!mobile,alpha:false,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,mobile?1:1.8));renderer.outputColorSpace=T.SRGBColorSpace;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=CINEMATIC.exposure;renderer.shadowMap.enabled=!fastHotel;renderer.shadowMap.type=T.PCFSoftShadowMap;el('viewport').append(renderer.domElement);
+ renderer=new T.WebGLRenderer({antialias:true,alpha:false,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,mobile?1.3:1.8));renderer.outputColorSpace=T.SRGBColorSpace;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=CINEMATIC.exposure;renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFSoftShadowMap;el('viewport').append(renderer.domElement);
  camera=new T.PerspectiveCamera(27.88,1,.35,3300);controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.dampingFactor=.075;controls.screenSpacePanning=true;controls.minDistance=4;controls.maxDistance=440;controls.maxPolarAngle=Math.PI*.492;controls.autoRotateSpeed=.65;controls.target.set(-1,5,-8);controls.zoomSpeed=.85;controls.panSpeed=.65;controls.rotateSpeed=.6;
  monitor=createPerformanceMonitor(renderer);
  const loader=new T.TextureLoader(),assets=new Map();
@@ -83,7 +83,7 @@ async function start(){
   sampleDuration+=period;sampleFrames++;
   if(sampleDuration<3000||sampleFrames<12)return;
   const average=sampleDuration/sampleFrames,old=renderer.getPixelRatio();
-  const upper=Math.min(devicePixelRatio,1);
+  const upper=Math.min(devicePixelRatio,1.3);
   sampleDuration=0;sampleFrames=0;
   slowWindows=average>39?slowWindows+1:0;
   fastWindows=average<24?fastWindows+1:0;
