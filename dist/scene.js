@@ -1,3 +1,4 @@
+import {finishParkingGardenConnection} from './parking-garden-link.js?v=114';
 import {finishResortArrival} from './resort-upgrade.js?v=113';
 import {preserveHotelSurroundings} from './hotel-meadow-preservation.js?v=91';
 import {rebuildReferencePlaza} from './reference-plaza.js?v=83';
@@ -16,15 +17,15 @@ import {makePlazaMaterials,applyVillagePlazaFinish} from './plaza-finish.js?v=91
 import {buildLakePathFurnishing,thinLakePathFurnishing} from './lake-path-furnishing.js?v=91';
 import {clearVillageConstruction} from './village.js?v=91';
 import {T,makeMaterials} from './core.js?v=75';
-import {buildHotel} from './hotel.js?v=113';
+import {buildHotel} from './hotel.js?v=114';
 import {makePoolMaterials} from './luxury-pool.js?v=75';
 import {makeSpaMaterials} from './spa-details.js?v=75';
 import {buildCar} from './car.js?v=112';
-import {buildLimousineParking,clearLimousineParkingVegetation,prepareLimousineParkingTerrain,relocateLimousineParkingLamps} from './limousine-parking.js?v=113';
-import {buildLandscape} from './landscape.js?v=112';
+import {buildLimousineParking,clearLimousineParkingVegetation,prepareLimousineParkingTerrain,relocateLimousineParkingLamps} from './limousine-parking.js?v=114';
+import {buildLandscape} from './landscape.js?v=114';
 import {buildLakeActivity} from './lake-activity.js?v=75';
-import {makeRoadMaterials,removeVegetationOnRoad,buildForecourt} from './forecourt.js?v=113';
-import {buildMobileLandscape} from './mobile-landscape.js?v=112';
+import {makeRoadMaterials,removeVegetationOnRoad,buildForecourt} from './forecourt.js?v=114';
+import {buildMobileLandscape} from './mobile-landscape.js?v=114';
 import {SPA_WING} from './spa-wing.js?v=98';
 export async function createScene({createCanvas,loadTexture,onProgress=()=>{},mobile=false,fastHotel=false}){
  // Allow the browser to paint the loading state between long scene build steps.
@@ -60,6 +61,7 @@ export async function createScene({createCanvas,loadTexture,onProgress=()=>{},mo
   const car=buildCar(scene,materials,carWrap);
   relocateLimousineParkingLamps(scene,materials);
   prepareLimousineParkingTerrain(scene,materials);
+ finishParkingGardenConnection(scene,materials);
   clearLimousineParkingVegetation(scene,materials);
   buildLimousineParking(scene,materials,car,createCanvas);
  finishResortArrival(scene,materials,createCanvas);
@@ -88,6 +90,7 @@ export async function createScene({createCanvas,loadTexture,onProgress=()=>{},mo
  applyVillageDetails(scene,materials,referencePlaza,meadow.controller);finishLobbyGarage(scene,materials,meadow.controller);scene.userData.hotelMeadowPreservation=preserveHotelSurroundings(meadow.controller,scene);
  relocateLimousineParkingLamps(scene,materials);
  prepareLimousineParkingTerrain(scene,materials,meadow.controller);
+ finishParkingGardenConnection(scene,materials,meadow.controller);
  clearLimousineParkingVegetation(scene,materials);
  buildLimousineParking(scene,materials,car,createCanvas);
  finishResortArrival(scene,materials,createCanvas);

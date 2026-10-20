@@ -12,22 +12,20 @@ globalThis.document={createElement:()=>createCanvas(1,1)};
 const {scene,materials}=await createScene({createCanvas,fastHotel:true,
  loadTexture:async p=>new T.Texture(await loadImage(path.resolve('dist',p)))});
 scene.updateMatrixWorld(true);
-const expected=new Map([
- ['Sauber angebundener Gartenweg rechts neben dem Hotel','30ed4b0f5c40bd7f736252925458faebfba77d1e49ee10039cc6ce879aff5440'],
- ['Durchgehender seitlicher Rand des Gartenwegs','bba7ec2ade341938a7b4043f3e505b677ac5d88cb785693baf61a3600ffa8016']
-]);
-for(const [name,hash] of expected){
- const o=scene.getObjectByName(name),h=crypto.createHash('sha256');assert(o);
- for(const [key,a]of Object.entries(o.geometry.attributes).sort())h.update(key).update(Buffer.from(a.array.buffer,a.array.byteOffset,a.array.byteLength));
- if(o.geometry.index)h.update(Buffer.from(o.geometry.index.array.buffer));
- assert.equal(h.digest('hex'),hash,'Original path position, UVs and normals');
- assert.deepEqual(o.matrixWorld.toArray(),[1,0,0,0,0,1,0,0,0,0,1,0,-3.4,0,8,1]);
-}
+const retainedPath=scene.getObjectByName('Sauber angebundener Gartenweg rechts neben dem Hotel');assert(retainedPath);
+const connection=scene.userData.parkingGardenConnection;assert(connection?.removedBlindSpur&&connection.closedPaving);assert.equal(connection.pathWidth,2.2);
+assert.equal(connection.join[2],-10);
 assert.deepEqual(scene.userData.parkingLamps.moves.map(x=>x.parts),[10,10,10]);
 assert.deepEqual(scene.userData.parkingLamps.moves.map(x=>x.to),[[45.15,-10],[45.15,6],[45.15,-31.85]]);
-assert.equal(LIMO_PARK.bayWidth,4.6);
+assert.equal(LIMO_PARK.bayWidth,4.3);
 const park=scene.getObjectByName('Privater Limousinenparkplatz – Lumina Leaf Hotel');
 assert.deepEqual(park.position.toArray(),[14,0,61]);
+assert.equal(park.userData.markings.parts,12);assert.equal(park.userData.markings.physicalWidth,.09);
+const paint=[];park.traverse(o=>{if(o.isInstancedMesh&&o.material.name==='Durchgezogene weiße Limousinen-Stellplatzlinien')paint.push(o);});assert.equal(paint.length,1);assert.equal(paint[0].count,12);
+assert.equal(park.getObjectByName('Einbahnführung innerhalb des Limousinenhofs'),undefined);
+const hotel=scene.getObjectByName('Lumina Leaf Hotel und Außenanlage');const terracePoint=hotel.localToWorld(new T.Vector3(20.5,.04,-48.4));assert(terracePoint.distanceTo(new T.Vector3(...connection.terraceJoin))<1e-8);
+const newWalk=scene.getObjectByName('Durchgehender Fußweg zur vorhandenen Terrasse');assert(newWalk);const edges=new Map(),wi=newWalk.geometry.index;
+for(let i=0;i<wi.count;i+=3)for(let j=0;j<3;j++){const a=wi.getX(i+j),b=wi.getX(i+(j+1)%3),key=[Math.min(a,b),Math.max(a,b)].join(',');edges.set(key,(edges.get(key)||0)+1);}assert([...edges.values()].every(n=>n===2),'New terrace connection is closed');
 const cars=park.getObjectByName('Drei identische geparkte Lumina Leaf Limousinen');
 const boxes=[new T.Box3(),new T.Box3(),new T.Box3()];
 cars.traverse(o=>{if(!o.isInstancedMesh)return;o.geometry.computeBoundingBox();
@@ -39,6 +37,7 @@ boxes.forEach((box,i)=>{
  assert(box.min.x>46.5&&box.max.x<87.5&&box.min.z>-30.5&&box.max.z<15.5,'Cars inside maneuvering court');
 });
 const labels=park.getObjectByName('Drei gut lesbare Limousine-Bodenaufschriften');
+assert.equal(labels.count,3);assert.equal(labels.userData.text,'LIMOUSINE');
 for(let i=0;i<labels.count;i++){const a=new T.Matrix4();labels.getMatrixAt(i,a);a.premultiply(labels.matrixWorld);
  assert(a.determinant()>0,'No mirrored text');assert(a.elements[0]>0,'L begins on the left when viewed from the vehicle front');}
 for(let z=19;z<=28.4;z+=.01)assert(parkingAccessSection(0,z).right<parkingAccessSection(1,z).left);
@@ -149,5 +148,5 @@ assert(scene.getObjectByName('Gerade Garten- und Straßenränder ohne gebogenen 
 console.log(JSON.stringify({roadSamples,plantContacts,levelSamples,cornerLamps:corners.length,limousineSweepSamples,
  furnishedGuardhouse:true,separateSigns:true,hotelDriveWidth:ROAD.driveWidth}));
 console.log(JSON.stringify({luxuryLandscapingChecked:true,plantParts:plants,...landscape.userData}));
-console.log(JSON.stringify({pathUnchanged:true,parkedCars:3,bayWidth:LIMO_PARK.bayWidth,
+console.log(JSON.stringify({rearSpurRemoved:true,parkedCars:3,bayWidth:LIMO_PARK.bayWidth,
  lamps:2,uniformLampSpacing:13,unmirroredLabels:3,terrainSamples:checked,closedApproaches:2}));

@@ -8,8 +8,9 @@ import {subtractGarageFootprint} from './garage-site.js?v=104';
 export const PARKING_SHIFT_X=14; // local x32 becomes world x46 (V107: x30).
 export const LIMO_PARK={minX:32,maxX:74,minZ:42,maxZ:92,asphaltY:-.07,
  entrances:[{x:41.0,label:'Ausfahrt'},{x:60.5,label:'Einfahrt'}],
- bays:[56.4837168574,52.5,48.5162831426],bayWidth:4.6,carZ:69,guardX:50.7,
- poses:[-4.6,0,4.6].map(v=>({x:52.5-v*Math.sin(Math.PI*2/3),z:69-v*Math.cos(Math.PI*2/3),heading:Math.PI*2/3}))};
+ bays:[60,64.5,69],bayWidth:4.3,carZ:81.4,guardX:50.7,
+ bayRearZ:91.2,bayFrontZ:71.2,
+ poses:[60,64.5,69].map(x=>({x,z:81.4,heading:Math.PI/2}))};
 export const LIMO_PARK_WORLD={
  minX:46,maxX:88,minZ:-31,maxZ:19,
  roadZ:28.4
@@ -26,13 +27,13 @@ export function inLimousineParking(x,z,padding=0){
 export const PARKING_ACCESS=[{roadX:55,gateX:55},{roadX:74.5,gateX:74.5}];
 export const PARKING_ROAD_EXTENSION={minX:66.3,maxX:102,minZ:28.4,maxZ:39.7};
 export const PARKING_CORNERS=[[31.15,41.15],[74.85,41.15],[31.15,92.85],[74.85,92.85]];
-// A horizontal section of each 6.64–7.2 m wide, straight driveway.
+// Straight gate connections; a tapered 9.5 m exit flare clears the long vehicle nose.
 // Widen the x span with the tangent so the actual lane never becomes narrow.
 export function parkingAccessSection(index,z){
  const a=PARKING_ACCESS[index],t=Math.max(0,Math.min(1,(28.4-z)/9.4));
  const smooth=t*t*(3-2*t),slope=(a.gateX-a.roadX)*6*t*(1-t)/9.4;
  const center=a.roadX+(a.gateX-a.roadX)*smooth;
- const half=(7.2+(6.64-7.2)*smooth)*Math.sqrt(1+slope*slope)/2;
+ const half=(7.2+((index===0?9.5:6.64)-7.2)*smooth)*Math.sqrt(1+slope*slope)/2;
  return {left:center-half,right:center+half,center};
 }
 
@@ -303,8 +304,8 @@ export function buildLimousineParking(scene,m,originalCar,createCanvas){
  // Local x=[32,68],z=[42,79] -> world x=[46,82],z=[19,-18].
  group.position.set(PARKING_SHIFT_X,0,61);
  group.scale.z=-1;
- group.userData={privateParking:true,luxuryParking:true,version:113,
-  relocatedFromWrongSide:true,eastwardShiftMeters:16,gardenPathPreserved:true,
+ group.userData={privateParking:true,luxuryParking:true,version:114,
+  relocatedFromWrongSide:true,eastwardShiftMeters:16,southernGardenPathPreserved:true,
   spaceCount:3,gateCount:2,asphaltY:p.asphaltY,
   placedOnExistingLevelHotelMeadow:true,noAdditionalSceneLights:false};
  scene.add(group);
@@ -342,25 +343,37 @@ export function buildLimousineParking(scene,m,originalCar,createCanvas){
 
  // Neat three-bay white road markings. Top is 16mm above the asphalt,
  // with a matching polygon bias for low-precision smartphone depth buffers.
- const ink=mark.clone();ink.name='Parkplatzmarkierung – Limousinen';
- ink.polygonOffset=true;ink.polygonOffsetFactor=-1;ink.polygonOffsetUnits=-2;
- const stripe=(x,z,w,d)=>k.box(ink,x,y+.018,z,w,.008,d);
- // Four short corner marks per service berth leave the circulation lane clear.
+ const ink=new T.MeshBasicMaterial({name:'Durchgezogene weiße Limousinen-Stellplatzlinien',color:'#f3f1e7',transparent:true,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-2});
+ // Derivative-smoothed paint keeps a thin continuous line visible on phones,
+ // rather than letting a subpixel-width box break into isolated white dots.
+ ink.onBeforeCompile=shader=>{
+  shader.vertexShader='varying vec2 vPaintUV;\n'+shader.vertexShader;
+  shader.vertexShader=shader.vertexShader.replace('#include <uv_vertex>','#include <uv_vertex>\n vPaintUV=uv;');
+  shader.fragmentShader='varying vec2 vPaintUV;\n'+shader.fragmentShader;
+  shader.fragmentShader=shader.fragmentShader.replace('#include <opaque_fragment>',`float paintPixel=max(fwidth(vPaintUV.x),0.0001);
+   float paintHalf=max(0.1,0.65*paintPixel);
+   diffuseColor.a*=1.0-smoothstep(paintHalf-0.55*paintPixel,paintHalf+0.55*paintPixel,abs(vPaintUV.x-0.5));
+   #include <opaque_fragment>`);
+ };
+ ink.customProgramCacheKey=()=> 'continuous-limousine-paint-v114';
+ const paintPlane=new T.PlaneGeometry(1,1);paintPlane.rotateX(-Math.PI/2);
+ const stripe=(x,z,length,angle=0)=>k.put(paintPlane,ink,x,y+.022,z,.45,1,length,0,angle);
+ // A single calm row along the rear edge, with continuous 9 cm paint.
+ // No corner dots, dashed bays or decorative inlays remain.
  for(const pose of p.poses){
-  const {x,z,heading:h}=pose,ax=-Math.cos(h),az=Math.sin(h),rx=Math.sin(h),rz=Math.cos(h);
-  for(const u of [-9.15,9.15])for(const v of [-2.1,2.1]){
-   const px=x+u*ax+v*rx,pz=z+u*az+v*rz;
-   const towardU=-Math.sign(u),towardV=-Math.sign(v);
-   k.line(ink,[px,y+.018,pz],[px+towardU*ax*.9,y+.018,pz+towardU*az*.9],.04);
-   k.line(ink,[px,y+.018,pz],[px+towardV*rx*.65,y+.018,pz+towardV*rz*.65],.04);
-  }
+  const width=p.bayWidth,length=p.bayRearZ-p.bayFrontZ,z=(p.bayRearZ+p.bayFrontZ)/2;
+  stripe(pose.x-width/2,z,length);
+  stripe(pose.x+width/2,z,length);
+  stripe(pose.x,p.bayRearZ,width,Math.PI/2);
+  stripe(pose.x,p.bayFrontZ,width,Math.PI/2);
  }
+ group.userData.markings={solid:true,style:'continuous rectangular bays',physicalWidth:.09,parts:12,subpixelAntialiasing:true};
  // One shared 1024px sign material for all three asphalt inscriptions.
  const canvas=createCanvas(1024,256),ctx=canvas.getContext('2d');
  ctx.clearRect(0,0,1024,256);ctx.fillStyle='#f7f6ef';
  ctx.textAlign='center';ctx.textBaseline='middle';
  ctx.font='bold 122px Arial, Helvetica, sans-serif';
- ctx.fillText('Limousine',512,130,990);
+ ctx.fillText('LIMOUSINE',512,130,990);
  const tex=new T.CanvasTexture(canvas);tex.colorSpace=T.SRGBColorSpace;
  tex.minFilter=T.LinearMipmapLinearFilter;tex.anisotropy=4;
  const words=new T.MeshBasicMaterial({name:'Weiße Bodenaufschrift Limousine',
@@ -373,25 +386,18 @@ export function buildLimousineParking(scene,m,originalCar,createCanvas){
  // Thus L is on the left for a reader at the road/guardhouse facing the bays.
  dummy.scale.z=-1;
  p.poses.forEach((pose,i)=>{dummy.rotation.y=pose.heading-Math.PI/2;
-  dummy.position.set(pose.x-Math.cos(pose.heading)*9.9,y+.023,pose.z+Math.sin(pose.heading)*9.9);
+  dummy.position.set(pose.x-Math.cos(pose.heading)*9.9,y+.023,p.bayFrontZ+.65);
   dummy.updateMatrix();labels.setMatrixAt(i,dummy.matrix);});
  labels.instanceMatrix.needsUpdate=true;labels.computeBoundingSphere();
- labels.castShadow=false;labels.userData={oppositeSideReadable:true,unmirrored:true,rotationDegrees:0,readFrom:'road and guardhouse'};labels.name='Drei gut lesbare Limousine-Bodenaufschriften';
+ labels.castShadow=false;labels.userData={text:'LIMOUSINE',oppositeSideReadable:true,unmirrored:true,rotationDegrees:0,readFrom:'open front of every berth'};labels.name='Drei gut lesbare Limousine-Bodenaufschriften';
  group.add(labels);
 
- // Two restrained arrows describe the one-way service circulation.
- for(const [x,z,angle]of [[66,57,0],[40,58,Math.PI]]){
-  const arrows=new T.Group();arrows.position.set(x,y+.02,z);arrows.rotation.y=angle;
-  arrows.name='Einbahnführung innerhalb des Limousinenhofs';
-  const ak=new Kit(arrows);ak.box(ink,0,0,-.25,.10,.008,1.2);
-  ak.line(ink,[0,0,.6],[-.35,0,.1],.05);ak.line(ink,[0,0,.6],[.35,0,.1],.05);ak.finish();group.add(arrows);
- }
  // Wall and safety fence follow the same exact segments, but stop at both gates.
  const walls=[
   {x:(p.minX+p.maxX)/2,z:p.maxZ,w:p.maxX-p.minX,d:.38,axis:'x',a:p.minX,b:p.maxX},
   {x:p.minX,z:(p.minZ+p.maxZ)/2,w:.38,d:p.maxZ-p.minZ,axis:'z',a:p.minZ,b:p.maxZ},
   {x:p.maxX,z:(p.minZ+p.maxZ)/2,w:.38,d:p.maxZ-p.minZ,axis:'z',a:p.minZ,b:p.maxZ},
-  ...[[p.minX,37.68],[44.32,48.1],[53.3,57.18],[63.82,p.maxX]]
+  ...[[p.minX,36.25],[45.75,48.1],[53.3,57.18],[63.82,p.maxX]]
    .map(([a,b])=>({x:(a+b)/2,z:p.minZ,w:b-a,d:.38,axis:'x',a,b}))
  ];
  for(const w of walls){
@@ -412,16 +418,16 @@ export function buildLimousineParking(scene,m,originalCar,createCanvas){
   }
  }
 
- // Separate 6.64m-wide drive-in and drive-out with individual barriers.
+ // Preserve gate centres; flare the exit inside the court for the long vehicle nose.
  // The gates are the only openings in the perimeter enclosure.
  for(const [index,entry]of p.entrances.entries()){
   const gx=entry.x,front=p.minZ+.75,side=index===0?-1:1;
-  const hinge=gx+side*2.98;
+  const hinge=gx+side*(index===0?4.75:2.98);
   stoneBox(hinge,y+.58,front,.42,1.16,.45);
   const armMat=m.ivory.clone();armMat.name='Geschlossene Schrankenarme';
   armMat.roughness=.58;
-  k.box(armMat,gx,y+1.05,front,5.9,.09,.12);
-  for(let a=0;a<4;a++)k.box(m.red,gx-2.3+a*1.45,y+1.105,front+.067,.64,.045,.018);
+  k.box(armMat,gx,y+1.05,front,index===0?9.5:5.9,.09,.12);
+  for(let a=0;a<4;a++)k.box(m.red,gx+(index===0?-3.7+a*2.4:-2.3+a*1.45),y+1.105,front+.067,.64,.045,.018);
  }
 
  // Substantial stone-and-glass guardhouse between the two separate gates.
@@ -531,7 +537,7 @@ export function buildLimousineParking(scene,m,originalCar,createCanvas){
  buildLuxuryParkingLandscape(scene,group,m,createCanvas,stone,metal);
  const cars=copyParkedLimousines(group,originalCar,p.poses);
  group.userData.parkedCarDrawGroups=cars.drawGroups;
- group.userData.maneuvering={rearAxleRadius:13,wheelbase:11.2,vehicleLength:16.9,oneWay:true,circulationCenter:[67,-8],diagonalHeadingDegrees:120};
+ group.userData.maneuvering={rearAxleRadius:13,wheelbase:11.2,vehicleLength:16.9,oneWay:true,parallelRearRow:true,headingDegrees:90,clearAisle:{minX:46.3,maxX:87.7,minZ:-10.2,maxZ:15.7},bayDimensions:[4.3,20]};
  group.userData.security={fence:true,guardhouse:true,cameras:5,floodlightOn:false,
   barrierCount:2,privateSigns:2};
  return group;
@@ -573,7 +579,7 @@ function buildLuxuryParkingLandscape(scene,root,m,createCanvas,stone,bronze){
  // Identical 1.2 m beds terminate 0.95 m short of each lamp centre.
  rectangle(30.55,31.75,42.1,91.9);rectangle(74.25,75.45,42.1,91.9);
  rectangle(32.1,73.9,92.25,93.45,true);
- for(const [a,b]of [[32.1,37.0],[45.0,47.7],[53.7,56.5],[65.0,73.9]])
+ for(const [a,b]of [[32.1,35.9],[46.1,47.7],[53.7,56.5],[65.0,73.9]])
   rectangle(a,b,40.55,41.75,true);
  // Reuse the original west/rear lantern; add the same fixture in the other
  // three corners. All four centres have exactly 0.85 m offsets from the wall.
@@ -632,7 +638,7 @@ function buildLuxuryParkingLandscape(scene,root,m,createCanvas,stone,bronze){
   features.trees++;}
  const bollard=(x,z,h=y)=>{k.box(bronze,x,h+.38,z,.18,.76,.18);
   k.box(lightMat,x,h+.68,z,.185,.10,.185);features.bollards++;};
- for(const x of [37.35,44.65,56.85,64.15])bollard(x,43.5);
+ for(const x of [35.95,46.05,56.85,64.15])bollard(x,43.5);
 
  for(const x of [hx-2.0,hx+2.0])k.box(lightMat,x,y+3.15,hz-1.8,.65,.035,.12);
  for(const x of [hx-1,hx+1])k.box(lightMat,x,y+3.14,hz,.60,.03,1.0);
@@ -649,7 +655,7 @@ function buildLuxuryParkingLandscape(scene,root,m,createCanvas,stone,bronze){
   mesh.name=title+' – Hofbeschilderung';mesh.castShadow=false;g.add(mesh);};
  sign('Lumina Leaf Hotel','Limousinenservice',4.8,.70,hx,y+2.90,hz-2.46);
  for(const [i,entry]of LIMO_PARK.entrances.entries()){
-  sign(entry.label,'Privatgelände',3.75,.85,i===0?34.84:65.91,y+.90,41.78);
+  sign(entry.label,'Privatgelände',3.75,.85,i===0?34.125:65.91,y+.90,41.78);
   const wz=24.2,s=parkingAccessSection(i,wz),a=PARKING_ACCESS[i];
   const t=(28.4-wz)/9.4,slope=(a.gateX-a.roadX)*6*t*(1-t)/9.4;
   const ar=new T.Group();ar.position.set(s.center-PARKING_SHIFT_X,y+.08,61-wz);

@@ -72,10 +72,10 @@ function ribbon(root,m,name,stations,inner,outer,base,top,extras){
 }
 
 export function buildGardenPath(root,m,pathShift,walkHeight){
- const cfg=GARDEN_PATH,stations=samples(cfg.startZ,cfg.endZ,[-16,-3,7,17.1]),height=z=>gardenSpaJunctionHeight(z,walkHeight(z)+.03+Math.max(0,(z-17.1)/1.2)*.075);
+ const cfg=GARDEN_PATH,stations=[-18,...samples(cfg.startZ,cfg.endZ,[-16,-3,7,17.1]).filter(z=>z> -18)],height=z=>gardenSpaJunctionHeight(z,walkHeight(z)+.03+Math.max(0,(z-17.1)/1.2)*.075);
  const positions=[],uv=[],indices=[];for(const z of stations)for(const side of [-1,1]){const x=27+pathShift(z)+side*cfg.width/2;positions.push(x,height(z),z);uv.push(x/4,z/4);}
  for(let i=0;i<stations.length-1;i++){const j=i*2;indices.push(j,j+2,j+3,j,j+3,j+1);}
- const geo=new T.BufferGeometry();geo.setAttribute('position',new T.Float32BufferAttribute(positions,3));geo.setAttribute('uv',new T.Float32BufferAttribute(uv,2));geo.setIndex(indices);geo.computeVertexNormals();const path=new T.Mesh(geo,m.cobbles);path.name='Sauber angebundener Gartenweg rechts neben dem Hotel';path.userData={gardenPath:true,endsBeforeRoad:true,worldEndZ:cfg.worldEndZ};path.receiveShadow=true;root.add(path);
+ const geo=new T.BufferGeometry();geo.setAttribute('position',new T.Float32BufferAttribute(positions,3));geo.setAttribute('uv',new T.Float32BufferAttribute(uv,2));geo.setIndex(indices);geo.computeVertexNormals();const path=new T.Mesh(geo,m.cobbles);path.name='Sauber angebundener Gartenweg rechts neben dem Hotel';path.userData={gardenPath:true,endsBeforeRoad:true,worldEndZ:cfg.worldEndZ,rearSpurRemoved:true,rearJoinWorldZ:-10};path.receiveShadow=true;root.add(path);
  for(const side of [1]){const inner=z=>27+pathShift(z)+side*cfg.width/2,outer=z=>inner(z)+side*.18,taper=z=>Math.min(1,Math.max(0,(cfg.endZ-z)/.60));ribbon(root,m.spaEdge,'Durchgehender seitlicher Rand des Gartenwegs',stations,inner,outer,z=>height(z)-.03,z=>height(z)+.12*taper(z),{gardenPathEdge:true,worldEndZ:cfg.worldEndZ,side});}
  return path;
 }
